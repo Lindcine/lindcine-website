@@ -79,21 +79,29 @@ grid.style.gridTemplateColumns="none";
 grid.style.width="max-content";
 grid.style.minWidth="max-content";
 
-// Wheel: while the pointer is anywhere over Work, a normal vertical mouse
-// wheel moves the archive horizontally. Trackpad deltaX is preserved.
-document.addEventListener("wheel",e=>{
-  const work=e.target.closest("#work");
-  if(!work)return;
+// Wheel: bind directly to the Work section.
+// A regular vertical mouse wheel is translated into horizontal movement.
+// Trackpads can send either deltaX or deltaY; both are supported.
+const workSection=document.querySelector("#work");
+workSection.addEventListener("wheel",e=>{
   const max=viewport.scrollWidth-viewport.clientWidth;
   if(max<=1)return;
-  const delta=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;
-  if(delta===0)return;
-  const atStart=viewport.scrollLeft<=0;
-  const atEnd=viewport.scrollLeft>=max-1;
-  if((delta<0&&atStart)||(delta>0&&atEnd))return;
+
+  let dx=e.deltaX;
+  let dy=e.deltaY;
+  // Normalize line/page-based wheel deltas to approximate pixel movement.
+  if(e.deltaMode===1){dx*=16;dy*=16;}
+  else if(e.deltaMode===2){dx*=viewport.clientWidth;dy*=viewport.clientWidth;}
+
+  const movement=Math.abs(dx)>Math.abs(dy)?dx:dy;
+  if(movement===0)return;
+
+  // Only consume the wheel event when the archive can move in that direction.
+  const next=viewport.scrollLeft+movement;
+  if(next<0 || next>max)return;
   e.preventDefault();
-  viewport.scrollLeft+=delta;
-},{passive:false,capture:true});
+  viewport.scrollLeft=next;
+},{passive:false});
 
 // Drag-to-scroll on empty areas of the viewport. Project cards remain clickable.
 let dragging=false,startX=0,startScroll=0;
