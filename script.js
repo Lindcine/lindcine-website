@@ -73,47 +73,44 @@ document.querySelector(".dialog-close").addEventListener("click",closeDialog);
 dialog.addEventListener("click",e=>{if(e.target===dialog)closeDialog();});
 
 // Horizontal archive navigation.
-// Force a genuinely wider grid, so the viewport always has scrollable content.
-function sizeArchiveGrid(){
-  const columns=Math.max(8,Math.ceil(projects.length*0.72));
-  const desktop=window.matchMedia("(max-width: 760px)").matches===false;
-  grid.style.gridTemplateColumns=`repeat(${columns}, minmax(0, ${desktop ? "clamp(190px, 16vw, 270px)" : "clamp(150px, 43vw, 220px)"}))`;
-  grid.style.width="max-content";
-  grid.style.minWidth="max-content";
-}
-sizeArchiveGrid();
-window.addEventListener("resize",sizeArchiveGrid);
+// Keep the CSS grid implicit: grid-auto-flow + grid-auto-columns creates
+// as many horizontal columns as the mosaic needs.
+grid.style.gridTemplateColumns="none";
+grid.style.width="max-content";
+grid.style.minWidth="max-content";
 
-// Convert vertical mouse-wheel movement into horizontal browsing over the archive.
-// Trackpads with horizontal gestures retain their native horizontal movement.
-viewport.addEventListener("wheel",e=>{
-  const dx=Math.abs(e.deltaX),dy=Math.abs(e.deltaY);
-  if(dy>dx){
-    const max=viewport.scrollWidth-viewport.clientWidth;
-    if(max>1){
-      e.preventDefault();
-      viewport.scrollLeft+=e.deltaY;
-    }
-  }
-},{passive:false});
+// Wheel: while the pointer is anywhere over Work, a normal vertical mouse
+// wheel moves the archive horizontally. Trackpad deltaX is preserved.
+document.addEventListener("wheel",e=>{
+  const work=e.target.closest("#work");
+  if(!work)return;
+  const max=viewport.scrollWidth-viewport.clientWidth;
+  if(max<=1)return;
+  const delta=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;
+  if(delta===0)return;
+  const atStart=viewport.scrollLeft<=0;
+  const atEnd=viewport.scrollLeft>=max-1;
+  if((delta<0&&atStart)||(delta>0&&atEnd))return;
+  e.preventDefault();
+  viewport.scrollLeft+=delta;
+},{passive:false,capture:true});
 
-// Drag anywhere on the archive background to move sideways.
-// Clicking a project still opens that project normally.
-let dragging=false,startX=0,startScroll=0,dragMoved=false;
+// Drag-to-scroll on empty areas of the viewport. Project cards remain clickable.
+let dragging=false,startX=0,startScroll=0;
 viewport.addEventListener("pointerdown",e=>{
-  if(e.pointerType==="touch" || e.target.closest(".project"))return;
-  dragging=true;dragMoved=false;startX=e.clientX;startScroll=viewport.scrollLeft;
-  viewport.setPointerCapture?.(e.pointerId);
+  if(e.pointerType==="touch"||e.target.closest(".project"))return;
+  dragging=true;startX=e.clientX;startScroll=viewport.scrollLeft;
+  viewport.setPointerCapture(e.pointerId);
 });
 viewport.addEventListener("pointermove",e=>{
   if(!dragging)return;
-  const dx=e.clientX-startX;
-  if(Math.abs(dx)>4)dragMoved=true;
-  if(dragMoved)viewport.scrollLeft=startScroll-dx;
+  viewport.scrollLeft=startScroll-(e.clientX-startX);
 });
 function stopDragging(){dragging=false;}
 viewport.addEventListener("pointerup",stopDragging);
 viewport.addEventListener("pointercancel",stopDragging);
+
+// Keyboard support when the archive is focused.
 viewport.addEventListener("keydown",e=>{
   if(e.key==="ArrowRight"){e.preventDefault();viewport.scrollBy({left:360,behavior:"smooth"});}
   if(e.key==="ArrowLeft"){e.preventDefault();viewport.scrollBy({left:-360,behavior:"smooth"});}
@@ -132,4 +129,3 @@ nav.querySelectorAll("a").forEach(link=>link.addEventListener("click",()=>{
 }));
 document.querySelector("#year").textContent=new Date().getFullYear();
 renderProjects();
-requestAnimationFrame(sizeArchiveGrid);
