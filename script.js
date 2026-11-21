@@ -72,30 +72,53 @@ function closeDialog(){dialog.close();frame.innerHTML="";}
 document.querySelector(".dialog-close").addEventListener("click",closeDialog);
 dialog.addEventListener("click",e=>{if(e.target===dialog)closeDialog();});
 
-// Convert vertical mouse-wheel movement into horizontal browsing while the pointer
-// is over the archive. At either end, normal page scrolling continues.
+// Horizontal archive navigation.
+// Force a genuinely wider grid, so the viewport always has scrollable content.
+function sizeArchiveGrid(){
+  const columns=Math.max(8,Math.ceil(projects.length*0.72));
+  const desktop=window.matchMedia("(max-width: 760px)").matches===false;
+  grid.style.gridTemplateColumns=`repeat(${columns}, minmax(0, ${desktop ? "clamp(190px, 16vw, 270px)" : "clamp(150px, 43vw, 220px)"}))`;
+  grid.style.width="max-content";
+  grid.style.minWidth="max-content";
+}
+sizeArchiveGrid();
+window.addEventListener("resize",sizeArchiveGrid);
+
+// Convert vertical mouse-wheel movement into horizontal browsing over the archive.
+// Trackpads with horizontal gestures retain their native horizontal movement.
 viewport.addEventListener("wheel",e=>{
-  if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){
+  const dx=Math.abs(e.deltaX),dy=Math.abs(e.deltaY);
+  if(dy>dx){
     const max=viewport.scrollWidth-viewport.clientWidth;
-    const canMove=(e.deltaY>0&&viewport.scrollLeft<max-1)||(e.deltaY<0&&viewport.scrollLeft>1);
-    if(canMove){e.preventDefault();viewport.scrollLeft+=e.deltaY;}
+    if(max>1){
+      e.preventDefault();
+      viewport.scrollLeft+=e.deltaY;
+    }
   }
 },{passive:false});
 
-// Drag-to-scroll for mouse users; touch and trackpads keep their native behaviour.
-let dragging=false,startX=0,startScroll=0;
-viewport.addEventListener("mousedown",e=>{
-  if(e.target.closest(".project"))return;
-  dragging=true;startX=e.pageX;startScroll=viewport.scrollLeft;
+// Drag anywhere on the archive background to move sideways.
+// Clicking a project still opens that project normally.
+let dragging=false,startX=0,startScroll=0,dragMoved=false;
+viewport.addEventListener("pointerdown",e=>{
+  if(e.pointerType==="touch" || e.target.closest(".project"))return;
+  dragging=true;dragMoved=false;startX=e.clientX;startScroll=viewport.scrollLeft;
+  viewport.setPointerCapture?.(e.pointerId);
 });
-window.addEventListener("mouseup",()=>dragging=false);
-window.addEventListener("mousemove",e=>{
+viewport.addEventListener("pointermove",e=>{
   if(!dragging)return;
-  viewport.scrollLeft=startScroll-(e.pageX-startX);
+  const dx=e.clientX-startX;
+  if(Math.abs(dx)>4)dragMoved=true;
+  if(dragMoved)viewport.scrollLeft=startScroll-dx;
 });
+function stopDragging(){dragging=false;}
+viewport.addEventListener("pointerup",stopDragging);
+viewport.addEventListener("pointercancel",stopDragging);
 viewport.addEventListener("keydown",e=>{
-  if(e.key==="ArrowRight"){e.preventDefault();viewport.scrollBy({left:320,behavior:"smooth"});}
-  if(e.key==="ArrowLeft"){e.preventDefault();viewport.scrollBy({left:-320,behavior:"smooth"});}
+  if(e.key==="ArrowRight"){e.preventDefault();viewport.scrollBy({left:360,behavior:"smooth"});}
+  if(e.key==="ArrowLeft"){e.preventDefault();viewport.scrollBy({left:-360,behavior:"smooth"});}
+  if(e.key==="Home"){e.preventDefault();viewport.scrollTo({left:0,behavior:"smooth"});}
+  if(e.key==="End"){e.preventDefault();viewport.scrollTo({left:viewport.scrollWidth,behavior:"smooth"});}
 });
 
 const menuButton=document.querySelector(".menu-button"),nav=document.querySelector(".main-nav");
@@ -109,3 +132,4 @@ nav.querySelectorAll("a").forEach(link=>link.addEventListener("click",()=>{
 }));
 document.querySelector("#year").textContent=new Date().getFullYear();
 renderProjects();
+requestAnimationFrame(sizeArchiveGrid);

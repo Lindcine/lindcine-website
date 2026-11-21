@@ -138,3 +138,47 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit}
   .project-title{font-size:12px}
   .project-sub{font-size:6px}
 }
+
+
+/* VERSION 6 — reliable horizontal mosaic scrolling */
+.work-page{overflow:hidden}
+.work-viewport{
+  display:block;
+  width:100%;
+  overflow-x:scroll;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  overscroll-behavior-y:auto;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x pan-y;
+  scroll-behavior:smooth;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(190,170,135,.35) transparent;
+  cursor:grab;
+}
+.work-viewport:active{cursor:grabbing}
+.work-viewport::-webkit-scrollbar{height:4px;display:block}
+.work-viewport::-webkit-scrollbar-track{background:transparent}
+.work-viewport::-webkit-scrollbar-thumb{background:rgba(190,170,135,.35);border-radius:4px}
+.work-track{
+  display:grid;
+  grid-auto-flow:column dense;
+  grid-template-rows:repeat(4,minmax(0,1fr));
+  grid-auto-columns:clamp(190px,16vw,270px);
+  width:max-content;
+  min-width:max-content;
+  height:100%;
+  align-content:stretch;
+  align-items:stretch;
+  gap:8px;
+  padding:8px 4.1vw 12px;
+}
+@media(max-width:760px){
+  .work-track{
+    grid-template-rows:repeat(3,minmax(0,1fr));
+    grid-auto-columns:clamp(150px,43vw,220px);
+    width:max-content;
+    min-width:max-content;
+    gap:6px;
+  }
+}
