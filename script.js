@@ -41,7 +41,7 @@ function videoEmbed(url){
   return url;
 }
 function renderProjects(){
-  count.textContent=`${String(projects.length).padStart(2,"0")} PROJECTS`;
+  if(count) count.textContent=`${String(projects.length).padStart(2,"0")} PROJECTS`;
   const copies=3;
   grid.innerHTML=Array.from({length:copies},(_,copy)=>`<div class="project-run" data-copy="${copy}" aria-hidden="${copy!==1}">`+projects.map((p,i)=>{
     const poster=p.image?`style="--poster:url('${p.image}');"`:"";

@@ -351,3 +351,10 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit}
  .about-layout{padding-top:7vh}
  .site-footer{border-top-color:rgba(232,230,225,.08)}
 }
+
+
+/* V12 — keep the original project mosaic, remove decorative work-section clutter. */
+#work .page-heading{border:0!important;padding-bottom:0!important;margin-bottom:0!important;}
+#work .work-hint{display:none!important;}
+#work .work-end{display:none!important;}
+#work .project-sub,#work .project-number{display:none!important;}
