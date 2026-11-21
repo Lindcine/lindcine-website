@@ -67,7 +67,7 @@ function openProject(p){
   const src=videoEmbed(p.video);
   if(!src)return;
   frame.innerHTML=`<iframe src="${src}" title="${p.title}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
-  caption.textContent=`${p.title} / ${p.detail}`;
+  caption.textContent=p.title;
   dialog.showModal();
 }
 function closeDialog(){dialog.close();frame.innerHTML="";}
