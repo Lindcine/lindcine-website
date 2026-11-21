@@ -16,9 +16,7 @@
   <header class="site-header">
     <a class="wordmark" href="#home" aria-label="LINDCINE home">LINDCINE<span>®</span></a>
     <nav class="main-nav" aria-label="Main navigation">
-      <a href="#work">WORK</a>
-      <a href="#about">ABOUT</a>
-      <a href="#contact">CONTACT</a>
+      <a href="#work">WORK</a><a href="#about">ABOUT</a><a href="#contact">CONTACT</a>
     </nav>
     <button class="menu-button" aria-label="Open menu" aria-expanded="false">MENU <span>＋</span></button>
   </header>
@@ -26,31 +24,22 @@
   <main>
     <section class="home" id="home">
       <div class="home-image" role="img" aria-label="Atmospheric cinematic background image">
-        <!-- Replace this background with one of your own stills in style.css (.home-image). -->
         <div class="home-image-vignette"></div>
       </div>
-      <div class="home-caption">
-        <span>LUCAS LINDGREN</span>
-        <i></i>
-        <span>CINEMATOGRAPHER & FILMMAKER</span>
-        <i></i>
-        <span>STOCKHOLM, SWEDEN</span>
-      </div>
-      <div class="home-bottom">
-        <span>INDEPENDENT FILMMAKER</span>
-        <a href="#work">SELECTED WORK <span>↘</span></a>
-      </div>
+      <div class="home-caption"><span>LUCAS LINDGREN</span><i></i><span>CINEMATOGRAPHER & FILMMAKER</span><i></i><span>STOCKHOLM, SWEDEN</span></div>
+      <div class="home-bottom"><span>INDEPENDENT FILMMAKER</span><a href="#work">EXPLORE WORK <span>↘</span></a></div>
     </section>
 
     <section class="work-page" id="work">
       <div class="page-heading">
-        <span class="eyebrow">SELECTED WORK <span>—</span> 2020–2026</span>
-        <span class="work-count" id="workCount">06 PROJECTS</span>
+        <span class="eyebrow">WORK ARCHIVE <span>—</span> 2020–2026</span>
+        <span class="work-count" id="workCount">18 PROJECTS</span>
       </div>
-      <div class="work-grid" id="workGrid" aria-label="Selected projects">
-        <!-- Projects are populated from script.js. Add your YouTube/Vimeo links there. -->
+      <div class="work-hint"><span>SCROLL TO EXPLORE</span><span class="hint-line"></span><span>↔</span></div>
+      <div class="work-viewport" id="workViewport" tabindex="0" aria-label="Horizontally scrolling project archive. Use mouse wheel, trackpad, or arrow keys.">
+        <div class="work-track" id="workGrid" aria-label="Selected projects"></div>
       </div>
-      <div class="work-end"><span>A SELECTION OF WORK</span><span>MORE AVAILABLE ON REQUEST</span></div>
+      <div class="work-end"><span>A GROWING ARCHIVE OF WORK</span><span>MORE AVAILABLE ON REQUEST</span></div>
     </section>
 
     <section class="about-page" id="about">
@@ -68,15 +57,8 @@
 
     <section class="contact-page" id="contact">
       <div class="page-heading"><span class="eyebrow">CONTACT</span><span class="eyebrow">OPEN FOR COLLABORATION</span></div>
-      <div class="contact-main">
-        <span class="eyebrow">HAVE SOMETHING IN MIND?</span>
-        <a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a>
-      </div>
-      <div class="contact-foot">
-        <span>STOCKHOLM, SWEDEN</span>
-        <a href="https://vimeo.com/994186610" target="_blank" rel="noreferrer">VIMEO ↗</a>
-        <a href="#home">BACK TO TOP ↑</a>
-      </div>
+      <div class="contact-main"><span class="eyebrow">HAVE SOMETHING IN MIND?</span><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a></div>
+      <div class="contact-foot"><span>STOCKHOLM, SWEDEN</span><a href="https://vimeo.com/994186610" target="_blank" rel="noreferrer">VIMEO ↗</a><a href="#home">BACK TO TOP ↑</a></div>
     </section>
   </main>
 
@@ -88,8 +70,7 @@
 
   <dialog class="video-dialog" id="videoDialog" aria-label="Project video">
     <button class="dialog-close" aria-label="Close video">CLOSE <span>×</span></button>
-    <div class="dialog-frame" id="dialogFrame"></div>
-    <div class="dialog-caption" id="dialogCaption"></div>
+    <div class="dialog-frame" id="dialogFrame"></div><div class="dialog-caption" id="dialogCaption"></div>
   </dialog>
   <script src="script.js"></script>
 </body>
