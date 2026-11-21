@@ -74,72 +74,76 @@ function closeDialog(){dialog.close();frame.innerHTML="";}
 document.querySelector(".dialog-close").addEventListener("click",closeDialog);
 dialog.addEventListener("click",e=>{if(e.target===dialog)closeDialog();});
 
-// Smooth, seamless horizontal archive loop.
-// Three identical project runs are rendered; the visitor starts in the middle run.
-// When the scroll position approaches either outer run, we shift by one run-width.
-// Since the content is duplicated pixel-for-pixel, the recentering is invisible.
+// Seamless infinite archive with continuous easing.
+// Three identical runs are rendered; the viewport lives on the middle run.
+// Re-centering always shifts both the rendered position and animation target
+// by exactly one run width, so the visible content and direction are preserved.
 const workSection=document.querySelector("#work");
 let cycleWidth=0;
 let targetScroll=0;
 let animationFrame=0;
-let lastWheelTime=0;
+let lastFrameTime=0;
 
 function measureLoop(){
-  const firstRun=grid.querySelector('.project-run[data-copy="0"]');
-  const middleRun=grid.querySelector('.project-run[data-copy="1"]');
-  if(!firstRun||!middleRun)return;
-  cycleWidth=middleRun.offsetLeft-firstRun.offsetLeft;
+  const first=grid.querySelector('.project-run[data-copy="0"]');
+  const middle=grid.querySelector('.project-run[data-copy="1"]');
+  if(!first||!middle)return;
+  // Both runs share the same flex parent; use their left-edge distance.
+  cycleWidth=middle.getBoundingClientRect().left-first.getBoundingClientRect().left;
   if(cycleWidth>0){
     viewport.scrollLeft=cycleWidth;
     targetScroll=cycleWidth;
   }
 }
-function keepLoopCentered(){
+function rebaseLoop(){
   if(!cycleWidth)return;
-  const low=cycleWidth*.5;
-  const high=cycleWidth*2-viewport.clientWidth*.5;
-  if(viewport.scrollLeft<low){
-    viewport.scrollLeft+=cycleWidth;
-    targetScroll+=cycleWidth;
-  }else if(viewport.scrollLeft>high){
+  // Keep the viewport in the middle copy. Shift target by the same amount,
+  // preserving the exact distance still to travel and therefore the direction.
+  while(viewport.scrollLeft>=cycleWidth*2){
     viewport.scrollLeft-=cycleWidth;
     targetScroll-=cycleWidth;
   }
+  while(viewport.scrollLeft<0){
+    viewport.scrollLeft+=cycleWidth;
+    targetScroll+=cycleWidth;
+  }
 }
-function animateScroll(){
+function animateScroll(time){
+  if(!lastFrameTime)lastFrameTime=time;
+  const dt=Math.min(32,time-lastFrameTime);
+  lastFrameTime=time;
   const current=viewport.scrollLeft;
   const diff=targetScroll-current;
-  if(Math.abs(diff)<.45){
+  // Frame-rate independent exponential easing; soft but responsive.
+  const ease=1-Math.pow(0.0015,dt/1000);
+  if(Math.abs(diff)<0.35){
     viewport.scrollLeft=targetScroll;
+    rebaseLoop();
     animationFrame=0;
-    keepLoopCentered();
+    lastFrameTime=0;
     return;
   }
-  viewport.scrollLeft=current+diff*.14;
-  keepLoopCentered();
+  viewport.scrollLeft=current+diff*ease;
+  rebaseLoop();
   animationFrame=requestAnimationFrame(animateScroll);
 }
 function requestSmoothScroll(){
-  if(!animationFrame)animationFrame=requestAnimationFrame(animateScroll);
+  if(!animationFrame){lastFrameTime=0;animationFrame=requestAnimationFrame(animateScroll);}
 }
 function addWheelMovement(delta){
   if(!cycleWidth)return;
   targetScroll+=delta;
-  // Keep the target within the duplicated buffer while preserving the same
-  // visual position after a whole-cycle shift.
-  while(targetScroll<cycleWidth*.5)targetScroll+=cycleWidth;
-  while(targetScroll>cycleWidth*2-viewport.clientWidth*.5)targetScroll-=cycleWidth;
   requestSmoothScroll();
 }
-workSection.addEventListener("wheel",e=>{
+workSection.addEventListener('wheel',e=>{
   let dx=e.deltaX,dy=e.deltaY;
   if(e.deltaMode===1){dx*=16;dy*=16;}
   else if(e.deltaMode===2){dx*=viewport.clientWidth;dy*=viewport.clientWidth;}
   const delta=Math.abs(dx)>Math.abs(dy)?dx:dy;
   if(!delta)return;
   e.preventDefault();
-  // Slightly amplify the wheel so the archive feels responsive, then ease it.
-  addWheelMovement(delta*1.35);
+  // A little momentum from each wheel notch; the easing handles the glide.
+  addWheelMovement(delta*1.65);
 },{passive:false});
 
 let dragging=false,dragStartX=0,dragStartScroll=0;
@@ -155,7 +159,7 @@ viewport.addEventListener("pointermove",e=>{
   const moved=dragStartScroll-(e.clientX-dragStartX);
   viewport.scrollLeft=moved;
   targetScroll=moved;
-  keepLoopCentered();
+  rebaseLoop();
 });
 function stopDragging(){dragging=false;}
 viewport.addEventListener("pointerup",stopDragging);

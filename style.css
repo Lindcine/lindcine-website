@@ -308,3 +308,10 @@ a{color:inherit;text-decoration:none}button{font:inherit;color:inherit}
 }
 
 .work-viewport{scroll-snap-type:none}
+
+
+/* VERSION 10 — polished infinite glide */
+.work-viewport{scroll-behavior:auto;overflow-anchor:none;scrollbar-width:none}
+.work-viewport::-webkit-scrollbar{display:none}
+.work-track{will-change:transform}
+.project-run{contain:layout paint}
