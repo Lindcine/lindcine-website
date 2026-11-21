@@ -42,17 +42,19 @@ function videoEmbed(url){
 }
 function renderProjects(){
   count.textContent=`${String(projects.length).padStart(2,"0")} PROJECTS`;
-  grid.innerHTML=projects.map((p,i)=>{
+  const copies=3;
+  grid.innerHTML=Array.from({length:copies},(_,copy)=>`<div class="project-run" data-copy="${copy}" aria-hidden="${copy!==1}">`+projects.map((p,i)=>{
     const poster=p.image?`style="--poster:url('${p.image}');"`:"";
     const image=p.image?`<img src="${p.image}" alt="${p.title}" loading="lazy">`:"";
     const preview=p.preview?`<video muted loop playsinline preload="none" src="${p.preview}"></video>`:"";
     const hasVideo=Boolean(p.video);
-    return `<article class="project ${hasVideo?"":"no-video"}" tabindex="0" role="button" data-index="${i}" aria-label="Open ${p.title}">
+    return `<article class="project tile-${i%10} ${hasVideo?"":"no-video"}" tabindex="${copy===1?0:-1}" role="button" data-index="${i}" aria-label="Open ${p.title}">
       <div class="project-media" ${poster}>${image}${preview}</div>
       ${hasVideo?'<span class="project-play" aria-hidden="true">↗</span>':""}
       <div class="project-info"><div><div class="project-title">${p.title}</div><div class="project-sub">${p.detail}</div></div><span class="project-number">${String(i+1).padStart(2,"0")}</span></div>
     </article>`;
-  }).join("");
+  }).join("")+`</div>`).join("");
+
   grid.querySelectorAll(".project").forEach(card=>{
     const p=projects[Number(card.dataset.index)],vid=card.querySelector("video");
     card.addEventListener("mouseenter",()=>{if(vid)vid.play().catch(()=>{});});
@@ -72,58 +74,98 @@ function closeDialog(){dialog.close();frame.innerHTML="";}
 document.querySelector(".dialog-close").addEventListener("click",closeDialog);
 dialog.addEventListener("click",e=>{if(e.target===dialog)closeDialog();});
 
-// Horizontal archive navigation.
-// Keep the CSS grid implicit: grid-auto-flow + grid-auto-columns creates
-// as many horizontal columns as the mosaic needs.
-grid.style.gridTemplateColumns="none";
-grid.style.width="max-content";
-grid.style.minWidth="max-content";
-
-// Wheel: bind directly to the Work section.
-// A regular vertical mouse wheel is translated into horizontal movement.
-// Trackpads can send either deltaX or deltaY; both are supported.
+// Smooth, seamless horizontal archive loop.
+// Three identical project runs are rendered; the visitor starts in the middle run.
+// When the scroll position approaches either outer run, we shift by one run-width.
+// Since the content is duplicated pixel-for-pixel, the recentering is invisible.
 const workSection=document.querySelector("#work");
-workSection.addEventListener("wheel",e=>{
-  const max=viewport.scrollWidth-viewport.clientWidth;
-  if(max<=1)return;
+let cycleWidth=0;
+let targetScroll=0;
+let animationFrame=0;
+let lastWheelTime=0;
 
-  let dx=e.deltaX;
-  let dy=e.deltaY;
-  // Normalize line/page-based wheel deltas to approximate pixel movement.
+function measureLoop(){
+  const firstRun=grid.querySelector('.project-run[data-copy="0"]');
+  const middleRun=grid.querySelector('.project-run[data-copy="1"]');
+  if(!firstRun||!middleRun)return;
+  cycleWidth=middleRun.offsetLeft-firstRun.offsetLeft;
+  if(cycleWidth>0){
+    viewport.scrollLeft=cycleWidth;
+    targetScroll=cycleWidth;
+  }
+}
+function keepLoopCentered(){
+  if(!cycleWidth)return;
+  const low=cycleWidth*.5;
+  const high=cycleWidth*2-viewport.clientWidth*.5;
+  if(viewport.scrollLeft<low){
+    viewport.scrollLeft+=cycleWidth;
+    targetScroll+=cycleWidth;
+  }else if(viewport.scrollLeft>high){
+    viewport.scrollLeft-=cycleWidth;
+    targetScroll-=cycleWidth;
+  }
+}
+function animateScroll(){
+  const current=viewport.scrollLeft;
+  const diff=targetScroll-current;
+  if(Math.abs(diff)<.45){
+    viewport.scrollLeft=targetScroll;
+    animationFrame=0;
+    keepLoopCentered();
+    return;
+  }
+  viewport.scrollLeft=current+diff*.14;
+  keepLoopCentered();
+  animationFrame=requestAnimationFrame(animateScroll);
+}
+function requestSmoothScroll(){
+  if(!animationFrame)animationFrame=requestAnimationFrame(animateScroll);
+}
+function addWheelMovement(delta){
+  if(!cycleWidth)return;
+  targetScroll+=delta;
+  // Keep the target within the duplicated buffer while preserving the same
+  // visual position after a whole-cycle shift.
+  while(targetScroll<cycleWidth*.5)targetScroll+=cycleWidth;
+  while(targetScroll>cycleWidth*2-viewport.clientWidth*.5)targetScroll-=cycleWidth;
+  requestSmoothScroll();
+}
+workSection.addEventListener("wheel",e=>{
+  let dx=e.deltaX,dy=e.deltaY;
   if(e.deltaMode===1){dx*=16;dy*=16;}
   else if(e.deltaMode===2){dx*=viewport.clientWidth;dy*=viewport.clientWidth;}
-
-  const movement=Math.abs(dx)>Math.abs(dy)?dx:dy;
-  if(movement===0)return;
-
-  // Only consume the wheel event when the archive can move in that direction.
-  const next=viewport.scrollLeft+movement;
-  if(next<0 || next>max)return;
+  const delta=Math.abs(dx)>Math.abs(dy)?dx:dy;
+  if(!delta)return;
   e.preventDefault();
-  viewport.scrollLeft=next;
+  // Slightly amplify the wheel so the archive feels responsive, then ease it.
+  addWheelMovement(delta*1.35);
 },{passive:false});
 
-// Drag-to-scroll on empty areas of the viewport. Project cards remain clickable.
-let dragging=false,startX=0,startScroll=0;
+let dragging=false,dragStartX=0,dragStartScroll=0;
 viewport.addEventListener("pointerdown",e=>{
   if(e.pointerType==="touch"||e.target.closest(".project"))return;
-  dragging=true;startX=e.clientX;startScroll=viewport.scrollLeft;
+  dragging=true;
+  dragStartX=e.clientX;
+  dragStartScroll=viewport.scrollLeft;
   viewport.setPointerCapture(e.pointerId);
 });
 viewport.addEventListener("pointermove",e=>{
   if(!dragging)return;
-  viewport.scrollLeft=startScroll-(e.clientX-startX);
+  const moved=dragStartScroll-(e.clientX-dragStartX);
+  viewport.scrollLeft=moved;
+  targetScroll=moved;
+  keepLoopCentered();
 });
 function stopDragging(){dragging=false;}
 viewport.addEventListener("pointerup",stopDragging);
 viewport.addEventListener("pointercancel",stopDragging);
 
-// Keyboard support when the archive is focused.
 viewport.addEventListener("keydown",e=>{
-  if(e.key==="ArrowRight"){e.preventDefault();viewport.scrollBy({left:360,behavior:"smooth"});}
-  if(e.key==="ArrowLeft"){e.preventDefault();viewport.scrollBy({left:-360,behavior:"smooth"});}
-  if(e.key==="Home"){e.preventDefault();viewport.scrollTo({left:0,behavior:"smooth"});}
-  if(e.key==="End"){e.preventDefault();viewport.scrollTo({left:viewport.scrollWidth,behavior:"smooth"});}
+  if(e.key==="ArrowRight"){e.preventDefault();addWheelMovement(420);}
+  if(e.key==="ArrowLeft"){e.preventDefault();addWheelMovement(-420);}
+  if(e.key==="Home"){e.preventDefault();addWheelMovement(-cycleWidth);}
+  if(e.key==="End"){e.preventDefault();addWheelMovement(cycleWidth);}
 });
 
 const menuButton=document.querySelector(".menu-button"),nav=document.querySelector(".main-nav");
@@ -137,3 +179,5 @@ nav.querySelectorAll("a").forEach(link=>link.addEventListener("click",()=>{
 }));
 document.querySelector("#year").textContent=new Date().getFullYear();
 renderProjects();
+requestAnimationFrame(()=>requestAnimationFrame(measureLoop));
+window.addEventListener('resize',()=>requestAnimationFrame(measureLoop));
