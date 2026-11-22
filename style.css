@@ -753,3 +753,125 @@ body.has-active-tile #work .project.showreel-tile:not(.is-active){filter:none}
 }
 
 #work .showreel-tile.is-full-player .showreel-preview-frame{pointer-events:auto}
+
+
+/* VERSION 20 — restore a clean, non-overlapping mosaic composition. */
+#work .project-run{
+  grid-template-rows:repeat(4,25svh) !important;
+  grid-auto-columns:clamp(250px,22vw,390px) !important;
+  grid-auto-flow:column dense !important;
+  align-content:start !important;
+  align-items:stretch !important;
+}
+
+/* Each information island occupies a real, full-height grid area.
+   This prevents the following project tiles from being auto-placed underneath it. */
+#work .panel-cluster{
+  grid-column:span 3 !important;
+  grid-row:1 / span 4 !important;
+  width:calc(3 * clamp(250px,22vw,390px) + 6px) !important;
+  height:100svh !important;
+  min-height:100svh !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  grid-template-rows:repeat(4,25svh) !important;
+  gap:3px !important;
+  align-self:stretch !important;
+  position:relative !important;
+  overflow:hidden !important;
+}
+#work .panel-cluster .world-panel{display:contents !important}
+#work .panel-cluster .panel-image-wash{display:none !important}
+#work .panel-cluster .panel-content{
+  position:relative !important;
+  width:auto !important;
+  height:auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+  padding:clamp(28px,3.3vw,58px) !important;
+  background:linear-gradient(115deg,rgba(17,20,21,.94),rgba(12,14,15,.78) 72%,rgba(12,14,15,.52)) !important;
+  isolation:isolate !important;
+  z-index:2 !important;
+}
+#work .panel-cluster .panel-content:before{
+  content:"" !important;
+  position:absolute !important;
+  inset:0 !important;
+  z-index:-1 !important;
+  background:radial-gradient(ellipse at 15% 45%,rgba(79,88,88,.18),transparent 72%) !important;
+}
+#work .about-cluster .panel-content{grid-column:1 / span 2 !important;grid-row:2 / span 3 !important}
+#work .about-cluster .clip-wide{grid-column:1 / span 2 !important;grid-row:1 !important}
+#work .about-cluster .clip-tall{grid-column:3 !important;grid-row:1 / span 2 !important}
+#work .about-cluster .clip-small{grid-column:3 !important;grid-row:3 / span 2 !important}
+
+#work .rightnow-cluster .panel-content{grid-column:2 / span 2 !important;grid-row:2 / span 3 !important}
+#work .rightnow-cluster .clip-wide{grid-column:1 !important;grid-row:1 / span 2 !important}
+#work .rightnow-cluster .clip-tall{grid-column:1 !important;grid-row:3 / span 2 !important}
+#work .rightnow-cluster .clip-small{grid-column:2 / span 2 !important;grid-row:1 !important}
+
+#work .contact-cluster .panel-content{grid-column:1 / span 2 !important;grid-row:2 / span 3 !important}
+#work .contact-cluster .clip-small{grid-column:1 !important;grid-row:1 !important}
+#work .contact-cluster .clip-wide{grid-column:2 / span 2 !important;grid-row:1 !important}
+#work .contact-cluster .clip-tall{grid-column:3 !important;grid-row:2 / span 3 !important}
+
+#work .panel-cluster .panel-content h1,
+#work .panel-cluster .panel-content h2{
+  font-size:clamp(52px,6vw,104px) !important;
+  line-height:.88 !important;
+  margin:16px 0 25px !important;
+}
+#work .panel-cluster .panel-copy{max-width:500px !important;font-size:clamp(11px,.82vw,14px) !important;line-height:1.75 !important}
+#work .panel-cluster .panel-copy .panel-lead{font-size:clamp(16px,1.25vw,21px) !important;line-height:1.45 !important}
+#work .panel-cluster .current-project{max-width:480px !important}
+#work .panel-cluster .contact-content h2{font-size:clamp(48px,5.5vw,92px) !important}
+#work .panel-cluster .contact-email{font-size:clamp(20px,2.5vw,40px) !important;overflow-wrap:anywhere}
+
+/* The reel is a clean, centered 2.3:1 image surface. It occupies two rows,
+   leaving actual mosaic cells above and below it. No transform on hover. */
+#work .project.showreel-tile{
+  grid-column:span 3 !important;
+  grid-row:2 / span 2 !important;
+  width:100% !important;
+  height:auto !important;
+  min-width:0 !important;
+  aspect-ratio:2.3 / 1 !important;
+  align-self:center !important;
+  justify-self:stretch !important;
+  transform:none !important;
+  filter:none !important;
+  clip-path:none !important;
+  overflow:hidden !important;
+  outline:1px solid rgba(255,255,255,.12) !important;
+  outline-offset:-1px !important;
+}
+#work .project.showreel-tile:hover,
+#work .project.showreel-tile.is-active{transform:none !important;filter:none !important}
+#work .project.showreel-tile .project-media,
+#work .project.showreel-tile .showreel-preview-frame{position:absolute !important;inset:0 !important;width:100% !important;height:100% !important;aspect-ratio:auto !important;clip-path:none !important}
+#work .project.showreel-tile .project-media{background:#080a0b !important}
+#work .project.showreel-tile .project-media:before,
+#work .project.showreel-tile .placeholder-mark{display:none !important}
+#work .project.showreel-tile .showreel-preview-frame{display:block !important;border:0 !important;opacity:0;z-index:3;pointer-events:none;transition:opacity .35s ease}
+#work .project.showreel-tile.is-playing .showreel-preview-frame{opacity:1}
+#work .project.showreel-tile.is-playing .showreel-center{opacity:0}
+#work .project.showreel-tile .project-info{z-index:4}
+#work .project.showreel-tile .showreel-center{transition:opacity .3s ease}
+
+@media(max-width:760px){
+  #work .project-run{grid-template-rows:repeat(3,33.333svh) !important;grid-auto-columns:clamp(210px,61vw,310px) !important}
+  #work .panel-cluster{grid-column:span 2 !important;grid-row:1 / span 3 !important;width:calc(2 * clamp(210px,61vw,310px) + 3px) !important;height:100svh !important;min-height:100svh !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;grid-template-rows:repeat(3,33.333svh) !important}
+  #work .panel-cluster .panel-content{padding:22px !important}
+  #work .about-cluster .panel-content,#work .rightnow-cluster .panel-content,#work .contact-cluster .panel-content{grid-column:1 !important;grid-row:1 / span 2 !important}
+  #work .panel-cluster .clip-tall{grid-column:2 !important;grid-row:1 / span 2 !important}
+  #work .panel-cluster .clip-wide{grid-column:1 !important;grid-row:3 !important}
+  #work .panel-cluster .clip-small{grid-column:2 !important;grid-row:3 !important}
+  #work .panel-cluster .panel-content h1,#work .panel-cluster .panel-content h2{font-size:clamp(42px,10vw,68px) !important}
+  #work .panel-cluster .panel-copy{font-size:11px !important}
+  #work .project.showreel-tile{grid-column:span 3 !important;grid-row:2 / span 1 !important;width:min(88vw,calc(33.333svh * 2.3)) !important;max-width:calc(100vw - 28px) !important;aspect-ratio:2.3 / 1 !important;justify-self:center !important}
+}
