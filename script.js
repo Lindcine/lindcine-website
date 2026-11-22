@@ -7,20 +7,20 @@
 const projects = [
   {title:"Cinematography Reel",kind:"production",size:"feature",detail:"Selected cinematography",image:"",video:"https://vimeo.com/994186610",preview:"",nav:"showreel"},
   {title:"Documentary",kind:"production",size:"tall",detail:"Long-form film",image:"",video:"",preview:""},
-  {title:"Commercial & Brand",kind:"production",size:"wide",detail:"Campaign film",image:"",video:"",preview:""},
+  {title:"Commercial & Brand",kind:"production",size:"wide",shape:"l",detail:"Campaign film",image:"",video:"",preview:""},
   {title:"A study in available light",kind:"fragment",size:"small",image:"",video:"",preview:"",comment:"A study in available light.",commentType:"A SMALL OBSERVATION"},
   {title:"People & Portraits",kind:"production",size:"small",detail:"Visual storytelling",image:"",video:"",preview:""},
-  {title:"Wedding moment",kind:"moment",size:"wide",image:"",video:"",preview:"",comment:"The moments in between.",commentType:"A PERSONAL NOTE"},
+  {title:"Wedding moment",kind:"moment",size:"wide",shape:"inverted-l",image:"",video:"",preview:"",comment:"The moments in between.",commentType:"A PERSONAL NOTE"},
   {title:"Narrative",kind:"production",size:"small",detail:"Camera & lighting",image:"",video:"",preview:""},
   {title:"Selected Projects",kind:"production",size:"wide",detail:"Film & collaboration",image:"",video:"",preview:""},
   {title:"Somewhere between here and nowhere",kind:"fragment",size:"tall",image:"",video:"",preview:"",comment:"Somewhere between here and nowhere.",commentType:"A SMALL OBSERVATION"},
   {title:"Brand Film",kind:"production",size:"small",detail:"Commercial",image:"",video:"",preview:""},
-  {title:"Behind the Scenes",kind:"moment",size:"tall",image:"",video:"",preview:"",comment:"A little chaos behind the scenes.",commentType:"A PERSONAL NOTE"},
+  {title:"Behind the Scenes",kind:"moment",size:"tall",shape:"l",image:"",video:"",preview:"",comment:"A little chaos behind the scenes.",commentType:"A PERSONAL NOTE"},
   {title:"Campaign",kind:"production",size:"small",detail:"Cinematography",image:"",video:"",preview:""},
   {title:"Live & Events",kind:"production",size:"wide",detail:"Event film",image:"",video:"",preview:""},
   {title:"Chasing the last light",kind:"fragment",size:"small",image:"",video:"",preview:"",comment:"Chasing the last light.",commentType:"A SMALL OBSERVATION"},
   {title:"Music & Culture",kind:"production",size:"small",detail:"Performance & visuals",image:"",video:"",preview:""},
-  {title:"Documentary Film",kind:"production",size:"wide",detail:"Character-led storytelling",image:"",video:"",preview:""},
+  {title:"Documentary Film",kind:"production",size:"wide",shape:"inverted-l",detail:"Character-led storytelling",image:"",video:"",preview:""},
   {title:"An afternoon that turned into something else",kind:"moment",size:"small",image:"",video:"",preview:"",comment:"Didn't plan this one. Glad it happened.",commentType:"A PERSONAL NOTE"},
   {title:"Earlier Work",kind:"production",size:"tall",detail:"Selected projects",image:"",video:"",preview:""}
 ];
@@ -74,15 +74,23 @@ function projectMarkup(p,i,copy){
   const preview=p.preview?`<video muted loop playsinline preload="none" src="${safeText(p.preview)}"></video>`:"";
   const hasOpen=Boolean(p.video);
   const commentAttrs=p.comment?`data-comment="${safeText(p.comment)}" data-comment-type="${safeText(p.commentType||"A NOTE")}"`:"";
-  return `<article class="project tile-${i%10} size-${p.size||"small"} kind-${p.kind||"production"} ${hasOpen?"has-project":""} ${p.preview?"has-preview":"no-preview"}" data-index="${i}" ${commentAttrs} tabindex="${copy===1?0:-1}" role="button" aria-label="${safeText(p.title)}" ${copy!==1?'aria-hidden="true"':''}>
+  return `<article class="project tile-${i%10} size-${p.size||"small"} kind-${p.kind||"production"} ${p.shape?`shape-${p.shape}`:""} ${hasOpen?"has-project":""} ${p.preview?"has-preview":"no-preview"}" data-index="${i}" ${commentAttrs} tabindex="${copy===1?0:-1}" role="button" aria-label="${safeText(p.title)}" ${copy!==1?'aria-hidden="true"':''}>
     <div class="project-media" ${poster}>${image}${preview}<div class="placeholder-mark" aria-hidden="true">L.</div></div>
     <div class="project-info"><div class="project-title">${safeText(p.title)}</div>${p.detail?`<div class="project-sub">${safeText(p.detail)}</div>`:""}</div>
     ${hasOpen?'<span class="project-play" aria-hidden="true">↗</span>':""}
   </article>`;
 }
 function renderRun(copy){
-  const cards=projects.map((p,i)=>projectMarkup(p,i,copy)).join("");
-  return `<div class="project-run" data-copy="${copy}" aria-label="Archive sequence">${cards}${aboutPanel}${rightNowPanel}${contactPanel}</div>`;
+  // Keep the information destinations embedded in the archive, with films and
+  // fragments between them rather than grouping all panels at the end.
+  const sequence=[];
+  projects.forEach((p,i)=>{
+    sequence.push(projectMarkup(p,i,copy));
+    if(i===4) sequence.push(aboutPanel);
+    if(i===10) sequence.push(rightNowPanel);
+    if(i===15) sequence.push(contactPanel);
+  });
+  return `<div class="project-run" data-copy="${copy}" aria-label="Archive sequence">${sequence.join("")}</div>`;
 }
 function renderWorld(){grid.innerHTML=[0,1,2].map(renderRun).join("");}
 

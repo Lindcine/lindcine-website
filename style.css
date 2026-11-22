@@ -520,3 +520,38 @@ body.has-active-tile .world-panel{filter:brightness(.55)}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+
+/* VERSION 15 — irregular image silhouettes and content woven through the archive */
+.project.shape-l,
+.project.shape-inverted-l{
+  grid-column:span 2 !important;
+  grid-row:span 2 !important;
+  overflow:visible;
+  background:transparent;
+}
+.project.shape-l .project-media{
+  clip-path:polygon(0 0,100% 0,100% 42%,44% 42%,44% 100%,0 100%);
+}
+.project.shape-inverted-l .project-media{
+  clip-path:polygon(0 0,100% 0,100% 100%,56% 100%,56% 42%,0 42%);
+}
+.project.shape-l .project-info,
+.project.shape-inverted-l .project-info{
+  left:18px;right:18px;bottom:17px;
+}
+.project.shape-l .project-play,
+.project.shape-inverted-l .project-play{
+  right:22px;top:20px;
+}
+/* Let the panels feel like destinations within the stream, not chapter endings. */
+.world-panel{
+  grid-column:span 3;
+  grid-row:1 / span 4;
+  min-width:clamp(620px,54vw,900px);
+  margin-right:clamp(8px,1vw,18px);
+}
+@media(max-width:760px){
+  .project.shape-l,.project.shape-inverted-l{grid-column:span 2 !important;grid-row:span 2 !important}
+  .world-panel{grid-column:span 2;grid-row:1 / span 3;min-width:88vw;margin-right:4px}
+}
