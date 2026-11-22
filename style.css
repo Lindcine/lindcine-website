@@ -689,3 +689,67 @@ body.has-active-tile .world-panel{filter:brightness(.55)}
 }
 
 #work .showreel-tile.is-playing:after{opacity:0!important}
+
+
+/* VERSION 19 — one stable showreel frame in the mosaic */
+#work .project.showreel-tile{
+  grid-column:span 3 !important;
+  grid-row:2 / span 2 !important;
+  width:100% !important;
+  height:auto !important;
+  min-width:0 !important;
+  aspect-ratio:2.3 / 1 !important;
+  align-self:center !important;
+  justify-self:stretch !important;
+  transform:none !important;
+  filter:none;
+  clip-path:none !important;
+  overflow:hidden !important;
+  outline:1px solid rgba(255,255,255,.12);
+  outline-offset:-1px;
+}
+#work .project.showreel-tile.is-active{
+  transform:none !important;
+  filter:none !important;
+}
+#work .project.showreel-tile .project-media,
+#work .project.showreel-tile .showreel-preview-frame{
+  position:absolute;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  aspect-ratio:auto !important;
+  clip-path:none !important;
+  object-fit:contain;
+}
+#work .project.showreel-tile .project-media{background:#080a0b}
+#work .project.showreel-tile .project-media:before,
+#work .project.showreel-tile .placeholder-mark{display:none}
+#work .project.showreel-tile .showreel-preview-frame{
+  display:block;
+  border:0;
+  opacity:0;
+  z-index:3;
+  pointer-events:none;
+  transition:opacity .35s ease;
+}
+#work .project.showreel-tile.is-playing .showreel-preview-frame{opacity:1}
+#work .project.showreel-tile.is-playing .showreel-center{opacity:0}
+#work .project.showreel-tile .showreel-center{transition:opacity .3s ease}
+#work .project.showreel-tile .project-info{z-index:4}
+#work .project.showreel-tile.is-active .project-media img{transform:none}
+#work .project.showreel-tile:after{opacity:.5}
+body.has-active-tile #work .project.showreel-tile:not(.is-active){filter:none}
+@media(max-width:760px){
+  #work .project.showreel-tile{
+    grid-column:span 3 !important;
+    grid-row:2 / span 1 !important;
+    width:88vw !important;
+    max-width:calc(100vw - 28px) !important;
+    height:auto !important;
+    aspect-ratio:2.3 / 1 !important;
+    justify-self:center !important;
+  }
+}
+
+#work .showreel-tile.is-full-player .showreel-preview-frame{pointer-events:auto}

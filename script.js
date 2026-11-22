@@ -35,7 +35,7 @@ const commentText=document.querySelector("#commentText");
 const commentKicker=document.querySelector("#commentKicker");
 const navButtons=[...document.querySelectorAll("[data-nav]")];
 let hoverTimer=0, commentTimer=0, activeCard=null, activeVideo=null, activePreviewFrame=null;
-let reelRatio=16/9;
+let reelRatio=2.3;
 const REEL_URL="https://vimeo.com/994186610";
 const REEL_ID="994186610";
 
@@ -111,51 +111,47 @@ function renderRun(copy){
 function renderWorld(){grid.innerHTML=[0,1,2].map(renderRun).join("");}
 
 function stopPreview(){
-  if(activeVideo){activeVideo.pause();try{activeVideo.currentTime=0;}catch(e){} activeVideo.closest(".project")?.classList.remove("is-playing");}
+  if(activeVideo){
+    activeVideo.pause();
+    try{activeVideo.currentTime=0;}catch(e){}
+    activeVideo.closest(".project")?.classList.remove("is-playing");
+  }
   activeVideo=null;
-  if(activePreviewFrame){activePreviewFrame.remove();activePreviewFrame=null;}
-  grid.querySelectorAll(".showreel-tile.is-playing").forEach(card=>card.classList.remove("is-playing"));
+  if(activePreviewFrame){
+    activePreviewFrame.remove();
+    activePreviewFrame=null;
+  }
+  grid.querySelectorAll(".showreel-tile").forEach(card=>{
+    card.classList.remove("is-playing","is-full-player");
+  });
 }
-function startShowreelPreview(card){
+function mountShowreelPlayer(card, fullPlayer=false){
   const media=card.querySelector(".project-media");
-  if(!media || media.querySelector(".showreel-preview-frame"))return;
+  if(!media)return;
+  const existing=media.querySelector(".showreel-preview-frame");
+  if(existing)existing.remove();
+
   const iframe=document.createElement("iframe");
   iframe.className="showreel-preview-frame";
-  iframe.src=`https://player.vimeo.com/video/${REEL_ID}?autoplay=1&muted=1&background=1&loop=1&autopause=0&dnt=1`;
-  iframe.title="Cinematography showreel preview";
+  iframe.src=fullPlayer
+    ? `https://player.vimeo.com/video/${REEL_ID}?autoplay=1&title=0&byline=0&portrait=0&dnt=1`
+    : `https://player.vimeo.com/video/${REEL_ID}?autoplay=1&muted=1&background=1&loop=1&autopause=0&dnt=1`;
+  iframe.title=fullPlayer?"Cinematography showreel":"Cinematography showreel preview";
   iframe.setAttribute("allow","autoplay; fullscreen; picture-in-picture");
-  iframe.setAttribute("aria-hidden","true");
+  iframe.setAttribute("allowfullscreen","");
+  iframe.setAttribute("aria-hidden",fullPlayer?"false":"true");
   media.appendChild(iframe);
   activePreviewFrame=iframe;
   card.classList.add("is-playing");
+  card.classList.toggle("is-full-player",fullPlayer);
 }
-async function applyShowreelSizing(){
-  const maxWidth=viewport.clientWidth*(window.matchMedia("(max-width: 760px)").matches?.88:.72);
-  const maxHeight=viewport.clientHeight*(window.matchMedia("(max-width: 760px)").matches?.78:.72);
-  const width=Math.min(maxWidth,maxHeight*reelRatio);
-  const height=width/reelRatio;
-  grid.querySelectorAll(".showreel-tile").forEach(card=>{
-    card.style.setProperty("--reel-ratio",String(reelRatio));
-    card.style.setProperty("--reel-width",`${width}px`);
-    card.style.setProperty("--reel-height",`${height}px`);
-  });
+function startShowreelPreview(card){
+  if(card.classList.contains("is-full-player"))return;
+  if(card.querySelector(".showreel-preview-frame"))return;
+  mountShowreelPlayer(card,false);
 }
-async function loadReelDimensions(){
-  try{
-    const response=await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(REEL_URL)}`);
-    if(!response.ok)throw new Error("Vimeo metadata unavailable");
-    const metadata=await response.json();
-    if(metadata.width>0 && metadata.height>0){
-      reelRatio=metadata.width/metadata.height;
-      applyShowreelSizing();
-      const dialogFrame=document.querySelector("#dialogFrame");
-      dialogFrame.style.aspectRatio=String(reelRatio);
-      requestAnimationFrame(()=>measureLoop());
-    }
-  }catch(error){
-    // Keep a conventional widescreen fallback if Vimeo's public oEmbed metadata is unavailable.
-    applyShowreelSizing();
-  }
+function startShowreelFullPlayer(card){
+  mountShowreelPlayer(card,true);
 }
 function hideComment(){clearTimeout(commentTimer);comment.classList.remove("is-visible","is-typing");comment.setAttribute("aria-hidden","true");}
 function clearActive(){clearTimeout(hoverTimer);clearTimeout(commentTimer);stopPreview();if(activeCard)activeCard.classList.remove("is-active");activeCard=null;document.body.classList.remove("has-active-tile");hideComment();}
@@ -188,6 +184,19 @@ function bindRun(run,copy){
   });
 }
 function openProject(p){
+  if(p.nav==="showreel"){
+    const card=middleRun()?.querySelector('.showreel-tile[data-index="0"]');
+    if(card){
+      if(activeCard!==card){
+        clearActive();
+        activeCard=card;
+        card.classList.add("is-active");
+        document.body.classList.add("has-active-tile");
+      }
+      startShowreelFullPlayer(card);
+    }
+    return;
+  }
   if(!p.video)return;
   clearActive();
   const src=videoEmbed(p.video);
@@ -280,8 +289,6 @@ menuButton.addEventListener("click",()=>{const open=nav.classList.toggle("open")
 
 renderWorld();
 grid.querySelectorAll(".project-run").forEach((run,i)=>bindRun(run,i));
-applyShowreelSizing();
-loadReelDimensions();
 requestAnimationFrame(()=>requestAnimationFrame(()=>{measureLoop();document.body.classList.remove("world-loading");}));
-window.addEventListener("resize",()=>requestAnimationFrame(()=>{applyShowreelSizing();measureLoop();}));
+window.addEventListener("resize",()=>requestAnimationFrame(()=>measureLoop()));
 window.addEventListener("blur",clearActive);
