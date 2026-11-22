@@ -34,7 +34,10 @@ const comment=document.querySelector("#hoverComment");
 const commentText=document.querySelector("#commentText");
 const commentKicker=document.querySelector("#commentKicker");
 const navButtons=[...document.querySelectorAll("[data-nav]")];
-let hoverTimer=0, commentTimer=0, activeCard=null, activeVideo=null;
+let hoverTimer=0, commentTimer=0, activeCard=null, activeVideo=null, activePreviewFrame=null;
+let reelRatio=16/9;
+const REEL_URL="https://vimeo.com/994186610";
+const REEL_ID="994186610";
 
 function videoEmbed(url){
   if(!url)return "";
@@ -110,6 +113,49 @@ function renderWorld(){grid.innerHTML=[0,1,2].map(renderRun).join("");}
 function stopPreview(){
   if(activeVideo){activeVideo.pause();try{activeVideo.currentTime=0;}catch(e){} activeVideo.closest(".project")?.classList.remove("is-playing");}
   activeVideo=null;
+  if(activePreviewFrame){activePreviewFrame.remove();activePreviewFrame=null;}
+  grid.querySelectorAll(".showreel-tile.is-playing").forEach(card=>card.classList.remove("is-playing"));
+}
+function startShowreelPreview(card){
+  const media=card.querySelector(".project-media");
+  if(!media || media.querySelector(".showreel-preview-frame"))return;
+  const iframe=document.createElement("iframe");
+  iframe.className="showreel-preview-frame";
+  iframe.src=`https://player.vimeo.com/video/${REEL_ID}?autoplay=1&muted=1&background=1&loop=1&autopause=0&dnt=1`;
+  iframe.title="Cinematography showreel preview";
+  iframe.setAttribute("allow","autoplay; fullscreen; picture-in-picture");
+  iframe.setAttribute("aria-hidden","true");
+  media.appendChild(iframe);
+  activePreviewFrame=iframe;
+  card.classList.add("is-playing");
+}
+async function applyShowreelSizing(){
+  const maxWidth=viewport.clientWidth*(window.matchMedia("(max-width: 760px)").matches?.88:.72);
+  const maxHeight=viewport.clientHeight*(window.matchMedia("(max-width: 760px)").matches?.78:.72);
+  const width=Math.min(maxWidth,maxHeight*reelRatio);
+  const height=width/reelRatio;
+  grid.querySelectorAll(".showreel-tile").forEach(card=>{
+    card.style.setProperty("--reel-ratio",String(reelRatio));
+    card.style.setProperty("--reel-width",`${width}px`);
+    card.style.setProperty("--reel-height",`${height}px`);
+  });
+}
+async function loadReelDimensions(){
+  try{
+    const response=await fetch(`https://vimeo.com/api/oembed.json?url=${encodeURIComponent(REEL_URL)}`);
+    if(!response.ok)throw new Error("Vimeo metadata unavailable");
+    const metadata=await response.json();
+    if(metadata.width>0 && metadata.height>0){
+      reelRatio=metadata.width/metadata.height;
+      applyShowreelSizing();
+      const dialogFrame=document.querySelector("#dialogFrame");
+      dialogFrame.style.aspectRatio=String(reelRatio);
+      requestAnimationFrame(()=>measureLoop());
+    }
+  }catch(error){
+    // Keep a conventional widescreen fallback if Vimeo's public oEmbed metadata is unavailable.
+    applyShowreelSizing();
+  }
 }
 function hideComment(){clearTimeout(commentTimer);comment.classList.remove("is-visible","is-typing");comment.setAttribute("aria-hidden","true");}
 function clearActive(){clearTimeout(hoverTimer);clearTimeout(commentTimer);stopPreview();if(activeCard)activeCard.classList.remove("is-active");activeCard=null;document.body.classList.remove("has-active-tile");hideComment();}
@@ -118,7 +164,8 @@ function activateCard(card){
   clearActive();activeCard=card;card.classList.add("is-active");document.body.classList.add("has-active-tile");
   const p=projects[Number(card.dataset.index)];
   const vid=card.querySelector("video");
-  if(vid){activeVideo=vid;vid.play().then(()=>card.classList.add("is-playing")).catch(()=>{});}
+  if(card.classList.contains("showreel-tile"))startShowreelPreview(card);
+  else if(vid){activeVideo=vid;vid.play().then(()=>card.classList.add("is-playing")).catch(()=>{});}
   if(card.dataset.comment){
     commentTimer=window.setTimeout(()=>{
       commentKicker.textContent=card.dataset.commentType||"A NOTE";
@@ -145,6 +192,7 @@ function openProject(p){
   clearActive();
   const src=videoEmbed(p.video);
   frame.innerHTML=`<iframe src="${src}" title="${safeText(p.title)}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+  frame.style.aspectRatio=p.nav==="showreel"?String(reelRatio):"16 / 9";
   caption.textContent=p.title;
   if(!dialog.open)dialog.showModal();
 }
@@ -167,7 +215,12 @@ function measureLoop(){
   const first=grid.querySelector('.project-run[data-copy="0"]'),middle=middleRun();
   if(!first||!middle)return;
   cycleWidth=middle.getBoundingClientRect().left-first.getBoundingClientRect().left;
-  if(cycleWidth>0){viewport.scrollLeft=cycleWidth;targetScroll=cycleWidth;}
+  if(cycleWidth>0){
+    const reel=middle.querySelector('.showreel-tile');
+    const reelCenter=reel?reel.offsetLeft+reel.offsetWidth/2:0;
+    const centered=cycleWidth+reelCenter-viewport.clientWidth/2;
+    viewport.scrollLeft=centered;targetScroll=centered;
+  }
 }
 function rebaseLoop(){
   if(!cycleWidth)return;
@@ -227,6 +280,8 @@ menuButton.addEventListener("click",()=>{const open=nav.classList.toggle("open")
 
 renderWorld();
 grid.querySelectorAll(".project-run").forEach((run,i)=>bindRun(run,i));
+applyShowreelSizing();
+loadReelDimensions();
 requestAnimationFrame(()=>requestAnimationFrame(()=>{measureLoop();document.body.classList.remove("world-loading");}));
-window.addEventListener("resize",()=>requestAnimationFrame(measureLoop));
+window.addEventListener("resize",()=>requestAnimationFrame(()=>{applyShowreelSizing();measureLoop();}));
 window.addEventListener("blur",clearActive);

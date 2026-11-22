@@ -659,3 +659,33 @@ body.has-active-tile .world-panel{filter:brightness(.55)}
   .contact-cluster .clip-tall{grid-column:3;grid-row:2 / span 2}
   #work .project.showreel-tile{grid-column:span 3!important;grid-row:span 2!important;width:min(88vw,calc(66.666svh * 16 / 9))!important;aspect-ratio:16/9}
 }
+
+
+/* VERSION 18 — keep the reel a clean, centered video rectangle. */
+#work .project.showreel-tile{
+  grid-column:span 4 !important;
+  grid-row:1 / span 4 !important;
+  width:var(--reel-width, 72vw) !important;
+  height:var(--reel-height, 40.5vw) !important;
+  aspect-ratio:var(--reel-ratio, 16 / 9) !important;
+  align-self:center !important;
+  justify-self:center !important;
+  clip-path:none !important;
+  border-radius:0 !important;
+  overflow:hidden !important;
+  outline:1px solid rgba(255,255,255,.12);
+  outline-offset:-1px;
+}
+#work .showreel-tile .project-media{inset:0 !important;clip-path:none !important;overflow:hidden;background:#080a0b}
+#work .showreel-tile .project-media:before{display:none}
+#work .showreel-tile .placeholder-mark{display:none}
+#work .showreel-tile .showreel-preview-frame{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none;opacity:0;z-index:2;transition:opacity .45s ease}
+#work .showreel-tile.is-playing .showreel-preview-frame{opacity:1}
+#work .showreel-tile.is-playing .showreel-center{opacity:0}
+#work .showreel-tile .showreel-center{transition:opacity .35s ease}
+#work .showreel-tile .project-info{z-index:4}
+@media(max-width:760px){
+  #work .project.showreel-tile{grid-column:span 3 !important;grid-row:1 / span 3 !important;width:var(--reel-width, 88vw) !important;height:var(--reel-height, 49.5vw) !important;max-width:calc(100vw - 28px) !important;aspect-ratio:var(--reel-ratio, 16 / 9) !important}
+}
+
+#work .showreel-tile.is-playing:after{opacity:0!important}
