@@ -46,22 +46,22 @@ function videoEmbed(url){
 }
 function safeText(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
 
-const aboutPanel=`<article class="world-panel about-panel" data-anchor="about" aria-label="About Lucas Lindgren">
-  <div class="panel-image-wash"></div><div class="panel-content">
+const aboutPanel=`<article class="world-panel about-panel" aria-label="About Lucas Lindgren">
+  <div class="panel-image-wash"></div><div class="panel-content" data-anchor="about">
     <span class="panel-kicker">BEHIND THE CAMERA</span>
     <h1>Lucas<br>Lindgren<span>.</span></h1>
     <div class="panel-copy"><p class="panel-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing. I’m interested in people, atmosphere and images that serve a story.</p><p>Available for selected projects in Sweden and internationally.</p></div>
   </div>
 </article>`;
-const rightNowPanel=`<article class="world-panel rightnow-panel" data-anchor="right-now" aria-label="What Lucas is working on right now">
-  <div class="panel-image-wash"></div><div class="panel-content rightnow-content">
+const rightNowPanel=`<article class="world-panel rightnow-panel" aria-label="What Lucas is working on right now">
+  <div class="panel-image-wash"></div><div class="panel-content rightnow-content" data-anchor="right-now">
     <span class="panel-kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2>
     <div class="current-project"><span class="current-label">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>
     <p class="rightnow-note">More soon.</p>
   </div>
 </article>`;
-const contactPanel=`<article class="world-panel contact-panel" data-anchor="contact" aria-label="Contact Lucas Lindgren">
-  <div class="panel-image-wash"></div><div class="panel-content contact-content">
+const contactPanel=`<article class="world-panel contact-panel" aria-label="Contact Lucas Lindgren">
+  <div class="panel-image-wash"></div><div class="panel-content contact-content" data-anchor="contact">
     <span class="panel-kicker">HAVE SOMETHING IN MIND?</span><h2>Let's<br>make something<span>.</span></h2>
     <a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a>
     <span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>
@@ -81,15 +81,27 @@ function projectMarkup(p,i,copy){
     ${hasOpen?'<span class="project-play" aria-hidden="true">↗</span>':""}
   </article>`;
 }
+function panelCluster(kind, panelMarkup, projectIndexes, copy){
+  const positions = {
+    about: ["clip-tall", "clip-wide", "clip-small"],
+    rightnow: ["clip-wide", "clip-tall", "clip-small"],
+    contact: ["clip-small", "clip-wide", "clip-tall"]
+  }[kind];
+  const tiles = projectIndexes.map((index, n) => {
+    const tile = projectMarkup(projects[index], index, copy).replace('class="project ', `class="project ${positions[n]} `);
+    return tile;
+  }).join("");
+  return `<div class="panel-cluster ${kind}-cluster">${panelMarkup}${tiles}</div>`;
+}
 function renderRun(copy){
-  // Keep the information destinations embedded in the archive, with films and
-  // fragments between them rather than grouping all panels at the end.
   const sequence=[];
+  const grouped = new Set([5,6,7,11,12,13,15,16,17]);
   projects.forEach((p,i)=>{
+    if(grouped.has(i)) return;
     sequence.push(projectMarkup(p,i,copy));
-    if(i===4) sequence.push(aboutPanel);
-    if(i===10) sequence.push(rightNowPanel);
-    if(i===15) sequence.push(contactPanel);
+    if(i===4) sequence.push(panelCluster("about", aboutPanel, [5,6,7], copy));
+    if(i===10) sequence.push(panelCluster("rightnow", rightNowPanel, [11,12,13], copy));
+    if(i===14) sequence.push(panelCluster("contact", contactPanel, [15,16,17], copy));
   });
   return `<div class="project-run" data-copy="${copy}" aria-label="Archive sequence">${sequence.join("")}</div>`;
 }

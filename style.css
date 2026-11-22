@@ -587,3 +587,75 @@ body.has-active-tile .world-panel{filter:brightness(.55)}
   .showreel-play{width:48px;height:48px;font-size:12px}
   .showreel-label{font-size:8px}
 }
+
+/* VERSION 17 — information is composed with adjacent films, not boxed as a tile. */
+.panel-cluster{
+  --cluster-col:clamp(250px,22vw,390px);
+  --cluster-row:25svh;
+  flex:0 0 auto;
+  width:calc(var(--cluster-col) * 3 + 6px);
+  height:calc(var(--cluster-row) * 3 + 6px);
+  display:grid;
+  grid-template-columns:repeat(3,var(--cluster-col));
+  grid-template-rows:repeat(3,var(--cluster-row));
+  gap:3px;
+  align-self:center;
+  position:relative;
+}
+/* Remove the old full-panel rectangle: the text occupies only its own cells. */
+.panel-cluster .world-panel{display:contents;min-width:0;margin:0;padding:0;background:none;}
+.panel-cluster .panel-image-wash{display:none;}
+.panel-cluster .panel-content{
+  position:relative;z-index:2;isolation:isolate;
+  width:auto;max-width:none;min-width:0;height:100%;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(22px,3vw,48px);
+  background:radial-gradient(ellipse at 28% 50%,rgba(37,42,43,.78),rgba(10,12,13,.38) 74%,rgba(10,12,13,0) 100%);
+  overflow:hidden;
+}
+.panel-cluster .panel-content:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(115deg,rgba(0,0,0,.24),transparent 78%);pointer-events:none}
+.about-cluster .panel-content{grid-column:1 / span 2;grid-row:1 / span 2;padding-right:clamp(26px,4vw,64px)}
+.rightnow-cluster .panel-content{grid-column:2 / span 2;grid-row:1 / span 2}
+.contact-cluster .panel-content{grid-column:1 / span 2;grid-row:2 / span 2}
+.panel-cluster .panel-content h1,.panel-cluster .panel-content h2{font-size:clamp(48px,6.3vw,100px);margin:18px 0 24px;line-height:.86}
+.panel-cluster .panel-copy{max-width:460px;font-size:clamp(10px,.78vw,13px);line-height:1.7}
+.panel-cluster .panel-copy .panel-lead{font-size:clamp(15px,1.3vw,20px)}
+.panel-cluster .current-project{max-width:440px}
+.panel-cluster .current-project p{font-size:12px;line-height:1.65}
+.panel-cluster .contact-content h2{font-size:clamp(43px,5.6vw,86px);margin-bottom:30px}
+.panel-cluster .contact-email{font-size:clamp(19px,2.4vw,38px);overflow-wrap:anywhere}
+.panel-cluster .clip-tall{grid-column:3;grid-row:1 / span 2}
+.panel-cluster .clip-wide{grid-column:1 / span 2;grid-row:3}
+.panel-cluster .clip-small{grid-column:3;grid-row:3}
+/* Re-order the three clips around each information island to create different silhouettes. */
+.rightnow-cluster .clip-wide{grid-column:1;grid-row:1 / span 2}
+.rightnow-cluster .clip-tall{grid-column:1 / span 2;grid-row:3}
+.rightnow-cluster .clip-small{grid-column:3;grid-row:3}
+.contact-cluster .clip-small{grid-column:1;grid-row:1}
+.contact-cluster .clip-wide{grid-column:2 / span 2;grid-row:1}
+.contact-cluster .clip-tall{grid-column:3;grid-row:2 / span 2}
+.panel-cluster .project{width:auto!important;height:auto!important;min-width:0;min-height:0}
+#work .project.showreel-tile{
+  grid-column:span 3 !important;grid-row:span 3 !important;
+  width:min(68vw, calc(75svh * 16 / 9)) !important;
+  height:auto !important;aspect-ratio:16 / 9;
+  align-self:center;justify-self:center;
+}
+@media(max-width:760px){
+  .panel-cluster{--cluster-col:clamp(190px,48vw,280px);--cluster-row:33.333svh;width:calc(var(--cluster-col)*3 + 6px);height:calc(var(--cluster-row)*3 + 6px)}
+  .panel-cluster .panel-content{padding:22px}
+  .about-cluster .panel-content,.rightnow-cluster .panel-content,.contact-cluster .panel-content{grid-column:1 / span 2;grid-row:1 / span 2}
+  .panel-cluster .panel-content h1,.panel-cluster .panel-content h2{font-size:clamp(42px,10vw,68px)}
+  .panel-cluster .panel-copy{font-size:11px}
+  .panel-cluster .panel-copy .panel-lead{font-size:15px}
+  .panel-cluster .clip-tall{grid-column:3;grid-row:1 / span 2}
+  .panel-cluster .clip-wide{grid-column:1 / span 2;grid-row:3}
+  .panel-cluster .clip-small{grid-column:3;grid-row:3}
+  .rightnow-cluster .clip-wide{grid-column:1;grid-row:1 / span 2}
+  .rightnow-cluster .clip-tall{grid-column:1 / span 2;grid-row:3}
+  .rightnow-cluster .clip-small{grid-column:3;grid-row:3}
+  .contact-cluster .clip-small{grid-column:1;grid-row:1}
+  .contact-cluster .clip-wide{grid-column:2 / span 2;grid-row:1}
+  .contact-cluster .clip-tall{grid-column:3;grid-row:2 / span 2}
+  #work .project.showreel-tile{grid-column:span 3!important;grid-row:span 2!important;width:min(88vw,calc(66.666svh * 16 / 9))!important;aspect-ratio:16/9}
+}
