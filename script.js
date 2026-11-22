@@ -1,5 +1,5 @@
 /*
-  LINDCINE — INFINITE WORLD (v14)
+  LINDCINE — INFINITE WORLD (v16)
   Replace image with a direct image URL, preview with a direct MP4/WebM URL,
   and video with a YouTube/Vimeo URL. Comments are optional and intentionally
   used on only selected tiles to keep the archive unpredictable.
@@ -74,8 +74,9 @@ function projectMarkup(p,i,copy){
   const preview=p.preview?`<video muted loop playsinline preload="none" src="${safeText(p.preview)}"></video>`:"";
   const hasOpen=Boolean(p.video);
   const commentAttrs=p.comment?`data-comment="${safeText(p.comment)}" data-comment-type="${safeText(p.commentType||"A NOTE")}"`:"";
-  return `<article class="project tile-${i%10} size-${p.size||"small"} kind-${p.kind||"production"} ${p.shape?`shape-${p.shape}`:""} ${hasOpen?"has-project":""} ${p.preview?"has-preview":"no-preview"}" data-index="${i}" ${commentAttrs} tabindex="${copy===1?0:-1}" role="button" aria-label="${safeText(p.title)}" ${copy!==1?'aria-hidden="true"':''}>
-    <div class="project-media" ${poster}>${image}${preview}<div class="placeholder-mark" aria-hidden="true">L.</div></div>
+  const showreel=p.nav==="showreel";
+  return `<article class="project tile-${i%10} size-${p.size||"small"} kind-${p.kind||"production"} ${showreel?"showreel-tile":""} ${p.shape?`shape-${p.shape}`:""} ${hasOpen?"has-project":""} ${p.preview?"has-preview":"no-preview"}" data-index="${i}" ${commentAttrs} tabindex="${copy===1?0:-1}" role="button" aria-label="${safeText(p.title)}" ${copy!==1?'aria-hidden="true"':''}>
+    <div class="project-media" ${poster}>${image}${preview}<div class="placeholder-mark" aria-hidden="true">L.</div>${showreel?'<div class="showreel-center"><span class="showreel-play">▶</span><span class="showreel-label">WATCH SHOWREEL</span></div>':""}</div>
     <div class="project-info"><div class="project-title">${safeText(p.title)}</div>${p.detail?`<div class="project-sub">${safeText(p.detail)}</div>`:""}</div>
     ${hasOpen?'<span class="project-play" aria-hidden="true">↗</span>':""}
   </article>`;
