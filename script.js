@@ -22,7 +22,9 @@ const projects = [
   {title:"Music & Culture",kind:"production",size:"small",detail:"Performance & visuals",image:"",video:"",preview:""},
   {title:"Documentary Film",kind:"production",size:"wide",shape:"inverted-l",detail:"Character-led storytelling",image:"",video:"",preview:""},
   {title:"An afternoon that turned into something else",kind:"moment",size:"small",image:"",video:"",preview:"",comment:"Didn't plan this one. Glad it happened.",commentType:"A PERSONAL NOTE"},
-  {title:"Earlier Work",kind:"production",size:"tall",detail:"Selected projects",image:"",video:"",preview:""}
+  {title:"Earlier Work",kind:"production",size:"tall",detail:"Selected projects",image:"",video:"",preview:""},
+  {title:"Between takes",kind:"moment",size:"wide",image:"",video:"",preview:"",comment:"The in-between is often where things happen.",commentType:"A PERSONAL NOTE"},
+  {title:"Light study",kind:"fragment",size:"small",image:"",video:"",preview:"",comment:"A little experiment with available light.",commentType:"A SMALL OBSERVATION"}
 ];
 
 const grid=document.querySelector("#workGrid");
@@ -35,7 +37,7 @@ const commentText=document.querySelector("#commentText");
 const commentKicker=document.querySelector("#commentKicker");
 const navButtons=[...document.querySelectorAll("[data-nav]")];
 let hoverTimer=0, commentTimer=0, activeCard=null, activeVideo=null, activePreviewFrame=null;
-let reelRatio=2.3;
+const REEL_RATIO=2.3;
 const REEL_URL="https://vimeo.com/994186610";
 const REEL_ID="994186610";
 
@@ -103,9 +105,9 @@ function renderRun(copy){
     if(grouped.has(i)) return;
     sequence.push(projectMarkup(p,i,copy));
     if(i===4) sequence.push(panelCluster("about", aboutPanel, [5,6,7], copy));
-    if(i===10) sequence.push(panelCluster("rightnow", rightNowPanel, [11,12,13], copy));
-    if(i===14) sequence.push(panelCluster("contact", contactPanel, [15,16,17], copy));
+    if(i===14) sequence.push(panelCluster("rightnow", rightNowPanel, [11,12,13], copy));
   });
+  sequence.push(panelCluster("contact", contactPanel, [15,16,17], copy));
   return `<div class="project-run" data-copy="${copy}" aria-label="Archive sequence">${sequence.join("")}</div>`;
 }
 function renderWorld(){grid.innerHTML=[0,1,2].map(renderRun).join("");}
@@ -134,8 +136,8 @@ function mountShowreelPlayer(card, fullPlayer=false){
   const iframe=document.createElement("iframe");
   iframe.className="showreel-preview-frame";
   iframe.src=fullPlayer
-    ? `https://player.vimeo.com/video/${REEL_ID}?autoplay=1&title=0&byline=0&portrait=0&dnt=1`
-    : `https://player.vimeo.com/video/${REEL_ID}?autoplay=1&muted=1&background=1&loop=1&autopause=0&dnt=1`;
+    ? `https://player.vimeo.com/video/${REEL_ID}?autoplay=1&title=0&byline=0&portrait=0&dnt=1&playsinline=1`
+    : `https://player.vimeo.com/video/${REEL_ID}?autoplay=1&muted=1&background=1&loop=1&autopause=0&dnt=1&playsinline=1`;
   iframe.title=fullPlayer?"Cinematography showreel":"Cinematography showreel preview";
   iframe.setAttribute("allow","autoplay; fullscreen; picture-in-picture");
   iframe.setAttribute("allowfullscreen","");
@@ -201,7 +203,7 @@ function openProject(p){
   clearActive();
   const src=videoEmbed(p.video);
   frame.innerHTML=`<iframe src="${src}" title="${safeText(p.title)}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
-  frame.style.aspectRatio=p.nav==="showreel"?String(reelRatio):"16 / 9";
+  frame.style.aspectRatio=p.nav==="showreel"?String(REEL_RATIO):"16 / 9";
   caption.textContent=p.title;
   if(!dialog.open)dialog.showModal();
 }
