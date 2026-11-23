@@ -159,11 +159,8 @@ function renderRun(copy) {
   return `<div class="world-run" data-copy="${copy}">
     ${showreelIsland()}
     ${projectWall(0)}
-    ${infoIsland("about")}
     ${projectWall(3)}
-    ${infoIsland("rightnow")}
     ${projectWall(6)}
-    ${infoIsland("contact")}
     ${projectWall(9)}
   </div>`;
 }
