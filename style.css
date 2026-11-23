@@ -1040,3 +1040,235 @@ body.has-active-tile #work .project.showreel-tile:not(.is-active){filter:none}
     justify-self:center !important;
   }
 }
+
+
+/* VERSION 22 — Ratio-led mosaic and organic information compositions */
+#work .project-run{
+  display:grid !important;
+  grid-auto-flow:column dense !important;
+  grid-template-rows:repeat(4,25svh) !important;
+  grid-auto-columns:max-content !important;
+  grid-auto-rows:25svh !important;
+  gap:4px !important;
+  height:100svh !important;
+  align-content:start !important;
+  align-items:stretch !important;
+  padding:0 4px 0 0 !important;
+  width:max-content !important;
+  min-width:max-content !important;
+}
+#work .project{
+  --tile-h:25svh;
+  --tile-ratio:1;
+  width:calc(var(--tile-h) * var(--tile-ratio)) !important;
+  height:var(--tile-h) !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  grid-column:auto !important;
+  grid-row:span 1 !important;
+  aspect-ratio:var(--tile-ratio) !important;
+  align-self:stretch !important;
+  transform:none;
+}
+#work .project[data-ratio="1"]{--tile-ratio:1}
+#work .project[data-ratio="1.3333"]{--tile-ratio:1.3333}
+#work .project[data-ratio="1.7778"]{--tile-ratio:1.7778}
+#work .project[data-ratio="2.35"]{--tile-ratio:2.35}
+#work .project.size-tall{--tile-h:50svh;height:50svh !important;grid-row:span 2 !important}
+#work .project.size-feature{--tile-h:25svh;height:25svh !important}
+#work .project .project-media{inset:0 !important;clip-path:none !important}
+#work .project.shape-l .project-media,
+#work .project.shape-inverted-l .project-media{clip-path:none !important}
+#work .project:hover,
+#work .project.is-active{transform:none !important}
+
+/* The reel is a single, centered 2.35:1 frame. Surrounding clips belong to
+   the same composition and sit above/below it rather than leaving it isolated. */
+#work .showreel-cluster{
+  position:relative !important;
+  flex:0 0 auto !important;
+  display:block !important;
+  width:clamp(1250px,112vw,2050px) !important;
+  height:100svh !important;
+  min-height:100svh !important;
+  margin-right:clamp(100px,13vw,230px) !important;
+  overflow:visible !important;
+  grid-column:span 5 !important;
+  grid-row:1 / span 4 !important;
+  contain:layout !important;
+}
+#work .showreel-cluster > .showreel-tile{
+  position:absolute !important;
+  z-index:4 !important;
+  left:50% !important;
+  top:50% !important;
+  transform:translate(-50%,-50%) !important;
+  width:min(68vw,calc(56svh * 2.35)) !important;
+  height:auto !important;
+  aspect-ratio:2.35 / 1 !important;
+  max-width:1100px !important;
+  min-width:720px !important;
+  overflow:hidden !important;
+  clip-path:none !important;
+  border:0 !important;
+  outline:1px solid rgba(255,255,255,.14) !important;
+  outline-offset:-1px !important;
+}
+#work .showreel-cluster > .showreel-tile .project-media,
+#work .showreel-cluster > .showreel-tile .showreel-preview-frame{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  aspect-ratio:2.35 / 1 !important;
+  border:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  clip-path:none !important;
+  object-fit:cover !important;
+  background:transparent !important;
+}
+#work .showreel-cluster > .showreel-tile .showreel-preview-frame{
+  display:block !important;
+  z-index:5 !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+  transition:opacity .35s ease !important;
+}
+#work .showreel-cluster > .showreel-tile.is-playing .showreel-preview-frame{opacity:1 !important}
+#work .showreel-cluster > .showreel-tile .placeholder-mark{display:none !important}
+#work .showreel-cluster > .showreel-tile:after{opacity:.15 !important}
+#work .showreel-cluster > .showreel-tile.is-active{transform:translate(-50%,-50%) !important}
+#work .showreel-cluster .reel-top-left,
+#work .showreel-cluster .reel-top-right,
+#work .showreel-cluster .reel-bottom-left,
+#work .showreel-cluster .reel-bottom-right{
+  position:absolute !important;
+  z-index:1 !important;
+  height:25svh !important;
+  width:auto !important;
+  aspect-ratio:var(--tile-ratio) !important;
+  transform:none !important;
+}
+#work .showreel-cluster .reel-top-left{left:2%;top:4%;--tile-ratio:1.3333}
+#work .showreel-cluster .reel-top-right{right:3%;top:4%;--tile-ratio:1.7778}
+#work .showreel-cluster .reel-bottom-left{left:8%;bottom:4%;--tile-ratio:1}
+#work .showreel-cluster .reel-bottom-right{right:8%;bottom:4%;--tile-ratio:1.3333}
+#work .showreel-cluster .reel-top-left{width:calc(25svh * 1.3333) !important}
+#work .showreel-cluster .reel-top-right{width:calc(25svh * 1.7778) !important}
+#work .showreel-cluster .reel-bottom-left{width:25svh !important}
+#work .showreel-cluster .reel-bottom-right{width:calc(25svh * 1.3333) !important}
+
+/* Information islands: one irregular panel plus three image tiles. Their
+   edges intentionally tuck under/over each other by 3px, but text stays clear. */
+#work .panel-cluster{
+  position:relative !important;
+  flex:0 0 auto !important;
+  display:block !important;
+  width:clamp(1120px,94vw,1650px) !important;
+  height:100svh !important;
+  min-height:100svh !important;
+  margin-right:clamp(150px,19vw,330px) !important;
+  overflow:visible !important;
+  grid-column:span 5 !important;
+  grid-row:1 / span 4 !important;
+  contain:layout !important;
+}
+#work .panel-cluster .world-panel{display:contents !important}
+#work .panel-cluster .panel-image-wash{display:none !important}
+#work .panel-cluster .panel-content{
+  position:absolute !important;
+  z-index:3 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+  overflow:hidden !important;
+  padding:clamp(34px,4vw,68px) !important;
+  background:
+    linear-gradient(115deg,rgba(10,12,13,.91),rgba(12,14,15,.73) 70%,rgba(12,14,15,.52)),
+    radial-gradient(ellipse at 25% 28%,rgba(112,120,118,.22),transparent 65%) !important;
+  isolation:isolate !important;
+  clip-path:polygon(0 0,100% 0,100% 68%,88% 68%,88% 100%,0 100%) !important;
+}
+#work .panel-cluster .panel-content:before{
+  content:"" !important;position:absolute !important;inset:0 !important;z-index:-1 !important;
+  background:linear-gradient(135deg,rgba(255,255,255,.035),transparent 55%) !important;
+}
+#work .panel-cluster .panel-content h1,
+#work .panel-cluster .panel-content h2{
+  font-size:clamp(56px,6.2vw,104px) !important;
+  line-height:.86 !important;
+  margin:16px 0 26px !important;
+}
+#work .panel-cluster .panel-copy{max-width:500px !important;font-size:clamp(12px,.82vw,14px) !important;line-height:1.75 !important}
+#work .panel-cluster .panel-copy .panel-lead{font-size:clamp(17px,1.25vw,21px) !important;line-height:1.45 !important}
+#work .panel-cluster .current-project{max-width:470px !important}
+#work .panel-cluster .contact-email{font-size:clamp(22px,2.5vw,40px) !important;overflow-wrap:anywhere}
+#work .panel-cluster .clip-a,
+#work .panel-cluster .clip-b,
+#work .panel-cluster .clip-c{
+  position:absolute !important;z-index:4 !important;overflow:hidden !important;
+  height:auto !important;min-height:0 !important;grid-row:auto !important;grid-column:auto !important;
+}
+#work .panel-cluster .clip-a{width:calc(25svh * 1.7778) !important;height:25svh !important;aspect-ratio:16/9 !important;top:5% !important;right:4% !important}
+#work .panel-cluster .clip-b{width:calc(25svh * 1.3333) !important;height:25svh !important;aspect-ratio:4/3 !important;bottom:5% !important;right:2% !important}
+#work .panel-cluster .clip-c{width:25svh !important;height:25svh !important;aspect-ratio:1/1 !important;bottom:8% !important;left:3% !important}
+#work .about-cluster .panel-content{
+  left:10% !important;top:14% !important;width:58% !important;height:72% !important;
+  clip-path:polygon(0 0,100% 0,100% 76%,88% 76%,88% 100%,0 100%) !important;
+}
+#work .about-cluster .clip-a{right:3% !important;top:6% !important}
+#work .about-cluster .clip-b{right:3% !important;bottom:6% !important}
+#work .about-cluster .clip-c{left:0 !important;bottom:6% !important}
+#work .rightnow-cluster .panel-content{
+  left:27% !important;top:13% !important;width:62% !important;height:74% !important;
+  clip-path:polygon(0 0,100% 0,100% 100%,12% 100%,12% 88%,0 88%) !important;
+}
+#work .rightnow-cluster .clip-a{left:2% !important;top:6% !important}
+#work .rightnow-cluster .clip-b{left:2% !important;bottom:6% !important}
+#work .rightnow-cluster .clip-c{right:0 !important;top:6% !important}
+#work .contact-cluster .panel-content{
+  left:8% !important;top:16% !important;width:62% !important;height:68% !important;
+  clip-path:polygon(0 0,88% 0,88% 14%,100% 14%,100% 100%,0 100%) !important;
+}
+#work .contact-cluster .clip-a{right:1% !important;top:5% !important}
+#work .contact-cluster .clip-b{right:1% !important;bottom:5% !important}
+#work .contact-cluster .clip-c{left:0 !important;top:5% !important}
+
+/* Keep a visible breathing gap between each large composition. */
+#work .showreel-cluster{margin-right:clamp(150px,18vw,300px) !important}
+#work .panel-cluster{margin-right:clamp(180px,22vw,360px) !important}
+
+/* No page-level hover dimming should change the reel's geometry or iframe fit. */
+#work .showreel-tile:hover,
+#work .showreel-tile.is-active{filter:none !important;transform:translate(-50%,-50%) !important}
+#work .showreel-tile .showreel-preview-frame{object-fit:cover !important}
+#work .showreel-tile .showreel-preview-frame::-webkit-media-controls{display:none}
+
+/* Mobile: preserve the same ratio logic, reduce cluster scale and keep content readable. */
+@media(max-width:760px){
+  #work .project-run{grid-template-rows:repeat(3,33.333svh) !important;grid-auto-columns:max-content !important}
+  #work .project{--tile-h:33.333svh !important;height:33.333svh !important}
+  #work .project.size-tall{--tile-h:33.333svh !important;height:66.666svh !important}
+  #work .showreel-cluster{width:145vw !important;height:100svh !important;margin-right:20vw !important}
+  #work .showreel-cluster > .showreel-tile{
+    width:min(86vw,calc(34svh * 2.35)) !important;min-width:0 !important;max-width:none !important;
+  }
+  #work .showreel-cluster .reel-top-left{left:3%;top:9%;width:calc(18svh * 1.3333) !important;height:18svh !important}
+  #work .showreel-cluster .reel-top-right{right:3%;top:9%;width:calc(18svh * 1.7778) !important;height:18svh !important}
+  #work .showreel-cluster .reel-bottom-left{left:6%;bottom:9%;width:18svh !important;height:18svh !important}
+  #work .showreel-cluster .reel-bottom-right{right:5%;bottom:9%;width:calc(18svh * 1.3333) !important;height:18svh !important}
+  #work .panel-cluster{width:150vw !important;margin-right:25vw !important}
+  #work .panel-cluster .panel-content{padding:22px !important}
+  #work .panel-cluster .panel-content h1,
+  #work .panel-cluster .panel-content h2{font-size:clamp(42px,10vw,66px) !important}
+  #work .panel-cluster .panel-copy{font-size:11px !important}
+  #work .panel-cluster .panel-copy .panel-lead{font-size:15px !important}
+  #work .about-cluster .panel-content{left:5% !important;top:22% !important;width:70% !important;height:58% !important}
+  #work .rightnow-cluster .panel-content{left:25% !important;top:22% !important;width:70% !important;height:58% !important}
+  #work .contact-cluster .panel-content{left:5% !important;top:22% !important;width:72% !important;height:58% !important}
+  #work .panel-cluster .clip-a{width:calc(17svh * 1.7778) !important;height:17svh !important}
+  #work .panel-cluster .clip-b{width:calc(17svh * 1.3333) !important;height:17svh !important}
+  #work .panel-cluster .clip-c{width:17svh !important;height:17svh !important}
+}

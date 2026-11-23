@@ -37,7 +37,7 @@ const commentText=document.querySelector("#commentText");
 const commentKicker=document.querySelector("#commentKicker");
 const navButtons=[...document.querySelectorAll("[data-nav]")];
 let hoverTimer=0, commentTimer=0, activeCard=null, activeVideo=null, activePreviewFrame=null;
-const REEL_RATIO=2.3;
+const REEL_RATIO=2.35;
 const REEL_URL="https://vimeo.com/994186610";
 const REEL_ID="994186610";
 
@@ -80,7 +80,8 @@ function projectMarkup(p,i,copy){
   const hasOpen=Boolean(p.video);
   const commentAttrs=p.comment?`data-comment="${safeText(p.comment)}" data-comment-type="${safeText(p.commentType||"A NOTE")}"`:"";
   const showreel=p.nav==="showreel";
-  return `<article class="project tile-${i%10} size-${p.size||"small"} kind-${p.kind||"production"} ${showreel?"showreel-tile":""} ${p.shape?`shape-${p.shape}`:""} ${hasOpen?"has-project":""} ${p.preview?"has-preview":"no-preview"}" data-index="${i}" ${commentAttrs} tabindex="${copy===1?0:-1}" role="button" aria-label="${safeText(p.title)}" ${copy!==1?'aria-hidden="true"':''}>
+  const ratio=p.ratio || ({feature:"2.35",wide:"1.7778",tall:"1.3333",small:"1"}[p.size||"small"]);
+  return `<article class="project tile-${i%10} size-${p.size||"small"} kind-${p.kind||"production"} ${showreel?"showreel-tile":""} ${p.shape?`shape-${p.shape}`:""} ${hasOpen?"has-project":""} ${p.preview?"has-preview":"no-preview"}" data-ratio="${ratio}" data-index="${i}" ${commentAttrs} tabindex="${copy===1?0:-1}" role="button" aria-label="${safeText(p.title)}" ${copy!==1?'aria-hidden="true"':''}>
     <div class="project-media" ${poster}>${image}${preview}<div class="placeholder-mark" aria-hidden="true">L.</div>${showreel?'<div class="showreel-center"><span class="showreel-play">▶</span><span class="showreel-label">WATCH SHOWREEL</span></div>':""}</div>
     <div class="project-info"><div class="project-title">${safeText(p.title)}</div>${p.detail?`<div class="project-sub">${safeText(p.detail)}</div>`:""}</div>
     ${hasOpen?'<span class="project-play" aria-hidden="true">↗</span>':""}
@@ -88,26 +89,36 @@ function projectMarkup(p,i,copy){
 }
 function panelCluster(kind, panelMarkup, projectIndexes, copy){
   const positions = {
-    about: ["clip-tall", "clip-wide", "clip-small"],
-    rightnow: ["clip-wide", "clip-tall", "clip-small"],
-    contact: ["clip-small", "clip-wide", "clip-tall"]
+    about:["clip-a","clip-b","clip-c"],
+    rightnow:["clip-a","clip-b","clip-c"],
+    contact:["clip-a","clip-b","clip-c"]
   }[kind];
-  const tiles = projectIndexes.map((index, n) => {
-    const tile = projectMarkup(projects[index], index, copy).replace('class="project ', `class="project ${positions[n]} `);
-    return tile;
+  const tiles = projectIndexes.map((index,n)=>
+    projectMarkup(projects[index],index,copy).replace('class="project ',`class="project ${positions[n]} `)
+  ).join("");
+  return `<section class="panel-cluster ${kind}-cluster" aria-label="${kind} composition">${panelMarkup}${tiles}</section>`;
+}
+function showreelCluster(copy){
+  const surrounding=[1,2,3,4].map((index,n)=>{
+    const position=["reel-top-left","reel-top-right","reel-bottom-left","reel-bottom-right"][n];
+    return projectMarkup(projects[index],index,copy).replace('class="project ',`class="project ${position} `);
   }).join("");
-  return `<div class="panel-cluster ${kind}-cluster">${panelMarkup}${tiles}</div>`;
+  return `<section class="showreel-cluster" aria-label="Showreel composition">
+    ${projectMarkup(projects[0],0,copy)}
+    ${surrounding}
+  </section>`;
 }
 function renderRun(copy){
-  const sequence=[];
-  const grouped = new Set([5,6,7,11,12,13,15,16,17]);
-  projects.forEach((p,i)=>{
-    if(grouped.has(i)) return;
-    sequence.push(projectMarkup(p,i,copy));
-    if(i===4) sequence.push(panelCluster("about", aboutPanel, [5,6,7], copy));
-    if(i===14) sequence.push(panelCluster("rightnow", rightNowPanel, [11,12,13], copy));
-  });
-  sequence.push(panelCluster("contact", contactPanel, [15,16,17], copy));
+  const sequence=[showreelCluster(copy)];
+  const grouped=new Set([0,1,2,3,4,5,6,7,11,12,13,15,16,17]);
+  // A few independent fragments create visual breathing room between the larger islands.
+  [8,9,10].forEach(i=>sequence.push(projectMarkup(projects[i],i,copy)));
+  sequence.push(panelCluster("about",aboutPanel,[5,6,7],copy));
+  [14,18,19].forEach(i=>sequence.push(projectMarkup(projects[i],i,copy)));
+  sequence.push(panelCluster("rightnow",rightNowPanel,[11,12,13],copy));
+  // More standalone work separates RIGHT NOW from CONTACT.
+  [4,8,9].forEach(i=>sequence.push(projectMarkup(projects[i],i,copy)));
+  sequence.push(panelCluster("contact",contactPanel,[15,16,17],copy));
   return `<div class="project-run" data-copy="${copy}" aria-label="Archive sequence">${sequence.join("")}</div>`;
 }
 function renderWorld(){grid.innerHTML=[0,1,2].map(renderRun).join("");}
@@ -228,7 +239,8 @@ function measureLoop(){
   cycleWidth=middle.getBoundingClientRect().left-first.getBoundingClientRect().left;
   if(cycleWidth>0){
     const reel=middle.querySelector('.showreel-tile');
-    const reelCenter=reel?reel.offsetLeft+reel.offsetWidth/2:0;
+    const reelRect=reel?.getBoundingClientRect();
+    const reelCenter=reelRect ? (reelRect.left - viewport.getBoundingClientRect().left + viewport.scrollLeft + reelRect.width/2) : 0;
     const centered=cycleWidth+reelCenter-viewport.clientWidth/2;
     viewport.scrollLeft=centered;targetScroll=centered;
   }
@@ -257,7 +269,7 @@ function scrollToAnchor(name){
   requestSmoothScroll();
 }
 function scrollToShowreel(){
-  const card=middleRun()?.querySelector('.project[data-index="0"]');
+  const card=middleRun()?.querySelector('.showreel-tile[data-index="0"]');
   if(!card||!cycleWidth)return;
   const vr=viewport.getBoundingClientRect(),cr=card.getBoundingClientRect();
   targetScroll=viewport.scrollLeft+(cr.left+cr.width/2-(vr.left+vr.width/2));
