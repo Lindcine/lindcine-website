@@ -247,3 +247,31 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .project-wall>.tile .tile-media,
 .project-wall>.tile .tile-media img,
 .project-wall>.tile .tile-media video{width:100%;height:100%}
+
+/* v31: irregular full-coverage mosaic with alternating four- and five-band layouts. */
+.project-wall{
+  display:grid!important;
+  grid-template-columns:repeat(24,minmax(0,1fr))!important;
+  grid-template-rows:repeat(10,minmax(0,1fr))!important;
+  grid-auto-flow:initial!important;
+  gap:0!important;
+  width:250.833333svh!important;
+  min-width:250.833333svh!important;
+  height:100svh!important;
+  flex:0 0 250.833333svh!important;
+  overflow:hidden;
+}
+.project-wall>.tile{
+  width:auto!important;
+  height:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  flex:none!important;
+  grid-column:auto;
+  grid-row:auto;
+}
+.project-wall>.tile .tile-media,
+.project-wall>.tile .tile-media img,
+.project-wall>.tile .tile-media video{width:100%;height:100%}
