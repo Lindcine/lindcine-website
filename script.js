@@ -56,7 +56,7 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
 
-function tile(project, extra = "", tall = false) {
+function tile(project, extra = "", tall = false, placement = "") {
   const ratio = tall ? "tile-tall" : `ratio-${project.ratio}`;
   const image = project.image
     ? `<img src="${esc(project.image)}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
@@ -67,7 +67,7 @@ function tile(project, extra = "", tall = false) {
   const note = project.note
     ? `data-note="${esc(project.note)}" data-note-type="${esc(project.noteType || "A NOTE")}"`
     : "";
-  return `<article class="tile ${ratio} ${extra}" data-id="${esc(project.id)}" ${note} tabindex="0" role="button" aria-label="${esc(project.title)}">
+  return `<article class="tile ${ratio} ${extra}" style="${placement}" data-id="${esc(project.id)}" ${note} tabindex="0" role="button" aria-label="${esc(project.title)}">
     <div class="tile-media">${image}${preview}</div>
     <div class="tile-meta">${esc(project.title)}</div>
   </article>`;
@@ -86,21 +86,18 @@ function row(items, widths = null) {
 }
 
 function projectWall(seed = 0) {
-  // Every line closes to exactly 100%. Cuts shift between rows so no seam
-  // continues vertically through the wall. Some tiles are ~50% wider.
-  const patterns = [
-    {ids:[21,14,1,26,24,9], widths:[11,18,23,12,21,15]},
-    {ids:[3,7,9,16,21,26,14], widths:[15,10,18,13,17,11,16]},
-    {ids:[24,26,14,21,1,7], widths:[20,12,14,22,11,21]},
-    {ids:[16,26,7,21,3,9,24], widths:[12,17,10,19,13,16,13]}
-  ];
-  const offset = seed % patterns.length;
-  const rows = patterns.map((_, i) => patterns[(i + offset) % patterns.length]);
+  // 12 x 8 exact-cover grid. Standard tiles are 2x2 cells; featured tiles
+  // are 3x3 cells: exactly 50% larger in BOTH width and height.
+  // Mixed 3x2 / 2x3 pieces close the pattern without gaps and break long seams.
+  const layouts = [[[0,0,2,3],[2,0,3,3],[5,0,3,3],[8,0,2,2],[10,0,2,2],[8,2,2,3],[10,2,2,3],[0,3,3,3],[3,3,3,3],[6,3,2,2],[6,5,3,3],[9,5,3,3],[0,6,3,2],[3,6,3,2]],[[0,0,3,3],[3,0,2,3],[5,0,2,3],[7,0,2,3],[9,0,3,2],[9,2,3,3],[0,3,3,2],[3,3,3,2],[6,3,3,2],[0,5,2,3],[2,5,3,3],[5,5,2,3],[7,5,3,3],[10,5,2,3]],[[0,0,2,3],[2,0,3,3],[5,0,2,2],[7,0,2,3],[9,0,3,2],[5,2,2,3],[9,2,3,3],[0,3,3,2],[3,3,2,2],[7,3,2,2],[0,5,3,3],[3,5,3,3],[6,5,2,3],[8,5,2,3],[10,5,2,3]],[[0,0,3,3],[3,0,3,3],[6,0,3,3],[9,0,3,2],[9,2,3,3],[0,3,3,3],[3,3,2,3],[5,3,2,3],[7,3,2,2],[7,5,3,3],[10,5,2,3],[0,6,2,2],[2,6,3,2],[5,6,2,2]]];
+  const layoutIndex = Math.floor(seed / 3) % layouts.length;
+  const layout = layouts[layoutIndex];
+  const offset = seed % projects.length;
   return `<section class="project-wall" aria-label="Selected work">
-    ${rows.map((r, i) => {
-      const shift = (seed + i * 3) % r.ids.length;
-      const ids = r.ids.slice(shift).concat(r.ids.slice(0, shift));
-      return row(ids, r.widths);
+    ${layout.map(([x,y,w,h], i) => {
+      const project = projects[(offset + i * 7 + layoutIndex * 3) % projects.length];
+      const placement = `grid-column:${x+1} / span ${w};grid-row:${y+1} / span ${h};`;
+      return tile(project, "wall-tile", false, placement);
     }).join("")}
   </section>`;
 }

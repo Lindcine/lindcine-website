@@ -220,3 +220,30 @@ body.has-active .tile.is-active{filter:brightness(1)}
   flex:none!important;
   grid-row:1;
 }
+
+/* v30: true 2D mosaic. 12 columns x 8 rows, with no gaps or overlaps.
+   A 2x2 tile is the standard size; a 3x3 feature tile is 1.5x in width
+   AND height. The mixed 3x2 / 2x3 pieces interrupt vertical seam lines. */
+.project-wall{
+  display:grid!important;
+  grid-template-columns:repeat(12,minmax(0,1fr))!important;
+  grid-template-rows:repeat(8,minmax(0,1fr))!important;
+  grid-auto-flow:initial!important;
+  gap:0!important;
+  width:250.833333svh!important;
+  height:100svh!important;
+  flex:0 0 250.833333svh!important;
+  overflow:hidden;
+}
+.project-wall>.tile{
+  width:auto!important;
+  height:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  flex:none!important;
+}
+.project-wall>.tile .tile-media,
+.project-wall>.tile .tile-media img,
+.project-wall>.tile .tile-media video{width:100%;height:100%}
