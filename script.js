@@ -81,19 +81,27 @@ function reelTile() {
 
 function row(items, widths = null) {
   const cols = widths || items.map(() => 100 / items.length);
-  const tracks = cols.map(v => `${v}fr`).join(" ");
+  const tracks = cols.map(v => `${v}%`).join(" ");
   return `<div class="mosaic-row" style="grid-template-columns:${tracks}">${items.map(item => tile(projects[item])).join("")}</div>`;
 }
 
 function projectWall(seed = 0) {
-  const rows = [
-    {ids:[21,14,1,26,24,9], widths:[13,17,21,14,19,16]},
-    {ids:[3,7,9,16,21,26,14], widths:[10,13,17,12,16,18,14]},
-    {ids:[24,26,14,21,1,7], widths:[18,12,17,20,14,19]},
-    {ids:[16,26,7,21,3,9,24], widths:[12,17,11,18,14,16,12]}
+  // Every line closes to exactly 100%. Cuts shift between rows so no seam
+  // continues vertically through the wall. Some tiles are ~50% wider.
+  const patterns = [
+    {ids:[21,14,1,26,24,9], widths:[11,18,23,12,21,15]},
+    {ids:[3,7,9,16,21,26,14], widths:[15,10,18,13,17,11,16]},
+    {ids:[24,26,14,21,1,7], widths:[20,12,14,22,11,21]},
+    {ids:[16,26,7,21,3,9,24], widths:[12,17,10,19,13,16,13]}
   ];
+  const offset = seed % patterns.length;
+  const rows = patterns.map((_, i) => patterns[(i + offset) % patterns.length]);
   return `<section class="project-wall" aria-label="Selected work">
-    ${rows.map(r => row(r.ids, r.widths)).join("")}
+    ${rows.map((r, i) => {
+      const shift = (seed + i * 3) % r.ids.length;
+      const ids = r.ids.slice(shift).concat(r.ids.slice(0, shift));
+      return row(ids, r.widths);
+    }).join("")}
   </section>`;
 }
 

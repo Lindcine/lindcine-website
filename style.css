@@ -200,3 +200,23 @@ body.has-active .tile.is-active{filter:brightness(1)}
 }
 .reel-side-stack .tile{height:25svh!important;width:auto!important}
 .reel-middle>.reel-tile{flex:0 0 119.5svh;width:119.5svh;height:50svh}
+
+/* v29: hard-closed percentage grid. Every row spans the full mosaic width. */
+.mosaic-row{
+  display:grid!important;
+  grid-auto-flow:initial!important;
+  grid-template-rows:minmax(0,1fr);
+  grid-auto-columns:unset!important;
+  width:250.833333svh!important;
+  min-width:250.833333svh!important;
+  flex:0 0 25svh!important;
+  overflow:hidden;
+}
+.mosaic-row>.tile{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:25svh!important;
+  flex:none!important;
+  grid-row:1;
+}
