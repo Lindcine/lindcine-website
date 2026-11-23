@@ -79,33 +79,42 @@ function reelTile() {
   </article>`;
 }
 
-function row(items) {
-  return `<div class="mosaic-row">${items.map(item => tile(projects[item])).join("")}</div>`;
+function row(items, widths = null) {
+  const cols = widths || items.map(() => 100 / items.length);
+  const tracks = cols.map(v => `${v}fr`).join(" ");
+  return `<div class="mosaic-row" style="grid-template-columns:${tracks}">${items.map(item => tile(projects[item])).join("")}</div>`;
 }
 
 function projectWall(seed = 0) {
   const rows = [
-    [21,14,1,26,24],
-    [9,3,21,7,26,16],
-    [24,26,14,21,1],
-    [16,26,7,21,3,9]
+    {ids:[21,14,1,26,24,9], widths:[13,17,21,14,19,16]},
+    {ids:[3,7,9,16,21,26,14], widths:[10,13,17,12,16,18,14]},
+    {ids:[24,26,14,21,1,7], widths:[18,12,17,20,14,19]},
+    {ids:[16,26,7,21,3,9,24], widths:[12,17,11,18,14,16,12]}
   ];
   return `<section class="project-wall" aria-label="Selected work">
-    ${rows.map(r => row(r)).join("")}
+    ${rows.map(r => row(r.ids, r.widths)).join("")}
   </section>`;
+}
+
+function sideStack(items, widthsA, widthsB) {
+  return `<div class="reel-side-stack">
+    ${row(items.slice(0,2), widthsA)}
+    ${row(items.slice(2,4), widthsB)}
+  </div>`;
 }
 
 function showreelIsland() {
   const top = [24,21,14,26,1];
   const bottom = [7,26,3,21,9,16];
   return `<section class="showreel-island" aria-label="Cinematography showreel">
-    ${row(top)}
+    ${row(top, [18,16,22,20,24])}
     <div class="reel-middle">
-      ${tile(projects[3], "reel-side", true)}
+      ${sideStack([3,9,14,21], [47,53], [58,42])}
       ${reelTile()}
-      ${tile(projects[9], "reel-side", true)}
+      ${sideStack([16,7,26,24], [55,45], [43,57])}
     </div>
-    ${row(bottom)}
+    ${row(bottom, [13,18,15,17,20,17])}
   </section>`;
 }
 

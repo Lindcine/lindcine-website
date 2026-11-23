@@ -45,7 +45,7 @@ button{font:inherit;color:inherit}
 .showreel-island,.project-wall{height:100svh;flex:0 0 auto;width:250.833333svh;display:flex;flex-direction:column;gap:0;margin:0;padding:0;overflow:hidden}
 .info-island{height:100svh;flex:0 0 auto;width:251.69svh;display:flex;flex-direction:column;gap:0;margin:0;padding:0;overflow:hidden}
 
-.mosaic-row{height:25svh;flex:0 0 25svh;display:flex;flex-direction:row;gap:0;width:250.833333svh;overflow:hidden}
+.mosaic-row{height:25svh;flex:0 0 25svh;display:grid;grid-auto-flow:column;gap:0;width:250.833333svh;overflow:hidden}
 .tile{
   position:relative;display:block;flex:0 0 auto;height:25svh;min-width:0;min-height:0;
   margin:0;padding:0;overflow:hidden;border:0;border-radius:0;background:#171a1c;
@@ -186,3 +186,17 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .info-island{display:none!important}
 .mosaic-row{gap:0!important;column-gap:0!important}
 .reel-middle{gap:0!important}
+
+/* v28: varied mosaic grid, exact row fill, and small tiles beside the reel. */
+.mosaic-row{display:grid!important;grid-auto-flow:column;grid-auto-columns:unset}
+.mosaic-row>.tile{width:auto!important;min-width:0;flex:none}
+.reel-middle{display:flex;align-items:stretch;gap:0}
+.reel-side-stack{
+  height:50svh;flex:0 0 65.666667svh;width:65.666667svh;
+  display:flex;flex-direction:column;gap:0;overflow:hidden
+}
+.reel-side-stack>.mosaic-row{
+  height:25svh;flex:0 0 25svh;width:65.666667svh
+}
+.reel-side-stack .tile{height:25svh!important;width:auto!important}
+.reel-middle>.reel-tile{flex:0 0 119.5svh;width:119.5svh;height:50svh}
