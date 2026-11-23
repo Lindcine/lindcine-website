@@ -86,9 +86,10 @@ function row(items, widths = null) {
 }
 
 function projectWall(seed = 0) {
-  // Six staggered exact-cover layouts. Each row uses a different set of
-  // vertical cut positions, deliberately breaking long top-to-bottom seams.
-  const layouts = [[[2, [3, 4, 6, 3, 3, 5]], [2, [5, 3, 3, 4, 6, 3]], [2, [6, 3, 5, 3, 3, 4]], [2, [4, 6, 5, 3, 6]], [2, [6, 6, 4, 3, 5]]], [[3, [3, 3, 6, 3, 4, 5]], [2, [5, 3, 6, 4, 3, 3]], [3, [4, 5, 4, 4, 3, 4]], [2, [3, 4, 3, 6, 5, 3]]], [[2, [3, 3, 4, 3, 5, 6]], [3, [5, 4, 3, 3, 6, 3]], [2, [4, 4, 3, 5, 4, 4]], [3, [3, 4, 6, 6, 5]]], [[2, [3, 3, 3, 4, 5, 6]], [2, [5, 6, 3, 3, 4, 3]], [3, [4, 3, 3, 6, 3, 5]], [3, [6, 6, 3, 5, 4]]], [[3, [3, 5, 4, 3, 3, 6]], [2, [4, 3, 6, 3, 3, 5]], [2, [5, 6, 3, 3, 4, 3]], [3, [6, 3, 6, 5, 4]]], [[2, [3, 6, 3, 5, 3, 4]], [3, [5, 6, 4, 3, 3, 3]], [3, [4, 6, 3, 3, 3, 5]], [2, [3, 5, 6, 6, 4]]]];
+  // Each layout uses 4 or 5 horizontal bands. Every band's vertical cut
+  // coordinates are unique across the ENTIRE wall, so no vertical seam can
+  // continue from the top edge to the bottom edge.
+  const layouts = [[[2, [8, 5, 5, 6, 8]], [2, [6, 8, 8, 5, 5]], [2, [7, 8, 6, 4, 7]], [2, [4, 8, 8, 8, 4]], [2, [5, 6, 8, 7, 6]]], [[2, [4, 8, 7, 6, 7]], [3, [7, 7, 8, 4, 6]], [2, [6, 7, 7, 7, 5]], [3, [5, 6, 7, 6, 8]]], [[2, [6, 7, 7, 8, 4]], [2, [7, 5, 6, 7, 7]], [2, [8, 6, 8, 4, 6]], [2, [5, 4, 8, 7, 8]], [2, [4, 7, 8, 8, 5]]], [[2, [6, 6, 7, 6, 7]], [3, [7, 7, 7, 7, 4]], [2, [8, 7, 7, 5, 5]], [3, [4, 7, 7, 6, 8]]], [[2, [6, 4, 8, 6, 8]], [2, [5, 8, 7, 6, 6]], [2, [4, 7, 6, 8, 7]], [2, [8, 8, 6, 6, 4]], [2, [7, 7, 5, 8, 5]]], [[2, [6, 8, 6, 7, 5]], [3, [5, 8, 6, 6, 7]], [2, [4, 7, 7, 8, 6]], [3, [7, 8, 8, 5, 4]]]];
   const layoutIndex = Math.floor(seed / 3) % layouts.length;
   const bands = layouts[layoutIndex];
   const offset = seed % projects.length;
