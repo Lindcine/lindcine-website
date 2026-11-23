@@ -393,3 +393,17 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .about-island .info-copy{clip-path:polygon(28% 20%,75% 20%,75% 30%,81% 30%,81% 50%,72% 50%,72% 60%,75% 60%,75% 80%,31% 80%,31% 70%,25% 70%,25% 60%,19% 60%,19% 50%,25% 50%,25% 30%,28% 30%)!important}
 .rightnow-island .info-copy{clip-path:polygon(22% 20%,75% 20%,75% 30%,78% 30%,78% 50%,72% 50%,72% 70%,78% 70%,78% 80%,25% 80%,25% 70%,19% 70%,19% 50%,28% 50%,28% 30%,22% 30%)!important}
 .contact-island .info-copy{clip-path:polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)!important}
+
+
+/* v39 — approved-ratio info cut-outs. Each 2-row tile uses a 64-column grid:
+   5/7/9/12 columns approximate 1:1, 4:3, 16:9 and 2.35:1 exactly.
+   The centre is genuinely empty; the side pieces are never squeezed into strips. */
+.info-island{
+  grid-template-columns:repeat(64,minmax(0,1fr))!important;
+  grid-template-rows:repeat(10,minmax(0,1fr))!important;
+}
+.info-island>.info-piece{grid-row:auto!important;}
+.info-island .info-copy{left:0!important;top:0!important;width:100%!important;height:100%!important;}
+.about-island .info-copy{clip-path:polygon(25% 20%,73% 20%,73% 30%,77% 30%,77% 50%,72% 50%,72% 70%,76% 70%,76% 80%,28% 80%,28% 70%,23% 70%,23% 50%,27% 50%,27% 30%,25% 30%)!important;}
+.rightnow-island .info-copy{clip-path:polygon(27% 20%,75% 20%,75% 40%,72% 40%,72% 60%,77% 60%,77% 80%,25% 80%,25% 70%,22% 70%,22% 40%,27% 40%)!important;}
+.contact-island .info-copy{clip-path:polygon(24% 20%,76% 20%,76% 30%,73% 30%,73% 50%,78% 50%,78% 70%,73% 70%,73% 80%,27% 80%,27% 60%,23% 60%,23% 40%,26% 40%)!important;}
