@@ -319,3 +319,10 @@ body.has-active .tile.is-active{filter:brightness(1)}
   max-width:none!important;
   max-height:none!important;
 }
+
+/* v34: staggered row cuts are generated in JS; preserve exact edge-to-edge packing. */
+.project-wall{
+  grid-template-columns:repeat(24,minmax(0,1fr))!important;
+  grid-template-rows:repeat(10,minmax(0,1fr))!important;
+  gap:0!important;
+}
