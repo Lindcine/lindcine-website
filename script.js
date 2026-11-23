@@ -140,43 +140,71 @@ function showreelIsland() {
 }
 
 function infoIsland(kind) {
-  // 64 x 10 grid. Every surrounding piece is two grid rows high.
-  // Widths 5 / 7 / 9 / 12 approximate the approved 1:1, 4:3, 16:9 and 2.35:1 ratios.
+  // Each band is 20svh high. Tile widths are restricted to the approved
+  // 1:1, 4:3, 16:9 and 2.35:1 proportions (5, 7, 9 or 12 grid units).
+  // Left/right coverage changes from band to band, carving an irregular,
+  // stepped negative-space opening rather than one broad rectangular void.
   const configs = {
     about: {
-      rows:[[[9,7],[12,7]],[[12,5],[9,9]],[[7,7,5],[12,5]],[[9,7],[7,12]],[[12,5],[9,7,5]]],
+      rows:[
+        [[9,7],       [12,7]],
+        [[12,7,5],    [9,7]],
+        [[7,5],       [12,9]],
+        [[9,7,5],     [7,7]],
+        [[12,5],      [9,5,5]]
+      ],
       copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
-      rows:[[[12,5],[9,7]],[[7,9],[12,5]],[[9,5,5],[7,12]],[[12,7],[9,9]],[[7,5,5],[12,7]]],
+      rows:[
+        [[12],        [12,7]],
+        [[9,7,5],     [9,7]],
+        [[12,7,5],    [7,7]],
+        [[7,9],       [12,9]],
+        [[9,7,5],     [12,5]]
+      ],
       copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
-      rows:[[[7,9],[12,5]],[[12,5],[7,9]],[[9,7,5],[12,7]],[[7,12],[9,9]],[[12,5],[7,9,5]]],
+      rows:[
+        [[9,7],       [12,7]],
+        [[12,7,5],    [7,7]],
+        [[7,5],       [12,9]],
+        [[9,7,5],     [9,7]],
+        [[12,5],      [9,5,5]]
+      ],
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
-  const c=configs[kind];
-  const ratioForWidth = w => w===5 ? '1' : w===7 ? '4-3' : w===9 ? '16-9' : '2-35';
-  let seed = kind==='about' ? 2 : kind==='rightnow' ? 13 : 23;
-  const pieces=[];
-  c.rows.forEach((sides,rowIndex)=>{
-    let x=0;
-    sides[0].forEach(w=>{
-      const candidates=projects.filter(p=>p.ratio===ratioForWidth(w));
-      const p=candidates[(seed++ * 3 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
-      pieces.push(tile(p,'wall-tile info-piece',false,`grid-column:${x+1} / span ${w};grid-row:${rowIndex*2+1} / span 2;`));
-      x+=w;
+  const c = configs[kind];
+  const ratioForWidth = w => w === 5 ? "1" : w === 7 ? "4-3" : w === 9 ? "16-9" : "2-35";
+  let seed = kind === "about" ? 2 : kind === "rightnow" ? 13 : 23;
+  const pieces = [];
+
+  c.rows.forEach(([leftWidths, rightWidths], rowIndex) => {
+    let x = 0;
+    leftWidths.forEach(w => {
+      const candidates = projects.filter(p => p.ratio === ratioForWidth(w));
+      const p = candidates[(seed++ * 3 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
+      pieces.push(tile(p, "wall-tile info-piece", false,
+        `grid-column:${x + 1} / span ${w};grid-row:${rowIndex * 2 + 1} / span 2;`));
+      x += w;
     });
-    x=64-sides[1].reduce((a,b)=>a+b,0);
-    sides[1].forEach(w=>{
-      const candidates=projects.filter(p=>p.ratio===ratioForWidth(w));
-      const p=candidates[(seed++ * 5 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
-      pieces.push(tile(p,'wall-tile info-piece',false,`grid-column:${x+1} / span ${w};grid-row:${rowIndex*2+1} / span 2;`));
-      x+=w;
+
+    x = 64 - rightWidths.reduce((a, b) => a + b, 0);
+    rightWidths.forEach(w => {
+      const candidates = projects.filter(p => p.ratio === ratioForWidth(w));
+      const p = candidates[(seed++ * 5 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
+      pieces.push(tile(p, "wall-tile info-piece", false,
+        `grid-column:${x + 1} / span ${w};grid-row:${rowIndex * 2 + 1} / span 2;`));
+      x += w;
     });
   });
-  return `<section class="info-island ${kind}-island" aria-label="${kind}">${pieces.join('')}<div class="info-copy" data-anchor="${kind}">${c.copy}</div></section>`;
+
+  return `<section class="info-island ${kind}-island" aria-label="${kind}">
+    ${pieces.join("")}
+    <div class="info-copy" data-anchor="${kind}">${c.copy}</div>
+  </section>`;
 }
 
 function renderRun(copy) {

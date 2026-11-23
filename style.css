@@ -420,3 +420,59 @@ body.has-active .tile.is-active{filter:brightness(1)}
   max-width: none !important;
   max-height: none !important;
 }
+
+
+/* v42 — stepped cut-outs built from whole, approved-ratio tiles.
+   Text sits in the real negative space; it is not a panel laid over tiles. */
+.info-island{
+  display:grid!important;
+  grid-template-columns:repeat(64,minmax(0,1fr))!important;
+  grid-template-rows:repeat(10,minmax(0,1fr))!important;
+  grid-auto-flow:initial!important;
+  gap:0!important;
+  background:#08090a!important;
+}
+.info-island > .info-piece{
+  position:relative!important;
+  inset:auto!important;
+  width:auto!important;
+  height:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  flex:none!important;
+}
+.info-island > .info-piece .tile-media,
+.info-island > .info-piece .tile-media img,
+.info-island > .info-piece .tile-media video{
+  width:100%!important;
+  height:100%!important;
+}
+.info-island .info-copy{
+  position:absolute!important;
+  z-index:5!important;
+  left:31%!important;
+  top:21%!important;
+  width:38%!important;
+  height:58%!important;
+  padding:clamp(18px,2vw,38px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  overflow:visible!important;
+  background:transparent!important;
+  clip-path:none!important;
+  pointer-events:none!important;
+}
+.info-island .info-copy a{pointer-events:auto!important}
+.info-island .info-copy::after{display:none!important}
+.info-copy h1,.info-copy h2{
+  font-size:clamp(40px,5vw,78px)!important;
+  line-height:.88!important;
+  margin:10px 0 16px!important;
+}
+.info-copy .info-lead{max-width:100%!important}
+.info-copy .info-body,.info-copy .current-work{max-width:100%!important}
+.info-copy .contact-email{font-size:clamp(18px,1.8vw,30px)!important}
