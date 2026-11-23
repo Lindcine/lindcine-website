@@ -85,10 +85,10 @@ function row(items) {
 
 function projectWall(seed = 0) {
   const rows = [
-    [21,1,14,24,26],
-    [3,7,9,16,21,26],
-    [21,1,14,24,26],
-    [3,7,9,16,21,26]
+    [21,14,1,26,24],
+    [9,3,21,7,26,16],
+    [24,26,14,21,1],
+    [16,26,7,21,3,9]
   ];
   return `<section class="project-wall" aria-label="Selected work">
     ${rows.map(r => row(r)).join("")}
@@ -96,8 +96,8 @@ function projectWall(seed = 0) {
 }
 
 function showreelIsland() {
-  const top = [21,1,14,24,26];
-  const bottom = [26,1,14,24,21];
+  const top = [24,21,14,26,1];
+  const bottom = [7,26,3,21,9,16];
   return `<section class="showreel-island" aria-label="Cinematography showreel">
     ${row(top)}
     <div class="reel-middle">
@@ -112,8 +112,8 @@ function showreelIsland() {
 function infoIsland(kind) {
   const configs = {
     about: {
-      top:[3,7,9,16,21,26],
-      bottom:[23,3,7,9,26,21],
+      top:[16,9,26,3,21,7],
+      bottom:[21,24,14,26,1],
       left:5, right:11,
       copy:`<span class="kicker">BEHIND THE CAMERA</span>
         <h1>Lucas<br>Lindgren<span>.</span></h1>
@@ -121,16 +121,16 @@ function infoIsland(kind) {
         <div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
-      top:[9,16,3,7,21,26],
-      bottom:[23,7,16,3,26,21],
+      top:[7,21,9,26,3,16],
+      bottom:[24,1,26,14,21],
       left:14, right:4,
       copy:`<span class="kicker">A CURRENT CHAPTER</span>
         <h2>Right<br>now<span>.</span></h2>
         <div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
-      top:[16,23,3,7,21,26],
-      bottom:[9,3,16,23,26,21],
+      top:[3,26,16,21,9,7],
+      bottom:[14,21,1,24,26],
       left:7, right:15,
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span>
         <h2>Let's make<br>something<span>.</span></h2>
