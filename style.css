@@ -275,3 +275,35 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .project-wall>.tile .tile-media,
 .project-wall>.tile .tile-media img,
 .project-wall>.tile .tile-media video{width:100%;height:100%}
+
+/* v32: bespoke, less repetitive five-band composition around the showreel.
+   The reel keeps its fixed 2.39:1 dimensions; only its neighbouring tiles change. */
+.reel-side-stack{
+  height:50svh!important;
+  flex:0 0 65.666667svh!important;
+  width:65.666667svh!important;
+  display:grid!important;
+  grid-template-rows:repeat(3,minmax(0,1fr))!important;
+  gap:0!important;
+  overflow:hidden;
+}
+.reel-side-row{
+  display:grid;
+  width:65.666667svh;
+  min-width:65.666667svh;
+  height:16.666667svh;
+  min-height:0;
+  gap:0;
+  overflow:hidden;
+}
+.reel-side-row>.tile{
+  width:100%!important;
+  height:16.666667svh!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  flex:none!important;
+}
+.reel-side-row>.tile .tile-media,
+.reel-side-row>.tile .tile-media img,
+.reel-side-row>.tile .tile-media video{width:100%;height:100%}

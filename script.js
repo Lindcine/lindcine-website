@@ -102,24 +102,32 @@ function projectWall(seed = 0) {
   </section>`;
 }
 
-function sideStack(items, widthsA, widthsB) {
+function sideMosaic(items, patterns) {
   return `<div class="reel-side-stack">
-    ${row(items.slice(0,2), widthsA)}
-    ${row(items.slice(2,4), widthsB)}
+    ${patterns.map((widths, rowIndex) => {
+      const rowItems = items.slice(patterns.slice(0, rowIndex).reduce((n, p) => n + p.length, 0),
+        patterns.slice(0, rowIndex + 1).reduce((n, p) => n + p.length, 0));
+      return `<div class="reel-side-row" style="grid-template-columns:${widths.map(w => `${w}fr`).join(" ")}">
+        ${rowItems.map((id, i) => tile(projects[id], "wall-tile")).join("")}
+      </div>`;
+    }).join("")}
   </div>`;
 }
 
 function showreelIsland() {
-  const top = [24,21,14,26,1];
-  const bottom = [7,26,3,21,9,16];
+  // A five-band composition around the reel: one varied band above and below,
+  // plus three independently divided bands on either side. This avoids the
+  // repeated two-large-tile stacks that made the reel feel boxed in.
+  const top = [24, 9, 16, 3, 21, 7];
+  const bottom = [14, 26, 1, 24, 9, 16, 3];
   return `<section class="showreel-island" aria-label="Cinematography showreel">
-    ${row(top, [18,16,22,20,24])}
+    ${row(top, [12,18,21,14,19,16])}
     <div class="reel-middle">
-      ${sideStack([3,9,14,21], [47,53], [58,42])}
+      ${sideMosaic([3,9,14,21,7], [[1],[0.58,0.42],[0.36,0.64]])}
       ${reelTile()}
-      ${sideStack([16,7,26,24], [55,45], [43,57])}
+      ${sideMosaic([16,7,26,24,1], [[0.46,0.54],[1],[0.62,0.38]])}
     </div>
-    ${row(bottom, [13,18,15,17,20,17])}
+    ${row(bottom, [15,12,18,13,17,11,14])}
   </section>`;
 }
 
