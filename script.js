@@ -140,64 +140,73 @@ function showreelIsland() {
 }
 
 function infoIsland(kind) {
+  // The info panel is a real absence in the wall: no thumbnails are placed
+  // inside the stepped polygon. Large surrounding tiles remain full-size.
   const configs = {
     about: {
-      holes:[[9,22],[7,24],[7,24],[9,23],[10,21]],
+      bands:[{y:0,h:2,left:null,right:null,parts:[7,9,8,8]},
+             {y:2,h:2,left:7,right:7},
+             {y:4,h:2,left:8,right:6},
+             {y:6,h:2,left:9,right:8},
+             {y:8,h:2,left:null,right:null,parts:[8,6,10,8]}],
+      shape:'polygon(21.875% 20%, 78.125% 20%, 78.125% 40%, 81.25% 40%, 81.25% 60%, 75% 60%, 75% 80%, 28.125% 80%, 28.125% 60%, 25% 60%, 25% 40%, 21.875% 40%)',
       copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
-      holes:[[10,23],[8,25],[8,24],[9,23],[11,22]],
+      bands:[{y:0,h:2,left:null,right:null,parts:[8,8,7,9]},
+             {y:2,h:2,left:8,right:6},
+             {y:4,h:2,left:7,right:7},
+             {y:6,h:2,left:8,right:8},
+             {y:8,h:2,left:null,right:null,parts:[6,9,8,9]}],
+      shape:'polygon(25% 20%, 81.25% 20%, 81.25% 40%, 78.125% 40%, 78.125% 60%, 75% 60%, 75% 80%, 25% 80%, 25% 60%, 21.875% 60%, 21.875% 40%, 25% 40%)',
       copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
-      holes:[[8,22],[7,24],[8,25],[10,24],[11,22]],
+      bands:[{y:0,h:2,left:null,right:null,parts:[8,7,9,8]},
+             {y:2,h:2,left:7,right:7},
+             {y:4,h:2,left:9,right:6},
+             {y:6,h:2,left:8,right:8},
+             {y:8,h:2,left:null,right:null,parts:[9,7,8,8]}],
+      shape:'polygon(21.875% 20%, 78.125% 20%, 78.125% 40%, 81.25% 40%, 81.25% 60%, 75% 60%, 75% 80%, 25% 80%, 25% 60%, 21.875% 60%, 21.875% 40%)',
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
   const c = configs[kind];
-  const cols = 32, rows = 10;
-  const blocked = Array.from({length:rows}, () => Array(cols).fill(false));
-  c.holes.forEach(([a,b], i) => { for(let x=a; x<b; x++) blocked[i+2][x] = true; });
-  const occupied = blocked.map(r => r.slice());
+  let seed = kind === 'about' ? 2 : kind === 'rightnow' ? 13 : 23;
+  const nextProject = () => projects[(seed++ * 7 + 3) % projects.length];
   const pieces = [];
-  let seed = kind === 'about' ? 3 : kind === 'rightnow' ? 11 : 19;
-  const rand = n => { seed = (seed * 9301 + 49297) % 233280; return seed % n; };
-  for(let y=0; y<rows; y++) {
-    for(let x=0; x<cols; x++) {
-      if(occupied[y][x]) continue;
-      let placed = false;
-      const heights = y < rows-1 ? [2,1] : [1];
-      for(const h of heights) {
-        if(placed) break;
-        const maxW = Math.min(7, cols-x);
-        const widths = h === 2 ? [6,5,4,7] : [3,2,4,5,1];
-        for(const w of widths.sort((a,b)=>0)) {
-          if(w > maxW) continue;
-          let free = true;
-          for(let yy=y; yy<y+h && free; yy++) for(let xx=x; xx<x+w; xx++) if(occupied[yy][xx]) { free=false; break; }
-          if(!free) continue;
-          // Keep tile ratios in a cinematic range while allowing occasional narrow pieces.
-          if(h===2 && w<4) continue;
-          if(h===1 && w>5) continue;
-          for(let yy=y; yy<y+h; yy++) for(let xx=x; xx<x+w; xx++) occupied[yy][xx]=true;
-          const project = projects[(seed + y*7 + x*3 + rand(projects.length)) % projects.length];
-          pieces.push(tile(project, 'wall-tile info-piece', false, `grid-column:${x+1} / span ${w};grid-row:${y+1} / span ${h};`));
-          placed=true; break;
-        }
-      }
-      if(!placed) {
-        occupied[y][x]=true;
-        const project = projects[(y*cols+x+seed) % projects.length];
-        pieces.push(tile(project, 'wall-tile info-piece', false, `grid-column:${x+1};grid-row:${y+1};`));
-      }
+  const split = total => {
+    if (total <= 5) return [total];
+    if (total <= 8) return [Math.floor(total/2), Math.ceil(total/2)];
+    const first = Math.floor(total/2);
+    return [first, total-first];
+  };
+  c.bands.forEach(band => {
+    if (band.parts) {
+      let x = 0;
+      band.parts.forEach(w => {
+        pieces.push(tile(nextProject(), 'wall-tile info-piece', false,
+          `grid-column:${x+1} / span ${w};grid-row:${band.y+1} / span ${band.h};`));
+        x += w;
+      });
+      return;
     }
-  }
-  const points = c.holes.map(([a,b],i)=>`${(a/cols)*100}% ${(i/5)*100}% ${(b/cols)*100}% ${(i/5)*100}%`).join(',');
+    let x = 0;
+    [band.left, 32-band.left-band.right, band.right].forEach((width, index) => {
+      if (index === 1) { x += width; return; } // the central negative-space cutout
+      split(width).forEach(w => {
+        pieces.push(tile(nextProject(), 'wall-tile info-piece', false,
+          `grid-column:${x+1} / span ${w};grid-row:${band.y+1} / span ${band.h};`));
+        x += w;
+      });
+    });
+  });
   return `<section class="info-island ${kind}-island" aria-label="${kind}">
     ${pieces.join('')}
-    <div class="info-copy" data-anchor="${kind}">${c.copy}</div>
+    <div class="info-copy" data-anchor="${kind}"><div class="info-copy-content">${c.copy}</div></div>
   </section>`;
 }
+
 function renderRun(copy) {
   return `<div class="world-run" data-copy="${copy}">
     ${showreelIsland()}
