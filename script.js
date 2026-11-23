@@ -95,7 +95,7 @@ const REEL_WIDTH = 2.35 * REEL_MID_HEIGHT;
 const SIDE_WIDTH = (WALL_WIDTH - REEL_WIDTH) / 2;
 
 function absoluteTile(project, x, y, width, height, extra="") {
-  const placement = `position:absolute;left:${x}svh;top:${y}svh;width:${width}svh;height:${height}svh;`;
+  const placement = `position:absolute!important;left:${x}svh!important;top:${y}svh!important;width:${width}svh!important;height:${height}svh!important;`;
   return tile(project, `wall-tile ${extra}`, false, placement);
 }
 
