@@ -375,7 +375,7 @@ body.has-active .tile.is-active{filter:brightness(1)}
 /* v37 — true negative-space cut-outs. Tiles stop at the stepped edge;
    the middle is intentionally empty, never filled with reduced miniatures. */
 .info-island{display:grid!important;position:relative!important;grid-template-columns:repeat(32,minmax(0,1fr))!important;grid-template-rows:repeat(10,minmax(0,1fr))!important;grid-auto-flow:initial!important;gap:0!important;background:#08090a!important;}
-.info-island>.info-piece{position:relative!important;inset:auto!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;}
+.info-island>.info-piece{position:relative!important;inset:auto!important;grid-column:auto;grid-row:auto;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;}
 .info-island>.info-piece .tile-media,.info-island>.info-piece .tile-media img,.info-island>.info-piece .tile-media video{width:100%;height:100%;}
 .info-island .info-copy{left:0!important;top:0!important;width:100%!important;height:100%!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;background:transparent!important;clip-path:none!important;}
 .info-island .info-copy>*{position:relative;z-index:1;}
@@ -395,84 +395,30 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .contact-island .info-copy{clip-path:polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)!important}
 
 
-/* v39 — approved-ratio info cut-outs. Each 2-row tile uses a 64-column grid:
-   5/7/9/12 columns approximate 1:1, 4:3, 16:9 and 2.35:1 exactly.
-   The centre is genuinely empty; the side pieces are never squeezed into strips. */
-.info-island{
-  grid-template-columns:repeat(64,minmax(0,1fr))!important;
+/* v38 ratio correction only: preserve the v38 composition and negative-space
+   silhouettes, but give each mosaic tile a grid span matching its approved ratio. */
+.project-wall{
+  display:grid!important;
+  grid-template-columns:repeat(128,minmax(0,1fr))!important;
   grid-template-rows:repeat(10,minmax(0,1fr))!important;
+  gap:0!important;
 }
-.info-island .info-copy{left:0!important;top:0!important;width:100%!important;height:100%!important;}
-.about-island .info-copy{clip-path:polygon(25% 20%,73% 20%,73% 30%,77% 30%,77% 50%,72% 50%,72% 70%,76% 70%,76% 80%,28% 80%,28% 70%,23% 70%,23% 50%,27% 50%,27% 30%,25% 30%)!important;}
-.rightnow-island .info-copy{clip-path:polygon(27% 20%,75% 20%,75% 40%,72% 40%,72% 60%,77% 60%,77% 80%,25% 80%,25% 70%,22% 70%,22% 40%,27% 40%)!important;}
-.contact-island .info-copy{clip-path:polygon(24% 20%,76% 20%,76% 30%,73% 30%,73% 50%,78% 50%,78% 70%,73% 70%,73% 80%,27% 80%,27% 60%,23% 60%,23% 40%,26% 40%)!important;}
-
-
-/* v41: restore v39's approved-ratio, stepped cut-out mosaic.
-   Do not override the inline grid-column/grid-row coordinates. */
-.info-island > .info-piece {
-  position: relative !important;
-  inset: auto !important;
-  width: auto !important;
-  height: auto !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  max-width: none !important;
-  max-height: none !important;
-}
-
-
-/* v42 — stepped cut-outs built from whole, approved-ratio tiles.
-   Text sits in the real negative space; it is not a panel laid over tiles. */
 .info-island{
   display:grid!important;
-  grid-template-columns:repeat(64,minmax(0,1fr))!important;
+  grid-template-columns:repeat(128,minmax(0,1fr))!important;
   grid-template-rows:repeat(10,minmax(0,1fr))!important;
-  grid-auto-flow:initial!important;
   gap:0!important;
-  background:#08090a!important;
 }
-.info-island > .info-piece{
-  position:relative!important;
-  inset:auto!important;
-  width:auto!important;
-  height:auto!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-width:none!important;
-  max-height:none!important;
-  flex:none!important;
+.project-wall>.tile,.info-island>.info-piece{
+  width:auto!important;height:auto!important;
+  min-width:0!important;min-height:0!important;
+  max-width:none!important;max-height:none!important;
 }
-.info-island > .info-piece .tile-media,
-.info-island > .info-piece .tile-media img,
-.info-island > .info-piece .tile-media video{
-  width:100%!important;
-  height:100%!important;
+.project-wall>.tile .tile-media,
+.project-wall>.tile .tile-media img,
+.project-wall>.tile .tile-media video,
+.info-island>.info-piece .tile-media,
+.info-island>.info-piece .tile-media img,
+.info-island>.info-piece .tile-media video{
+  width:100%!important;height:100%!important;
 }
-.info-island .info-copy{
-  position:absolute!important;
-  z-index:5!important;
-  left:31%!important;
-  top:21%!important;
-  width:38%!important;
-  height:58%!important;
-  padding:clamp(18px,2vw,38px)!important;
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:flex-start!important;
-  justify-content:center!important;
-  overflow:visible!important;
-  background:transparent!important;
-  clip-path:none!important;
-  pointer-events:none!important;
-}
-.info-island .info-copy a{pointer-events:auto!important}
-.info-island .info-copy::after{display:none!important}
-.info-copy h1,.info-copy h2{
-  font-size:clamp(40px,5vw,78px)!important;
-  line-height:.88!important;
-  margin:10px 0 16px!important;
-}
-.info-copy .info-lead{max-width:100%!important}
-.info-copy .info-body,.info-copy .current-work{max-width:100%!important}
-.info-copy .contact-email{font-size:clamp(18px,1.8vw,30px)!important}

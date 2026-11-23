@@ -86,26 +86,33 @@ function row(items, widths = null) {
 }
 
 function projectWall(seed = 0) {
-  // Each layout uses 4 or 5 horizontal bands. Every band's vertical cut
-  // coordinates are unique across the ENTIRE wall, so no vertical seam can
-  // continue from the top edge to the bottom edge.
-  const layouts = [[[2, [8, 5, 5, 6, 8]], [2, [6, 8, 8, 5, 5]], [2, [7, 8, 6, 4, 7]], [2, [4, 8, 8, 8, 4]], [2, [5, 6, 8, 7, 6]]], [[2, [4, 8, 7, 6, 7]], [3, [7, 7, 8, 4, 6]], [2, [6, 7, 7, 7, 5]], [3, [5, 6, 7, 6, 8]]], [[2, [6, 7, 7, 8, 4]], [2, [7, 5, 6, 7, 7]], [2, [8, 6, 8, 4, 6]], [2, [5, 4, 8, 7, 8]], [2, [4, 7, 8, 8, 5]]], [[2, [6, 6, 7, 6, 7]], [3, [7, 7, 7, 7, 4]], [2, [8, 7, 7, 5, 5]], [3, [4, 7, 7, 6, 8]]], [[2, [6, 4, 8, 6, 8]], [2, [5, 8, 7, 6, 6]], [2, [4, 7, 6, 8, 7]], [2, [8, 8, 6, 6, 4]], [2, [7, 7, 5, 8, 5]]], [[2, [6, 8, 6, 7, 5]], [3, [5, 8, 6, 6, 7]], [2, [4, 7, 7, 8, 6]], [3, [7, 8, 8, 5, 4]]]];
-  const layoutIndex = Math.floor(seed / 3) % layouts.length;
-  const bands = layouts[layoutIndex];
-  const offset = seed % projects.length;
+  // Exact-cover wall: 128 columns x 10 rows. Each band is 2 rows (20svh).
+  // Widths 10 / 14 / 18 / 24 produce the approved 1:1, 4:3, 16:9
+  // and 2.35:1 tile proportions at this wall's fixed dimensions.
+  const layouts = [
+    [10,10,18,18,24,24,24],
+    [10,18,10,24,18,24,24],
+    [18,10,24,10,18,24,24],
+    [24,10,18,10,24,18,24],
+    [10,24,18,10,24,18,24]
+  ];
+  const ratioByWidth = {10:"1",14:"4-3",18:"16-9",24:"2-35"};
   let y = 0;
   let tileIndex = 0;
   const tiles = [];
-  bands.forEach(([height, widths]) => {
+  layouts.forEach((widths, bandIndex) => {
     let x = 0;
     widths.forEach(width => {
-      const project = projects[(offset + tileIndex * 7 + layoutIndex * 5) % projects.length];
-      const placement = `grid-column:${x+1} / span ${width};grid-row:${y+1} / span ${height};`;
+      const ratio = ratioByWidth[width];
+      const candidates = projects.filter(p => p.ratio === ratio);
+      const project = candidates[(seed * 5 + bandIndex * 7 + tileIndex * 3) % candidates.length]
+        || projects[(seed + tileIndex) % projects.length];
+      const placement = `grid-column:${x+1} / span ${width};grid-row:${y+1} / span 2;`;
       tiles.push(tile(project, "wall-tile", false, placement));
       x += width;
       tileIndex++;
     });
-    y += height;
+    y += 2;
   });
   return `<section class="project-wall" aria-label="Selected work">${tiles.join("")}</section>`;
 }
@@ -140,69 +147,67 @@ function showreelIsland() {
 }
 
 function infoIsland(kind) {
-  // Each band is 20svh high. Tile widths are restricted to the approved
-  // 1:1, 4:3, 16:9 and 2.35:1 proportions (5, 7, 9 or 12 grid units).
-  // Left/right coverage changes from band to band, carving an irregular,
-  // stepped negative-space opening rather than one broad rectangular void.
+  // Same v38 stepped negative-space design, with tile dimensions recalculated
+  // on a 128-column grid so every surrounding piece keeps an approved ratio.
   const configs = {
     about: {
-      rows:[
-        [[9,7],       [12,7]],
-        [[12,7,5],    [9,7]],
-        [[7,5],       [12,9]],
-        [[9,7,5],     [7,7]],
-        [[12,5],      [9,5,5]]
+      bands:[
+        {left:[24,14],right:[18,24]},
+        {left:[10,18,14],right:[24,18]},
+        {left:[24,18],right:[10,14,18]},
+        {left:[14,14,10],right:[24,24]},
+        {left:[24,10],right:[18,14,10]}
       ],
+      shape:'polygon(28% 20%,75% 20%,75% 30%,81% 30%,81% 50%,72% 50%,72% 60%,75% 60%,75% 80%,31% 80%,31% 70%,25% 70%,25% 60%,19% 60%,19% 50%,25% 50%,25% 30%,28% 30%)',
       copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
-      rows:[
-        [[12],        [12,7]],
-        [[9,7,5],     [9,7]],
-        [[12,7,5],    [7,7]],
-        [[7,9],       [12,9]],
-        [[9,7,5],     [12,5]]
+      bands:[
+        {left:[18,24],right:[10,14,18]},
+        {left:[24,14],right:[18,24]},
+        {left:[10,18,14],right:[24,18]},
+        {left:[18,14,10],right:[24,24]},
+        {left:[24,10],right:[18,14,10]}
       ],
+      shape:'polygon(22% 20%,75% 20%,75% 30%,78% 30%,78% 50%,72% 50%,72% 70%,78% 70%,78% 80%,25% 80%,25% 70%,19% 70%,19% 50%,28% 50%,28% 30%,22% 30%)',
       copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
-      rows:[
-        [[9,7],       [12,7]],
-        [[12,7,5],    [7,7]],
-        [[7,5],       [12,9]],
-        [[9,7,5],     [9,7]],
-        [[12,5],      [9,5,5]]
+      bands:[
+        {left:[14,18,10],right:[24,18]},
+        {left:[24,10],right:[18,14,10]},
+        {left:[10,14,18],right:[24,18]},
+        {left:[18,24],right:[10,14,18]},
+        {left:[24,14],right:[18,24]}
       ],
+      shape:'polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)',
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
   const c = configs[kind];
-  const ratioForWidth = w => w === 5 ? "1" : w === 7 ? "4-3" : w === 9 ? "16-9" : "2-35";
-  let seed = kind === "about" ? 2 : kind === "rightnow" ? 13 : 23;
+  let seed = kind === 'about' ? 2 : kind === 'rightnow' ? 13 : 23;
+  const ratioByWidth = {10:"1",14:"4-3",18:"16-9",24:"2-35"};
   const pieces = [];
-
-  c.rows.forEach(([leftWidths, rightWidths], rowIndex) => {
+  c.bands.forEach((band, rowIndex) => {
     let x = 0;
-    leftWidths.forEach(w => {
-      const candidates = projects.filter(p => p.ratio === ratioForWidth(w));
-      const p = candidates[(seed++ * 3 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
-      pieces.push(tile(p, "wall-tile info-piece", false,
-        `grid-column:${x + 1} / span ${w};grid-row:${rowIndex * 2 + 1} / span 2;`));
-      x += w;
+    band.left.forEach(width => {
+      const candidates = projects.filter(p => p.ratio === ratioByWidth[width]);
+      const project = candidates[(seed++ * 7 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
+      pieces.push(tile(project, 'wall-tile info-piece', false,
+        `grid-column:${x+1} / span ${width};grid-row:${rowIndex*2+1} / span 2;`));
+      x += width;
     });
-
-    x = 64 - rightWidths.reduce((a, b) => a + b, 0);
-    rightWidths.forEach(w => {
-      const candidates = projects.filter(p => p.ratio === ratioForWidth(w));
-      const p = candidates[(seed++ * 5 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
-      pieces.push(tile(p, "wall-tile info-piece", false,
-        `grid-column:${x + 1} / span ${w};grid-row:${rowIndex * 2 + 1} / span 2;`));
-      x += w;
+    x = 128 - band.right.reduce((sum, width) => sum + width, 0);
+    band.right.forEach(width => {
+      const candidates = projects.filter(p => p.ratio === ratioByWidth[width]);
+      const project = candidates[(seed++ * 5 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
+      pieces.push(tile(project, 'wall-tile info-piece', false,
+        `grid-column:${x+1} / span ${width};grid-row:${rowIndex*2+1} / span 2;`));
+      x += width;
     });
   });
-
   return `<section class="info-island ${kind}-island" aria-label="${kind}">
-    ${pieces.join("")}
+    ${pieces.join('')}
     <div class="info-copy" data-anchor="${kind}">${c.copy}</div>
   </section>`;
 }
