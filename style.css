@@ -269,6 +269,8 @@ body.has-active .tile.is-active{filter:brightness(1)}
   max-width:none!important;
   max-height:none!important;
   flex:none!important;
+  grid-column:auto;
+  grid-row:auto;
 }
 .project-wall>.tile .tile-media,
 .project-wall>.tile .tile-media img,
@@ -406,13 +408,15 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .contact-island .info-copy{clip-path:polygon(24% 20%,76% 20%,76% 30%,73% 30%,73% 50%,78% 50%,78% 70%,73% 70%,73% 80%,27% 80%,27% 60%,23% 60%,23% 40%,26% 40%)!important;}
 
 
-/* v40 — restore the explicit two-row placements for every info-piece.
-   The v37/v39 auto-row override collapsed the side mosaic into the top half. */
-.info-island>.info-piece{
-  grid-column: auto;
-  /* grid-row is intentionally left to the inline placement generated in JS */
-}
-.info-island{
-  grid-auto-rows:minmax(0,1fr)!important;
-  align-content:stretch!important;
+/* v41: restore v39's approved-ratio, stepped cut-out mosaic.
+   Do not override the inline grid-column/grid-row coordinates. */
+.info-island > .info-piece {
+  position: relative !important;
+  inset: auto !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
 }
