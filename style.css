@@ -1272,3 +1272,349 @@ body.has-active-tile #work .project.showreel-tile:not(.is-active){filter:none}
   #work .panel-cluster .clip-b{width:calc(17svh * 1.3333) !important;height:17svh !important}
   #work .panel-cluster .clip-c{width:17svh !important;height:17svh !important}
 }
+
+
+/* ============================================================
+   VERSION 23 — FULL-BLEED CONTINUOUS MOSAIC
+   Replace the sparse oversized island layout with a dense
+   full-height horizontal wall. All geometry is stable on hover.
+   ============================================================ */
+html,body{height:100%;overflow:hidden}
+.site-header{
+  height:52px !important;
+  padding:0 2.6vw !important;
+  background:linear-gradient(180deg,rgba(7,8,9,.72),rgba(7,8,9,.12)) !important;
+  border:0 !important;
+}
+.wordmark{font-size:14px !important}
+.main-nav{gap:28px !important}
+.work-page{
+  position:fixed !important;
+  inset:0 !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  overflow:hidden !important;
+}
+.work-viewport{
+  position:absolute !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100svh !important;
+  max-height:none !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  cursor:grab !important;
+  scroll-snap-type:none !important;
+  scrollbar-width:none !important;
+}
+.work-viewport::-webkit-scrollbar{display:none !important}
+.work-track{
+  height:100svh !important;
+  min-height:100svh !important;
+  width:max-content !important;
+  min-width:max-content !important;
+  display:flex !important;
+  flex-flow:row nowrap !important;
+  align-items:stretch !important;
+  gap:5px !important;
+  padding:0 5px !important;
+}
+.project-run{
+  height:100svh !important;
+  display:flex !important;
+  flex:0 0 auto !important;
+  flex-flow:row nowrap !important;
+  align-items:stretch !important;
+  gap:5px !important;
+  width:max-content !important;
+  min-width:max-content !important;
+  padding:0 !important;
+}
+.project{
+  position:relative !important;
+  flex:0 0 auto !important;
+  height:calc(50svh - 4px) !important;
+  width:auto !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  margin:0 !important;
+  align-self:flex-start !important;
+  transform:none !important;
+  clip-path:none !important;
+  border-radius:0 !important;
+  overflow:hidden !important;
+  scroll-snap-align:none !important;
+  transition:filter .45s ease,opacity .45s ease !important;
+}
+.project[data-ratio="1"]{width:calc(50svh - 4px) !important}
+.project[data-ratio="1.3333"]{width:calc((50svh - 4px) * 1.3333) !important}
+.project[data-ratio="1.7778"]{width:calc((50svh - 4px) * 1.7778) !important}
+.project[data-ratio="2.35"]{width:calc((50svh - 4px) * 2.35) !important}
+.project.size-tall{height:calc(100svh - 10px) !important;width:calc((100svh - 10px) * .75) !important}
+.project.size-feature{height:calc(50svh - 4px) !important;width:calc((50svh - 4px) * 2.35) !important}
+.project:nth-child(even){align-self:flex-end !important}
+.project-media,.project-media img,.project-media video{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+}
+.project-media img,.project-media video{object-fit:cover !important}
+.project-info{left:14px !important;right:14px !important;bottom:13px !important}
+.project-title{font-size:clamp(12px,1vw,16px) !important}
+.project:after{opacity:.8 !important}
+.project:hover{filter:brightness(1.08) !important;transform:none !important}
+body.has-active-tile .project:not(.is-active){filter:brightness(.52) !important}
+body.has-active-tile .project.is-active{filter:brightness(1) !important;transform:none !important}
+
+/* Each information island is compact enough to sit inside the full-bleed wall.
+   It is built from a shaped copy block plus three real project tiles. */
+.panel-cluster{
+  position:relative !important;
+  flex:0 0 auto !important;
+  width:calc(100svh * 1.72) !important;
+  height:100svh !important;
+  min-height:100svh !important;
+  margin:0 clamp(24px,3vw,54px) !important;
+  display:block !important;
+  overflow:visible !important;
+  isolation:isolate !important;
+}
+.panel-cluster .world-panel{display:contents !important}
+.panel-cluster .panel-image-wash{display:none !important}
+.panel-cluster .panel-content{
+  position:absolute !important;
+  z-index:3 !important;
+  overflow:hidden !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+  padding:clamp(26px,3vw,52px) !important;
+  background:
+    linear-gradient(115deg,rgba(8,10,11,.92),rgba(10,12,13,.78) 72%,rgba(10,12,13,.42)),
+    radial-gradient(ellipse at 22% 25%,rgba(120,130,130,.20),transparent 65%) !important;
+  clip-path:polygon(0 0,100% 0,100% 76%,91% 76%,91% 100%,0 100%) !important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.07) inset !important;
+}
+.panel-cluster .panel-content h1,
+.panel-cluster .panel-content h2{
+  font-size:clamp(48px,5vw,82px) !important;
+  line-height:.88 !important;
+  letter-spacing:-.09em !important;
+  margin:12px 0 22px !important;
+}
+.panel-cluster .panel-copy{
+  max-width:390px !important;
+  font-size:clamp(11px,.78vw,13px) !important;
+  line-height:1.7 !important;
+}
+.panel-cluster .panel-copy .panel-lead{
+  font-size:clamp(15px,1.1vw,19px) !important;
+  line-height:1.45 !important;
+}
+.panel-cluster .current-project{max-width:380px !important}
+.panel-cluster .current-project h3{font-size:clamp(24px,2.5vw,40px) !important}
+.panel-cluster .contact-email{font-size:clamp(19px,2.1vw,34px) !important;overflow-wrap:anywhere}
+.panel-cluster .clip-a,
+.panel-cluster .clip-b,
+.panel-cluster .clip-c{
+  position:absolute !important;
+  z-index:4 !important;
+  margin:0 !important;
+  height:calc(50svh - 4px) !important;
+  min-height:0 !important;
+  align-self:auto !important;
+}
+.panel-cluster .clip-a[data-ratio="1"]{width:calc(50svh - 4px) !important}
+.panel-cluster .clip-a[data-ratio="1.3333"]{width:calc((50svh - 4px)*1.3333) !important}
+.panel-cluster .clip-a[data-ratio="1.7778"]{width:calc((50svh - 4px)*1.7778) !important}
+.panel-cluster .clip-a[data-ratio="2.35"]{width:calc((50svh - 4px)*2.35) !important}
+.panel-cluster .clip-b[data-ratio="1"]{width:calc(50svh - 4px) !important}
+.panel-cluster .clip-b[data-ratio="1.3333"]{width:calc((50svh - 4px)*1.3333) !important}
+.panel-cluster .clip-b[data-ratio="1.7778"]{width:calc((50svh - 4px)*1.7778) !important}
+.panel-cluster .clip-b[data-ratio="2.35"]{width:calc((50svh - 4px)*2.35) !important}
+.panel-cluster .clip-c[data-ratio="1"]{width:calc(50svh - 4px) !important}
+.panel-cluster .clip-c[data-ratio="1.3333"]{width:calc((50svh - 4px)*1.3333) !important}
+.panel-cluster .clip-c[data-ratio="1.7778"]{width:calc((50svh - 4px)*1.7778) !important}
+.panel-cluster .clip-c[data-ratio="2.35"]{width:calc((50svh - 4px)*2.35) !important}
+.about-cluster .panel-content{left:5%;top:25%;width:52%;height:50%}
+.about-cluster .clip-a{right:2%;top:0}
+.about-cluster .clip-b{right:2%;bottom:0}
+.about-cluster .clip-c{left:0;bottom:0}
+.rightnow-cluster .panel-content{left:35%;top:25%;width:58%;height:50%;clip-path:polygon(0 0,100% 0,100% 100%,10% 100%,10% 88%,0 88%) !important}
+.rightnow-cluster .clip-a{left:0;top:0}
+.rightnow-cluster .clip-b{left:0;bottom:0}
+.rightnow-cluster .clip-c{right:0;top:0}
+.contact-cluster .panel-content{left:7%;top:25%;width:56%;height:50%;clip-path:polygon(0 0,90% 0,90% 12%,100% 12%,100% 100%,0 100%) !important}
+.contact-cluster .clip-a{right:0;top:0}
+.contact-cluster .clip-b{right:0;bottom:0}
+.contact-cluster .clip-c{left:0;top:0}
+
+/* Full-bleed showreel island: no empty top/bottom margins; surrounding
+   tiles occupy the rest of the 100vh composition. */
+.showreel-cluster{
+  position:relative !important;
+  flex:0 0 auto !important;
+  width:calc(100svh * 3.05) !important;
+  height:100svh !important;
+  min-height:100svh !important;
+  margin:0 clamp(22px,2.5vw,46px) !important;
+  display:block !important;
+  overflow:visible !important;
+}
+.showreel-cluster > .showreel-tile{
+  position:absolute !important;
+  z-index:6 !important;
+  left:50% !important;
+  top:50% !important;
+  width:calc(42svh * 2.35) !important;
+  height:42svh !important;
+  min-width:0 !important;
+  max-width:none !important;
+  aspect-ratio:2.35 / 1 !important;
+  transform:translate(-50%,-50%) !important;
+  transition:none !important;
+  clip-path:none !important;
+  overflow:hidden !important;
+  background:#090a0b !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+}
+.showreel-cluster > .showreel-tile:hover,
+.showreel-cluster > .showreel-tile.is-active{
+  transform:translate(-50%,-50%) !important;
+  filter:none !important;
+}
+.showreel-cluster > .showreel-tile .project-media{
+  position:absolute !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  aspect-ratio:2.35 / 1 !important;
+  background:transparent !important;
+  overflow:hidden !important;
+}
+.showreel-cluster > .showreel-tile .project-media:before,
+.showreel-cluster > .showreel-tile .placeholder-mark{display:none !important}
+.showreel-cluster > .showreel-tile .showreel-preview-frame{
+  position:absolute !important;
+  display:block !important;
+  inset:0 !important;
+  width:100% !important;
+  height:100% !important;
+  min-width:100% !important;
+  min-height:100% !important;
+  border:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  aspect-ratio:2.35 / 1 !important;
+  opacity:0 !important;
+  z-index:5 !important;
+  pointer-events:none !important;
+  transition:opacity .25s ease !important;
+}
+.showreel-cluster > .showreel-tile.is-playing .showreel-preview-frame{opacity:1 !important}
+.showreel-cluster > .showreel-tile .showreel-center{
+  position:absolute !important;z-index:7 !important;left:50% !important;top:50% !important;
+  transform:translate(-50%,-50%) !important;transition:opacity .25s ease !important;
+}
+.showreel-cluster > .showreel-tile.is-playing .showreel-center{opacity:0 !important}
+.showreel-cluster .reel-top-left,
+.showreel-cluster .reel-top-right,
+.showreel-cluster .reel-bottom-left,
+.showreel-cluster .reel-bottom-right{
+  position:absolute !important;
+  z-index:2 !important;
+  height:calc(50svh - 4px) !important;
+  min-height:0 !important;
+  margin:0 !important;
+  align-self:auto !important;
+}
+.showreel-cluster .reel-top-left{left:0;top:0;width:calc((50svh - 4px)*1.7778) !important}
+.showreel-cluster .reel-top-right{right:0;top:0;width:calc((50svh - 4px)*1.3333) !important}
+.showreel-cluster .reel-bottom-left{left:0;bottom:0;width:calc(50svh - 4px) !important}
+.showreel-cluster .reel-bottom-right{right:0;bottom:0;width:calc((50svh - 4px)*1.7778) !important}
+
+/* Ensure the reel's geometry cannot be changed by global active/hover styles. */
+.showreel-cluster .showreel-tile,
+.showreel-cluster .showreel-tile:hover,
+.showreel-cluster .showreel-tile.is-active,
+.showreel-cluster .showreel-tile.is-playing{
+  box-sizing:border-box !important;
+  transform:translate(-50%,-50%) !important;
+  width:calc(42svh * 2.35) !important;
+  height:42svh !important;
+  aspect-ratio:2.35 / 1 !important;
+}
+.showreel-cluster .showreel-tile .showreel-preview-frame{object-fit:fill !important}
+
+/* Small screens keep the same full-screen wall and fixed reel ratio. */
+@media(max-width:760px){
+  .site-header{height:54px !important;padding:0 18px !important}
+  .main-nav{gap:18px !important}
+  .work-viewport{height:100svh !important}
+  .work-track,.project-run{height:100svh !important}
+  .project{height:50svh !important}
+  .project[data-ratio="1"]{width:50svh !important}
+  .project[data-ratio="1.3333"]{width:66.665svh !important}
+  .project[data-ratio="1.7778"]{width:88.89svh !important}
+  .project[data-ratio="2.35"]{width:117.5svh !important}
+  .showreel-cluster{width:240vw !important;margin:0 14px !important}
+  .showreel-cluster > .showreel-tile,
+  .showreel-cluster .showreel-tile:hover,
+  .showreel-cluster .showreel-tile.is-active,
+  .showreel-cluster .showreel-tile.is-playing{
+    width:min(88vw,calc(38svh * 2.35)) !important;
+    height:auto !important;
+    aspect-ratio:2.35 / 1 !important;
+  }
+  .showreel-cluster .reel-top-left{width:44svh !important}
+  .showreel-cluster .reel-top-right{width:33svh !important}
+  .showreel-cluster .reel-bottom-left{width:50svh !important}
+  .showreel-cluster .reel-bottom-right{width:44svh !important}
+  .panel-cluster{width:190vw !important;margin:0 20px !important}
+  .panel-cluster .panel-content{padding:20px !important}
+  .panel-cluster .panel-content h1,.panel-cluster .panel-content h2{font-size:clamp(38px,9vw,58px) !important}
+  .panel-cluster .panel-copy{font-size:10px !important}
+  .panel-cluster .contact-email{font-size:20px !important}
+}
+
+
+/* V23.1 — pack both rows of the viewport; no alternating empty half-screens */
+.project-run{
+  display:grid !important;
+  grid-auto-flow:column !important;
+  grid-template-rows:repeat(2,50svh) !important;
+  grid-auto-columns:max-content !important;
+  grid-auto-rows:50svh !important;
+  align-content:stretch !important;
+  align-items:stretch !important;
+  gap:5px !important;
+  height:100svh !important;
+}
+.project-run > .project{
+  grid-row:span 1 !important;
+  height:calc(50svh - 5px) !important;
+  align-self:stretch !important;
+}
+.project-run > .project.size-tall{
+  grid-row:span 2 !important;
+  height:calc(100svh - 5px) !important;
+  width:calc((100svh - 5px) * .75) !important;
+}
+.project-run > .showreel-cluster,
+.project-run > .panel-cluster{
+  grid-row:span 2 !important;
+}
+.showreel-cluster{
+  width:calc(100svh * 2.1) !important;
+}
+.panel-cluster{
+  width:calc(100svh * 1.8) !important;
+}
+@media(max-width:760px){
+  .project-run{grid-template-rows:repeat(2,50svh) !important}
+  .showreel-cluster{width:190vw !important}
+  .panel-cluster{width:175vw !important}
+}

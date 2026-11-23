@@ -109,16 +109,15 @@ function showreelCluster(copy){
   </section>`;
 }
 function renderRun(copy){
-  const sequence=[showreelCluster(copy)];
-  const grouped=new Set([0,1,2,3,4,5,6,7,11,12,13,15,16,17]);
-  // A few independent fragments create visual breathing room between the larger islands.
-  [8,9,10].forEach(i=>sequence.push(projectMarkup(projects[i],i,copy)));
+  const sequence = [];
+  sequence.push(showreelCluster(copy));
   sequence.push(panelCluster("about",aboutPanel,[5,6,7],copy));
-  [14,18,19].forEach(i=>sequence.push(projectMarkup(projects[i],i,copy)));
+  [8,9,10].forEach(i=>sequence.push(projectMarkup(projects[i],i,copy)));
   sequence.push(panelCluster("rightnow",rightNowPanel,[11,12,13],copy));
-  // More standalone work separates RIGHT NOW from CONTACT.
-  [4,8,9].forEach(i=>sequence.push(projectMarkup(projects[i],i,copy)));
+  [14,18,19].forEach(i=>sequence.push(projectMarkup(projects[i],i,copy)));
   sequence.push(panelCluster("contact",contactPanel,[15,16,17],copy));
+  // A few more standalone tiles bridge the end of the sequence to its repeat.
+  [1,2,3,4].forEach(i=>sequence.push(projectMarkup(projects[i],i,copy)));
   return `<div class="project-run" data-copy="${copy}" aria-label="Archive sequence">${sequence.join("")}</div>`;
 }
 function renderWorld(){grid.innerHTML=[0,1,2].map(renderRun).join("");}
@@ -147,7 +146,7 @@ function mountShowreelPlayer(card, fullPlayer=false){
   const iframe=document.createElement("iframe");
   iframe.className="showreel-preview-frame";
   iframe.src=fullPlayer
-    ? `https://player.vimeo.com/video/${REEL_ID}?autoplay=1&title=0&byline=0&portrait=0&dnt=1&playsinline=1`
+    ? `https://player.vimeo.com/video/${REEL_ID}?autoplay=1&controls=1&title=0&byline=0&portrait=0&dnt=1&playsinline=1`
     : `https://player.vimeo.com/video/${REEL_ID}?autoplay=1&muted=1&background=1&loop=1&autopause=0&dnt=1&playsinline=1`;
   iframe.title=fullPlayer?"Cinematography showreel":"Cinematography showreel preview";
   iframe.setAttribute("allow","autoplay; fullscreen; picture-in-picture");
