@@ -42,14 +42,16 @@ button{font:inherit;color:inherit}
 .world-viewport.is-dragging{cursor:grabbing}
 .world-track{height:100svh;width:max-content;display:flex;gap:0;align-items:stretch;padding:0;will-change:scroll-position}
 .world-run{height:100svh;flex:0 0 auto;display:flex;gap:0;align-items:stretch;width:max-content}
-.showreel-island,.info-island,.project-wall{height:100svh;flex:0 0 auto;width:250.833333svh;display:flex;flex-direction:column;gap:0;margin:0;padding:0;overflow:hidden}
+.showreel-island,.project-wall{height:100svh;flex:0 0 auto;width:250.833333svh;display:flex;flex-direction:column;gap:0;margin:0;padding:0;overflow:hidden}
+.info-island{height:100svh;flex:0 0 auto;width:251.69svh;display:flex;flex-direction:column;gap:0;margin:0;padding:0;overflow:hidden}
+
 .mosaic-row{height:25svh;flex:0 0 25svh;display:flex;flex-direction:row;gap:3px;width:250.833333svh;overflow:hidden}
 .tile{
   position:relative;display:block;flex:0 0 auto;height:25svh;min-width:0;min-height:0;
   margin:0;padding:0;overflow:hidden;border:0;border-radius:0;background:#171a1c;
   isolation:isolate;cursor:pointer;color:var(--fg);
 }
-.ratio-1{width:25svh}
+.ratio-1{width:24.143333svh}
 .ratio-4-3{width:33.333333svh}
 .ratio-16-9{width:44.444444svh}
 .ratio-2-35{width:58.75svh}
@@ -81,7 +83,7 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .reel-middle{height:50svh;flex:0 0 50svh;width:250.833333svh;display:flex;gap:0;overflow:hidden}
 .tile-tall{height:50svh;width:66.666667svh;flex:0 0 66.666667svh}
 .reel-tile{
-  position:relative;z-index:2;flex:0 0 117.5svh;width:117.5svh;height:50svh;
+  position:relative;z-index:2;flex:0 0 114.5svh;width:114.5svh;height:50svh;
   aspect-ratio:2.35/1;overflow:hidden;background:#090a0b;cursor:pointer;
 }
 .reel-tile:hover,.reel-tile.is-active,.reel-tile.is-playing,.reel-tile.is-full{transform:none!important}
@@ -103,10 +105,15 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .reel-tile.is-playing .reel-invite{opacity:0}
 /* About / Right Now / Contact: 25vh image bands sandwich a 50vh middle.
    The copy is a reserved hole in the mosaic, not a card layered over thumbnails. */
-.info-middle{height:50svh;flex:0 0 50svh;width:250.833333svh;display:flex;gap:0;overflow:hidden}
-.info-side{height:50svh;width:66.666667svh;flex:0 0 66.666667svh}
+.info-middle{height:50svh;flex:0 0 50svh;width:250.833333svh;display:flex;gap:3px;overflow:hidden}
+.info-collage{height:50svh;flex:0 0 133.333333svh;width:133.333333svh;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.info-collage-row{height:calc((50svh - 3px)/2);flex:0 0 calc((50svh - 3px)/2);width:133.333333svh;display:flex;gap:3px;overflow:hidden}
+.info-collage-row .tile{height:100%;flex:0 0 auto}
+.info-collage-row .tile:nth-child(1){width:58.75svh}
+.info-collage-row .tile:nth-child(2){width:44.44svh}
+.info-collage-row .tile:nth-child(3){width:24.143333svh}
 .info-copy{
-  position:relative;z-index:1;flex:0 0 117.5svh;width:117.5svh;height:50svh;
+  position:relative;z-index:1;flex:0 0 114.5svh;width:114.5svh;height:50svh;
   padding:clamp(28px,3.4vw,62px);display:flex;flex-direction:column;justify-content:center;
   overflow:hidden;background:
     radial-gradient(ellipse at 18% 22%,rgba(116,126,126,.20),transparent 60%),
@@ -116,9 +123,9 @@ body.has-active .tile.is-active{filter:brightness(1)}
   content:"";position:absolute;inset:0;pointer-events:none;opacity:.4;
   background:linear-gradient(135deg,rgba(255,255,255,.035),transparent 50%);
 }
-.about-island .info-copy{clip-path:polygon(0 0,100% 0,100% 82%,94% 82%,94% 100%,0 100%)}
-.rightnow-island .info-copy{clip-path:polygon(0 0,94% 0,94% 12%,100% 12%,100% 100%,0 100%)}
-.contact-island .info-copy{clip-path:polygon(0 0,100% 0,100% 100%,7% 100%,7% 88%,0 88%)}
+.about-island .info-copy{clip-path:polygon(0 0,100% 0,100% 84%,94% 84%,94% 100%,0 100%)}
+.rightnow-island .info-copy{clip-path:polygon(0 0,95% 0,95% 10%,100% 10%,100% 100%,0 100%)}
+.contact-island .info-copy{clip-path:polygon(0 0,100% 0,100% 100%,6% 100%,6% 90%,0 90%)}
 .kicker{font:7px var(--mono);letter-spacing:.18em;color:var(--accent)}
 .info-copy h1,.info-copy h2{
   position:relative;margin:12px 0 20px;font-size:clamp(52px,5.8vw,94px);
@@ -168,3 +175,7 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .mosaic-row{column-gap:3px}
 .mosaic-row .tile{outline:0}
 .mosaic-row{background:#08090a}
+
+/* v26: info collages use regular-height clips, never double-height side tiles. */
+.info-collage-row .tile{height:calc((50svh - 3px)/2)!important}
+.info-collage-row .tile-tall{height:calc((50svh - 3px)/2)!important;width:auto}

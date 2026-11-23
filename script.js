@@ -114,7 +114,8 @@ function infoIsland(kind) {
     about: {
       top:[16,9,26,3,21,7],
       bottom:[21,24,14,26,1],
-      left:5, right:11,
+      collageTop:[5,11,18],
+      collageBottom:[22,27,29],
       copy:`<span class="kicker">BEHIND THE CAMERA</span>
         <h1>Lucas<br>Lindgren<span>.</span></h1>
         <p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p>
@@ -123,7 +124,8 @@ function infoIsland(kind) {
     rightnow: {
       top:[7,21,9,26,3,16],
       bottom:[24,1,26,14,21],
-      left:14, right:4,
+      collageTop:[4,10,15],
+      collageBottom:[19,23,28],
       copy:`<span class="kicker">A CURRENT CHAPTER</span>
         <h2>Right<br>now<span>.</span></h2>
         <div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
@@ -131,7 +133,8 @@ function infoIsland(kind) {
     contact: {
       top:[3,26,16,21,9,7],
       bottom:[14,21,1,24,26],
-      left:7, right:15,
+      collageTop:[0,12,17],
+      collageBottom:[20,25,28],
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span>
         <h2>Let's make<br>something<span>.</span></h2>
         <a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a>
@@ -142,9 +145,11 @@ function infoIsland(kind) {
   return `<section class="info-island ${kind}-island" aria-label="${kind}">
     ${row(c.top)}
     <div class="info-middle">
-      ${tile(projects[c.left], "info-side", true)}
       <div class="info-copy" data-anchor="${kind}">${c.copy}</div>
-      ${tile(projects[c.right], "info-side", true)}
+      <div class="info-collage">
+        <div class="info-collage-row">${c.collageTop.map(i => tile(projects[i])).join("")}</div>
+        <div class="info-collage-row">${c.collageBottom.map(i => tile(projects[i])).join("")}</div>
+      </div>
     </div>
     ${row(c.bottom)}
   </section>`;
