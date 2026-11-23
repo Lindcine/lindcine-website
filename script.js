@@ -86,20 +86,27 @@ function row(items, widths = null) {
 }
 
 function projectWall(seed = 0) {
-  // Six distinct exact-cover layouts. Each uses 4 or 5 visual bands,
-  // with independently partitioned widths. Matching segments sometimes
-  // merge vertically, creating larger pieces without leaving holes.
-  const layouts = [[[0,0,7,2],[7,0,8,2],[15,0,6,2],[21,0,3,4],[0,2,3,2],[3,2,4,2],[7,2,6,2],[13,2,8,2],[0,4,4,2],[4,4,5,2],[9,4,5,2],[14,4,3,2],[17,4,7,2],[0,6,8,4],[8,6,7,2],[15,6,3,2],[18,6,6,2],[8,8,6,2],[14,8,3,2],[17,8,7,2]],[[0,0,7,2],[7,0,8,2],[15,0,4,2],[19,0,5,2],[0,2,6,3],[6,2,4,3],[10,2,4,3],[14,2,7,3],[21,2,3,3],[0,5,8,2],[8,5,6,2],[14,5,3,2],[17,5,7,2],[0,7,4,3],[4,7,7,3],[11,7,5,3],[16,7,8,3]],[[0,0,7,5],[7,0,3,3],[10,0,6,3],[16,0,8,3],[7,3,5,2],[12,3,6,2],[18,3,3,2],[21,3,3,7],[0,5,8,3],[8,5,7,3],[15,5,6,5],[0,8,5,2],[5,8,6,2],[11,8,4,2]],[[0,0,7,2],[7,0,3,2],[10,0,8,2],[18,0,6,2],[0,2,5,2],[5,2,8,2],[13,2,4,5],[17,2,7,8],[0,4,8,3],[8,4,5,3],[0,7,5,3],[5,7,4,3],[9,7,5,3],[14,7,3,3]],[[0,0,3,3],[3,0,3,3],[6,0,6,3],[12,0,7,3],[19,0,5,3],[0,3,8,2],[8,3,5,2],[13,3,4,2],[17,3,7,2],[0,5,7,5],[7,5,3,2],[10,5,6,2],[16,5,8,2],[7,7,5,3],[12,7,6,3],[18,7,3,3],[21,7,3,3]],[[0,0,7,2],[7,0,5,2],[12,0,4,2],[16,0,8,2],[0,2,6,3],[6,2,8,3],[14,2,3,3],[17,2,7,3],[0,5,3,3],[3,5,8,3],[11,5,7,3],[18,5,6,3],[0,8,5,2],[5,8,4,2],[9,8,8,2],[17,8,7,2]]];
+  // Compact irregular exact-cover layouts. Every wall is tiled edge-to-edge
+  // on a 24 x 10 grid; max tile footprint is 6 x 3 cells.
+  const layouts = [[[2, [5, 4, 6, 4, 5]], [3, [4, 5, 4, 6, 5]], [2, [6, 4, 5, 4, 5]], [3, [5, 4, 6, 4, 5]]], [[3, [4, 6, 4, 5, 5]], [2, [5, 4, 6, 4, 5]], [3, [6, 4, 5, 4, 5]], [2, [4, 5, 4, 6, 5]]], [[2, [4, 6, 5, 4, 5]], [3, [5, 4, 4, 6, 5]], [2, [6, 4, 5, 5, 4]], [3, [4, 5, 6, 4, 5]]], [[3, [5, 4, 6, 4, 5]], [2, [4, 5, 4, 6, 5]], [2, [6, 4, 5, 4, 5]], [3, [5, 4, 4, 6, 5]]], [[2, [6, 4, 5, 4, 5]], [3, [4, 5, 6, 4, 5]], [3, [5, 4, 5, 4, 6]], [2, [4, 6, 4, 5, 5]]], [[3, [4, 5, 4, 6, 5]], [2, [6, 4, 5, 4, 5]], [3, [5, 4, 6, 4, 5]], [2, [4, 5, 5, 4, 6]]]];
   const layoutIndex = Math.floor(seed / 3) % layouts.length;
-  const layout = layouts[layoutIndex];
+  const bands = layouts[layoutIndex];
   const offset = seed % projects.length;
-  return `<section class="project-wall" aria-label="Selected work">
-    ${layout.map(([x,y,w,h], i) => {
-      const project = projects[(offset + i * 11 + layoutIndex * 5) % projects.length];
-      const placement = `grid-column:${x+1} / span ${w};grid-row:${y+1} / span ${h};`;
-      return tile(project, "wall-tile", false, placement);
-    }).join("")}
-  </section>`;
+  let y = 0;
+  let tileIndex = 0;
+  const tiles = [];
+  bands.forEach(([height, widths]) => {
+    let x = 0;
+    widths.forEach(width => {
+      const project = projects[(offset + tileIndex * 7 + layoutIndex * 5) % projects.length];
+      const placement = `grid-column:${x+1} / span ${width};grid-row:${y+1} / span ${height};`;
+      tiles.push(tile(project, "wall-tile", false, placement));
+      x += width;
+      tileIndex++;
+    });
+    y += height;
+  });
+  return `<section class="project-wall" aria-label="Selected work">${tiles.join("")}</section>`;
 }
 
 function sideMosaic(items, patterns) {
