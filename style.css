@@ -387,5 +387,9 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .info-copy h1,.info-copy h2{font-size:clamp(42px,5.2vw,82px)!important;line-height:.88!important;margin:10px 0 16px!important;}
 .info-copy .kicker,.info-copy .info-lead,.info-copy .info-body,.info-copy .current-work,.info-copy .contact-email,.info-copy .contact-location{max-width:70svh;}
 @media(max-width:760px){.info-island{display:grid!important}.info-copy h1,.info-copy h2{font-size:clamp(30px,5vw,50px)!important}.info-body,.current-work p{font-size:9px!important}}
-.info-copy-content{width:43%;max-width:78svh;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;pointer-events:none;}
-.info-copy-content a{pointer-events:auto!important;}
+
+/* v38 — more irregular, stepped negative-space openings. Keep surrounding
+   tiles whole rather than subdividing them into narrow little slivers. */
+.about-island .info-copy{clip-path:polygon(28% 20%,75% 20%,75% 30%,81% 30%,81% 50%,72% 50%,72% 60%,75% 60%,75% 80%,31% 80%,31% 70%,25% 70%,25% 60%,19% 60%,19% 50%,25% 50%,25% 30%,28% 30%)!important}
+.rightnow-island .info-copy{clip-path:polygon(22% 20%,75% 20%,75% 30%,78% 30%,78% 50%,72% 50%,72% 70%,78% 70%,78% 80%,25% 80%,25% 70%,19% 70%,19% 50%,28% 50%,28% 30%,22% 30%)!important}
+.contact-island .info-copy{clip-path:polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)!important}

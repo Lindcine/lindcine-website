@@ -145,29 +145,32 @@ function infoIsland(kind) {
   const configs = {
     about: {
       bands:[{y:0,h:2,left:null,right:null,parts:[7,9,8,8]},
-             {y:2,h:2,left:7,right:7},
-             {y:4,h:2,left:8,right:6},
-             {y:6,h:2,left:9,right:8},
+             {y:2,h:1,left:9,right:8},
+             {y:3,h:2,left:8,right:6},
+             {y:5,h:1,left:6,right:9},
+             {y:6,h:2,left:8,right:8},
              {y:8,h:2,left:null,right:null,parts:[8,6,10,8]}],
-      shape:'polygon(21.875% 20%, 78.125% 20%, 78.125% 40%, 81.25% 40%, 81.25% 60%, 75% 60%, 75% 80%, 28.125% 80%, 28.125% 60%, 25% 60%, 25% 40%, 21.875% 40%)',
+      shape:'polygon(28% 20%,75% 20%,75% 30%,81% 30%,81% 50%,72% 50%,72% 60%,75% 60%,75% 80%,31% 80%,31% 70%,25% 70%,25% 60%,19% 60%,19% 50%,25% 50%,25% 30%,28% 30%)',
       copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
       bands:[{y:0,h:2,left:null,right:null,parts:[8,8,7,9]},
-             {y:2,h:2,left:8,right:6},
-             {y:4,h:2,left:7,right:7},
-             {y:6,h:2,left:8,right:8},
+             {y:2,h:1,left:7,right:8},
+             {y:3,h:2,left:9,right:6},
+             {y:5,h:2,left:8,right:9},
+             {y:7,h:1,left:6,right:7},
              {y:8,h:2,left:null,right:null,parts:[6,9,8,9]}],
-      shape:'polygon(25% 20%, 81.25% 20%, 81.25% 40%, 78.125% 40%, 78.125% 60%, 75% 60%, 75% 80%, 25% 80%, 25% 60%, 21.875% 60%, 21.875% 40%, 25% 40%)',
+      shape:'polygon(22% 20%,75% 20%,75% 30%,78% 30%,78% 50%,72% 50%,72% 70%,78% 70%,78% 80%,25% 80%,25% 70%,19% 70%,19% 50%,28% 50%,28% 30%,22% 30%)',
       copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
       bands:[{y:0,h:2,left:null,right:null,parts:[8,7,9,8]},
-             {y:2,h:2,left:7,right:7},
-             {y:4,h:2,left:9,right:6},
-             {y:6,h:2,left:8,right:8},
+             {y:2,h:2,left:8,right:7},
+             {y:4,h:1,left:10,right:8},
+             {y:5,h:2,left:7,right:9},
+             {y:7,h:1,left:9,right:6},
              {y:8,h:2,left:null,right:null,parts:[9,7,8,8]}],
-      shape:'polygon(21.875% 20%, 78.125% 20%, 78.125% 40%, 81.25% 40%, 81.25% 60%, 75% 60%, 75% 80%, 25% 80%, 25% 60%, 21.875% 60%, 21.875% 40%)',
+      shape:'polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)',
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
@@ -175,12 +178,7 @@ function infoIsland(kind) {
   let seed = kind === 'about' ? 2 : kind === 'rightnow' ? 13 : 23;
   const nextProject = () => projects[(seed++ * 7 + 3) % projects.length];
   const pieces = [];
-  const split = total => {
-    if (total <= 5) return [total];
-    if (total <= 8) return [Math.floor(total/2), Math.ceil(total/2)];
-    const first = Math.floor(total/2);
-    return [first, total-first];
-  };
+  const split = total => [total];
   c.bands.forEach(band => {
     if (band.parts) {
       let x = 0;
@@ -203,7 +201,7 @@ function infoIsland(kind) {
   });
   return `<section class="info-island ${kind}-island" aria-label="${kind}">
     ${pieces.join('')}
-    <div class="info-copy" data-anchor="${kind}"><div class="info-copy-content">${c.copy}</div></div>
+    <div class="info-copy" data-anchor="${kind}">${c.copy}</div>
   </section>`;
 }
 
