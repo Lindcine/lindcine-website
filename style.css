@@ -269,8 +269,6 @@ body.has-active .tile.is-active{filter:brightness(1)}
   max-width:none!important;
   max-height:none!important;
   flex:none!important;
-  grid-column:auto;
-  grid-row:auto;
 }
 .project-wall>.tile .tile-media,
 .project-wall>.tile .tile-media img,
@@ -375,7 +373,7 @@ body.has-active .tile.is-active{filter:brightness(1)}
 /* v37 — true negative-space cut-outs. Tiles stop at the stepped edge;
    the middle is intentionally empty, never filled with reduced miniatures. */
 .info-island{display:grid!important;position:relative!important;grid-template-columns:repeat(32,minmax(0,1fr))!important;grid-template-rows:repeat(10,minmax(0,1fr))!important;grid-auto-flow:initial!important;gap:0!important;background:#08090a!important;}
-.info-island>.info-piece{position:relative!important;inset:auto!important;grid-column:auto;grid-row:auto;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;}
+.info-island>.info-piece{position:relative!important;inset:auto!important;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;}
 .info-island>.info-piece .tile-media,.info-island>.info-piece .tile-media img,.info-island>.info-piece .tile-media video{width:100%;height:100%;}
 .info-island .info-copy{left:0!important;top:0!important;width:100%!important;height:100%!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;background:transparent!important;clip-path:none!important;}
 .info-island .info-copy>*{position:relative;z-index:1;}
@@ -402,8 +400,19 @@ body.has-active .tile.is-active{filter:brightness(1)}
   grid-template-columns:repeat(64,minmax(0,1fr))!important;
   grid-template-rows:repeat(10,minmax(0,1fr))!important;
 }
-.info-island>.info-piece{grid-row:auto!important;}
 .info-island .info-copy{left:0!important;top:0!important;width:100%!important;height:100%!important;}
 .about-island .info-copy{clip-path:polygon(25% 20%,73% 20%,73% 30%,77% 30%,77% 50%,72% 50%,72% 70%,76% 70%,76% 80%,28% 80%,28% 70%,23% 70%,23% 50%,27% 50%,27% 30%,25% 30%)!important;}
 .rightnow-island .info-copy{clip-path:polygon(27% 20%,75% 20%,75% 40%,72% 40%,72% 60%,77% 60%,77% 80%,25% 80%,25% 70%,22% 70%,22% 40%,27% 40%)!important;}
 .contact-island .info-copy{clip-path:polygon(24% 20%,76% 20%,76% 30%,73% 30%,73% 50%,78% 50%,78% 70%,73% 70%,73% 80%,27% 80%,27% 60%,23% 60%,23% 40%,26% 40%)!important;}
+
+
+/* v40 — restore the explicit two-row placements for every info-piece.
+   The v37/v39 auto-row override collapsed the side mosaic into the top half. */
+.info-island>.info-piece{
+  grid-column: auto;
+  /* grid-row is intentionally left to the inline placement generated in JS */
+}
+.info-island{
+  grid-auto-rows:minmax(0,1fr)!important;
+  align-content:stretch!important;
+}
