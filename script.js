@@ -142,55 +142,71 @@ function showreelIsland() {
 function infoIsland(kind) {
   const configs = {
     about: {
-      top:[16,9,26,3,21,7],
-      bottom:[21,24,14,26,1],
-      collageTop:[5,11,18],
-      collageBottom:[22,27,29],
-      copy:`<span class="kicker">BEHIND THE CAMERA</span>
-        <h1>Lucas<br>Lindgren<span>.</span></h1>
-        <p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p>
-        <div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
+      holes:[[9,22],[7,24],[7,24],[9,23],[10,21]],
+      copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
-      top:[7,21,9,26,3,16],
-      bottom:[24,1,26,14,21],
-      collageTop:[4,10,15],
-      collageBottom:[19,23,28],
-      copy:`<span class="kicker">A CURRENT CHAPTER</span>
-        <h2>Right<br>now<span>.</span></h2>
-        <div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
+      holes:[[10,23],[8,25],[8,24],[9,23],[11,22]],
+      copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
-      top:[3,26,16,21,9,7],
-      bottom:[14,21,1,24,26],
-      collageTop:[0,12,17],
-      collageBottom:[20,25,28],
-      copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span>
-        <h2>Let's make<br>something<span>.</span></h2>
-        <a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a>
-        <span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
+      holes:[[8,22],[7,24],[8,25],[10,24],[11,22]],
+      copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
   const c = configs[kind];
+  const cols = 32, rows = 10;
+  const blocked = Array.from({length:rows}, () => Array(cols).fill(false));
+  c.holes.forEach(([a,b], i) => { for(let x=a; x<b; x++) blocked[i+2][x] = true; });
+  const occupied = blocked.map(r => r.slice());
+  const pieces = [];
+  let seed = kind === 'about' ? 3 : kind === 'rightnow' ? 11 : 19;
+  const rand = n => { seed = (seed * 9301 + 49297) % 233280; return seed % n; };
+  for(let y=0; y<rows; y++) {
+    for(let x=0; x<cols; x++) {
+      if(occupied[y][x]) continue;
+      let placed = false;
+      const heights = y < rows-1 ? [2,1] : [1];
+      for(const h of heights) {
+        if(placed) break;
+        const maxW = Math.min(7, cols-x);
+        const widths = h === 2 ? [6,5,4,7] : [3,2,4,5,1];
+        for(const w of widths.sort((a,b)=>0)) {
+          if(w > maxW) continue;
+          let free = true;
+          for(let yy=y; yy<y+h && free; yy++) for(let xx=x; xx<x+w; xx++) if(occupied[yy][xx]) { free=false; break; }
+          if(!free) continue;
+          // Keep tile ratios in a cinematic range while allowing occasional narrow pieces.
+          if(h===2 && w<4) continue;
+          if(h===1 && w>5) continue;
+          for(let yy=y; yy<y+h; yy++) for(let xx=x; xx<x+w; xx++) occupied[yy][xx]=true;
+          const project = projects[(seed + y*7 + x*3 + rand(projects.length)) % projects.length];
+          pieces.push(tile(project, 'wall-tile info-piece', false, `grid-column:${x+1} / span ${w};grid-row:${y+1} / span ${h};`));
+          placed=true; break;
+        }
+      }
+      if(!placed) {
+        occupied[y][x]=true;
+        const project = projects[(y*cols+x+seed) % projects.length];
+        pieces.push(tile(project, 'wall-tile info-piece', false, `grid-column:${x+1};grid-row:${y+1};`));
+      }
+    }
+  }
+  const points = c.holes.map(([a,b],i)=>`${(a/cols)*100}% ${(i/5)*100}% ${(b/cols)*100}% ${(i/5)*100}%`).join(',');
   return `<section class="info-island ${kind}-island" aria-label="${kind}">
-    ${row(c.top)}
-    <div class="info-middle">
-      <div class="info-copy" data-anchor="${kind}">${c.copy}</div>
-      <div class="info-collage">
-        <div class="info-collage-row">${c.collageTop.map(i => tile(projects[i])).join("")}</div>
-        <div class="info-collage-row">${c.collageBottom.map(i => tile(projects[i])).join("")}</div>
-      </div>
-    </div>
-    ${row(c.bottom)}
+    ${pieces.join('')}
+    <div class="info-copy" data-anchor="${kind}">${c.copy}</div>
   </section>`;
 }
-
 function renderRun(copy) {
   return `<div class="world-run" data-copy="${copy}">
     ${showreelIsland()}
     ${projectWall(0)}
+    ${infoIsland("about")}
     ${projectWall(3)}
+    ${infoIsland("rightnow")}
     ${projectWall(6)}
+    ${infoIsland("contact")}
     ${projectWall(9)}
   </div>`;
 }
