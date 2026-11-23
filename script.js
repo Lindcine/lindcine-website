@@ -86,33 +86,26 @@ function row(items, widths = null) {
 }
 
 function projectWall(seed = 0) {
-  // Exact-cover wall: 128 columns x 10 rows. Each band is 2 rows (20svh).
-  // Widths 10 / 14 / 18 / 24 produce the approved 1:1, 4:3, 16:9
-  // and 2.35:1 tile proportions at this wall's fixed dimensions.
-  const layouts = [
-    [10,10,18,18,24,24,24],
-    [10,18,10,24,18,24,24],
-    [18,10,24,10,18,24,24],
-    [24,10,18,10,24,18,24],
-    [10,24,18,10,24,18,24]
-  ];
-  const ratioByWidth = {10:"1",14:"4-3",18:"16-9",24:"2-35"};
+  // Each layout uses 4 or 5 horizontal bands. Every band's vertical cut
+  // coordinates are unique across the ENTIRE wall, so no vertical seam can
+  // continue from the top edge to the bottom edge.
+  const layouts = [[[2, [8, 5, 5, 6, 8]], [2, [6, 8, 8, 5, 5]], [2, [7, 8, 6, 4, 7]], [2, [4, 8, 8, 8, 4]], [2, [5, 6, 8, 7, 6]]], [[2, [4, 8, 7, 6, 7]], [3, [7, 7, 8, 4, 6]], [2, [6, 7, 7, 7, 5]], [3, [5, 6, 7, 6, 8]]], [[2, [6, 7, 7, 8, 4]], [2, [7, 5, 6, 7, 7]], [2, [8, 6, 8, 4, 6]], [2, [5, 4, 8, 7, 8]], [2, [4, 7, 8, 8, 5]]], [[2, [6, 6, 7, 6, 7]], [3, [7, 7, 7, 7, 4]], [2, [8, 7, 7, 5, 5]], [3, [4, 7, 7, 6, 8]]], [[2, [6, 4, 8, 6, 8]], [2, [5, 8, 7, 6, 6]], [2, [4, 7, 6, 8, 7]], [2, [8, 8, 6, 6, 4]], [2, [7, 7, 5, 8, 5]]], [[2, [6, 8, 6, 7, 5]], [3, [5, 8, 6, 6, 7]], [2, [4, 7, 7, 8, 6]], [3, [7, 8, 8, 5, 4]]]];
+  const layoutIndex = Math.floor(seed / 3) % layouts.length;
+  const bands = layouts[layoutIndex];
+  const offset = seed % projects.length;
   let y = 0;
   let tileIndex = 0;
   const tiles = [];
-  layouts.forEach((widths, bandIndex) => {
+  bands.forEach(([height, widths]) => {
     let x = 0;
     widths.forEach(width => {
-      const ratio = ratioByWidth[width];
-      const candidates = projects.filter(p => p.ratio === ratio);
-      const project = candidates[(seed * 5 + bandIndex * 7 + tileIndex * 3) % candidates.length]
-        || projects[(seed + tileIndex) % projects.length];
-      const placement = `grid-column:${x+1} / span ${width};grid-row:${y+1} / span 2;`;
+      const project = projects[(offset + tileIndex * 7 + layoutIndex * 5) % projects.length];
+      const placement = `grid-column:${x+1} / span ${width};grid-row:${y+1} / span ${height};`;
       tiles.push(tile(project, "wall-tile", false, placement));
       x += width;
       tileIndex++;
     });
-    y += 2;
+    y += height;
   });
   return `<section class="project-wall" aria-label="Selected work">${tiles.join("")}</section>`;
 }
@@ -147,63 +140,63 @@ function showreelIsland() {
 }
 
 function infoIsland(kind) {
-  // Same v38 stepped negative-space design, with tile dimensions recalculated
-  // on a 128-column grid so every surrounding piece keeps an approved ratio.
+  // The info panel is a real absence in the wall: no thumbnails are placed
+  // inside the stepped polygon. Large surrounding tiles remain full-size.
   const configs = {
     about: {
-      bands:[
-        {left:[24,14],right:[18,24]},
-        {left:[10,18,14],right:[24,18]},
-        {left:[24,18],right:[10,14,18]},
-        {left:[14,14,10],right:[24,24]},
-        {left:[24,10],right:[18,14,10]}
-      ],
+      bands:[{y:0,h:2,left:null,right:null,parts:[7,9,8,8]},
+             {y:2,h:1,left:9,right:8},
+             {y:3,h:2,left:8,right:6},
+             {y:5,h:1,left:6,right:9},
+             {y:6,h:2,left:8,right:8},
+             {y:8,h:2,left:null,right:null,parts:[8,6,10,8]}],
       shape:'polygon(28% 20%,75% 20%,75% 30%,81% 30%,81% 50%,72% 50%,72% 60%,75% 60%,75% 80%,31% 80%,31% 70%,25% 70%,25% 60%,19% 60%,19% 50%,25% 50%,25% 30%,28% 30%)',
       copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
-      bands:[
-        {left:[18,24],right:[10,14,18]},
-        {left:[24,14],right:[18,24]},
-        {left:[10,18,14],right:[24,18]},
-        {left:[18,14,10],right:[24,24]},
-        {left:[24,10],right:[18,14,10]}
-      ],
+      bands:[{y:0,h:2,left:null,right:null,parts:[8,8,7,9]},
+             {y:2,h:1,left:7,right:8},
+             {y:3,h:2,left:9,right:6},
+             {y:5,h:2,left:8,right:9},
+             {y:7,h:1,left:6,right:7},
+             {y:8,h:2,left:null,right:null,parts:[6,9,8,9]}],
       shape:'polygon(22% 20%,75% 20%,75% 30%,78% 30%,78% 50%,72% 50%,72% 70%,78% 70%,78% 80%,25% 80%,25% 70%,19% 70%,19% 50%,28% 50%,28% 30%,22% 30%)',
       copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
-      bands:[
-        {left:[14,18,10],right:[24,18]},
-        {left:[24,10],right:[18,14,10]},
-        {left:[10,14,18],right:[24,18]},
-        {left:[18,24],right:[10,14,18]},
-        {left:[24,14],right:[18,24]}
-      ],
+      bands:[{y:0,h:2,left:null,right:null,parts:[8,7,9,8]},
+             {y:2,h:2,left:8,right:7},
+             {y:4,h:1,left:10,right:8},
+             {y:5,h:2,left:7,right:9},
+             {y:7,h:1,left:9,right:6},
+             {y:8,h:2,left:null,right:null,parts:[9,7,8,8]}],
       shape:'polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)',
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
   const c = configs[kind];
   let seed = kind === 'about' ? 2 : kind === 'rightnow' ? 13 : 23;
-  const ratioByWidth = {10:"1",14:"4-3",18:"16-9",24:"2-35"};
+  const nextProject = () => projects[(seed++ * 7 + 3) % projects.length];
   const pieces = [];
-  c.bands.forEach((band, rowIndex) => {
+  const split = total => [total];
+  c.bands.forEach(band => {
+    if (band.parts) {
+      let x = 0;
+      band.parts.forEach(w => {
+        pieces.push(tile(nextProject(), 'wall-tile info-piece', false,
+          `grid-column:${x+1} / span ${w};grid-row:${band.y+1} / span ${band.h};`));
+        x += w;
+      });
+      return;
+    }
     let x = 0;
-    band.left.forEach(width => {
-      const candidates = projects.filter(p => p.ratio === ratioByWidth[width]);
-      const project = candidates[(seed++ * 7 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
-      pieces.push(tile(project, 'wall-tile info-piece', false,
-        `grid-column:${x+1} / span ${width};grid-row:${rowIndex*2+1} / span 2;`));
-      x += width;
-    });
-    x = 128 - band.right.reduce((sum, width) => sum + width, 0);
-    band.right.forEach(width => {
-      const candidates = projects.filter(p => p.ratio === ratioByWidth[width]);
-      const project = candidates[(seed++ * 5 + rowIndex) % candidates.length] || projects[seed++ % projects.length];
-      pieces.push(tile(project, 'wall-tile info-piece', false,
-        `grid-column:${x+1} / span ${width};grid-row:${rowIndex*2+1} / span 2;`));
-      x += width;
+    [band.left, 32-band.left-band.right, band.right].forEach((width, index) => {
+      if (index === 1) { x += width; return; } // the central negative-space cutout
+      split(width).forEach(w => {
+        pieces.push(tile(nextProject(), 'wall-tile info-piece', false,
+          `grid-column:${x+1} / span ${w};grid-row:${band.y+1} / span ${band.h};`));
+        x += w;
+      });
     });
   });
   return `<section class="info-island ${kind}-island" aria-label="${kind}">
