@@ -79,143 +79,144 @@ function reelTile() {
   </article>`;
 }
 
-const WALL_WIDTH = 250.76978907208147; // svh; derived from exact-ratio row packing
-const RATIO = {"1":1,"4-3":4/3,"16-9":16/9,"2-35":2.35};
-const ROW_COUNTS = [
-  {"1":2,"4-3":3,"16-9":1,"2-35":2},
-  {"1":2,"4-3":2,"16-9":0,"2-35":3},
-  {"1":0,"4-3":1,"16-9":3,"2-35":3},
-  {"1":3,"4-3":1,"16-9":3,"2-35":2},
-  {"1":2,"4-3":1,"16-9":3,"2-35":1}
-];
-const WALL_ROW_HEIGHTS = ROW_COUNTS.map(c => WALL_WIDTH / Object.entries(c).reduce((s,[r,n])=>s+RATIO[r]*n,0));
-const WALL_TOP_HEIGHT = WALL_WIDTH / (2*2.35 + 3*(16/9));
-const REEL_MID_HEIGHT = 100 - 2*WALL_TOP_HEIGHT;
-const REEL_WIDTH = 2.35 * REEL_MID_HEIGHT;
-const SIDE_WIDTH = (WALL_WIDTH - REEL_WIDTH) / 2;
-
-function absoluteTile(project, x, y, width, height, extra="") {
-  const placement = `position:absolute!important;left:${x}svh!important;top:${y}svh!important;width:${width}svh!important;height:${height}svh!important;`;
-  return tile(project, `wall-tile ${extra}`, false, placement);
-}
-
-function chooseProject(ratio, seed, used) {
-  const candidates = projects.filter(p => p.ratio === ratio);
-  if (!candidates.length) return projects[seed % projects.length];
-  let index = ((seed % candidates.length) + candidates.length) % candidates.length;
-  for (let tries=0; tries<candidates.length; tries++) {
-    const p = candidates[(index+tries)%candidates.length];
-    const count = used.get(p.id) || 0;
-    if (count < 2) { used.set(p.id,count+1); return p; }
-  }
-  const p = candidates[index]; used.set(p.id,(used.get(p.id)||0)+1); return p;
+function row(items, widths = null) {
+  const cols = widths || items.map(() => 100 / items.length);
+  const tracks = cols.map(v => `${v}%`).join(" ");
+  return `<div class="mosaic-row" style="grid-template-columns:${tracks}">${items.map(item => tile(projects[item])).join("")}</div>`;
 }
 
 function projectWall(seed = 0) {
-  let y = 0;
-  const pieces = [];
-  const used = new Map();
-  const bandOrder = [0,1,2,3,4].map(i => (i + seed) % 5);
-  bandOrder.forEach((patternIndex, visualRow) => {
-    const counts = ROW_COUNTS[patternIndex];
-    const h = WALL_ROW_HEIGHTS[patternIndex];
-    const ratios = [];
-    ["1","4-3","16-9","2-35"].forEach(r => { for(let i=0;i<counts[r];i++) ratios.push(r); });
-    // Seeded rotation changes the rhythm without changing the exact cover.
-    const shift = (seed*3 + visualRow*2) % ratios.length;
-    const ordered = ratios.slice(shift).concat(ratios.slice(0,shift));
+  // Exact-ratio, exact-cover mosaic. All dimensions are derived from the
+  // approved ratios; the wall is 250.8333svh wide for 4 rows and 251.4444svh
+  // for 5 rows. No image is stretched to fill a cell.
+  const fourRowPatterns = [
+    [{ratio:"16-9",units:1600},{ratio:"16-9",units:1600},{ratio:"16-9",units:1600},{ratio:"2-35",units:2115},{ratio:"2-35",units:2115}],
+    [{ratio:"4-3",units:1200},{ratio:"4-3",units:1200},{ratio:"4-3",units:1200},{ratio:"4-3",units:1200},{ratio:"2-35",units:2115},{ratio:"2-35",units:2115}],
+    [{ratio:"1",units:900},{ratio:"1",units:900},{ratio:"1",units:900},{ratio:"1",units:900},{ratio:"4-3",units:1200},{ratio:"2-35",units:2115},{ratio:"2-35",units:2115}]
+  ];
+  // Five rows share the same total 100svh height (20svh each). This exact
+  // combination sums to 9052/36svh and keeps every tile ratio mathematically exact.
+  const fiveRowPattern = [
+    {ratio:"4-3",units:960},
+    {ratio:"16-9",units:1280},{ratio:"16-9",units:1280},{ratio:"16-9",units:1280},
+    {ratio:"16-9",units:1280},{ratio:"16-9",units:1280},
+    {ratio:"2-35",units:1692}
+  ];
+  const useFive = [2, 5].includes(Math.abs(seed) % 9); // occasional five-row wall
+  const rowHeight = useFive ? 20 : 25;
+  const patterns = useFive ? Array.from({length:5},()=>fiveRowPattern) :
+    Array.from({length:4},(_,i)=>fourRowPatterns[(Math.abs(seed)+i)%fourRowPatterns.length]);
+  const wallUnits = useFive ? 9052 : 9030;
+  const wallWidth = wallUnits / 36;
+  let y = 0, tileIndex = 0;
+  const tiles = [];
+  patterns.forEach((pattern, rowIndex) => {
+    // Rotate each row's ordering without changing any dimensions.
+    const shift = (Math.abs(seed) + rowIndex * 2) % pattern.length;
+    const ordered = pattern.slice(shift).concat(pattern.slice(0, shift));
     let x = 0;
-    ordered.forEach((ratio, i) => {
-      const w = RATIO[ratio] * h;
-      const project = chooseProject(ratio, seed*11 + visualRow*7 + i*3, used);
-      pieces.push(absoluteTile(project,x,y,w,h));
-      x += w;
+    ordered.forEach(spec => {
+      const candidates = projects.filter(p => p.ratio === spec.ratio);
+      const project = candidates[(Math.abs(seed) * 3 + tileIndex * 5 + rowIndex) % candidates.length]
+        || projects[(Math.abs(seed) + tileIndex) % projects.length];
+      const width = spec.units / 36;
+      const placement = `left:${x/36}svh;top:${y}svh;width:${width}svh;height:${rowHeight}svh;`;
+      tiles.push(tile(project, "wall-tile", false, placement));
+      x += spec.units;
+      tileIndex++;
     });
-    y += h;
+    if (x !== wallUnits) throw new Error(`Mosaic row ${rowIndex} does not close: ${x}/${wallUnits}`);
+    y += rowHeight;
   });
-  return `<section class="project-wall" aria-label="Selected work">${pieces.join("")}</section>`;
+  return `<section class="project-wall ${useFive ? 'five-row-wall' : 'four-row-wall'}" style="--wall-width:${wallWidth}svh" aria-label="Selected work">${tiles.join("")}</section>`;
 }
 
-function showreelSideStack(side, seed) {
-  const rows = [
-    {h:SIDE_WIDTH/4, ratios: seed%2 ? ["1","1","1","1"] : ["4-3","4-3","4-3"]},
-    {h:SIDE_WIDTH/4, ratios: seed%2 ? ["4-3","4-3","4-3"] : ["1","1","1","1"]},
-    {h:REEL_MID_HEIGHT - 2*(SIDE_WIDTH/4), ratios: seed%2 ? ["1","1","1","1"] : ["4-3","4-3","4-3"]}
-  ];
-  let y=0, n=0, html="";
-  const used=new Map();
-  rows.forEach(row=>{
-    let x=0;
-    row.ratios.forEach(r=>{
-      const w=RATIO[r]*row.h;
-      const p=chooseProject(r,seed*5+n*3,used);
-      html+=absoluteTile(p,x,y,w,row.h);
-      x+=w;n++;
-    });
-    y+=row.h;
-  });
-  return `<div class="reel-side-stack ${side}">${html}</div>`;
+function sideMosaic(items, patterns) {
+  return `<div class="reel-side-stack">
+    ${patterns.map((widths, rowIndex) => {
+      const rowItems = items.slice(patterns.slice(0, rowIndex).reduce((n, p) => n + p.length, 0),
+        patterns.slice(0, rowIndex + 1).reduce((n, p) => n + p.length, 0));
+      return `<div class="reel-side-row" style="grid-template-columns:${widths.map(w => `${w}fr`).join(" ")}">
+        ${rowItems.map((id, i) => tile(projects[id], "wall-tile")).join("")}
+      </div>`;
+    }).join("")}
+  </div>`;
 }
 
 function showreelIsland() {
-  const topRatios=["2-35","16-9","2-35","16-9","16-9"];
-  const bottomRatios=["16-9","2-35","16-9","16-9","2-35"];
-  function horizontalBand(ratios, top, seed){
-    let x=0, html=""; const used=new Map();
-    ratios.forEach((r,i)=>{
-      const w=RATIO[r]*WALL_TOP_HEIGHT;
-      html+=absoluteTile(chooseProject(r,seed+i*4,used),x,top,w,WALL_TOP_HEIGHT);
-      x+=w;
-    });
-    return html;
-  }
+  // A five-band composition around the reel: one varied band above and below,
+  // plus three independently divided bands on either side. This avoids the
+  // repeated two-large-tile stacks that made the reel feel boxed in.
+  const top = [24, 9, 16, 3, 21, 7];
+  const bottom = [14, 26, 1, 24, 9, 16, 3];
   return `<section class="showreel-island" aria-label="Cinematography showreel">
-    ${horizontalBand(topRatios,0,3)}
+    ${row(top, [12,18,21,14,19,16])}
     <div class="reel-middle">
-      ${showreelSideStack("left",0)}
-      <article class="tile reel-tile" data-id="showreel" data-anchor="showreel" style="position:absolute;left:${SIDE_WIDTH}svh;top:0;width:${REEL_WIDTH}svh;height:${REEL_MID_HEIGHT}svh" tabindex="0" role="button" aria-label="Play cinematography showreel"><div class="reel-invite"><span class="reel-play">▶</span><span class="reel-label">WATCH SHOWREEL</span></div></article>
-      ${showreelSideStack("right",1)}
+      ${sideMosaic([3,9,14,21,7], [[1],[0.58,0.42],[0.36,0.64]])}
+      ${reelTile()}
+      ${sideMosaic([16,7,26,24,1], [[0.46,0.54],[1],[0.62,0.38]])}
     </div>
-    ${horizontalBand(bottomRatios,WALL_TOP_HEIGHT+REEL_MID_HEIGHT,17)}
+    ${row(bottom, [15,12,18,13,17,11,14])}
   </section>`;
 }
 
 function infoIsland(kind) {
+  // The info pages are carved from the same 4-row mosaic. The central copy
+  // sits in a genuine tile-free opening; surrounding tiles keep exact ratios.
   const configs = {
     about: {
-      bands:[[["2-35","4-3"],["16-9","2-35"]],[["1","16-9","4-3"],["2-35","16-9"]],[["2-35","16-9"],["1","4-3","16-9"]],[["4-3","4-3","1"],["2-35","2-35"]],[["2-35","1"],["16-9","4-3","1"]]],
-      shape:'polygon(28% 20%,75% 20%,75% 30%,81% 30%,81% 50%,72% 50%,72% 60%,75% 60%,75% 80%,31% 80%,31% 70%,25% 70%,25% 60%,19% 60%,19% 50%,25% 50%,25% 30%,28% 30%)',
       copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
-      bands:[[["16-9","2-35"],["1","4-3","16-9"]],[["2-35","4-3"],["16-9","2-35"]],[["1","16-9","4-3"],["2-35","16-9"]],[["16-9","4-3","1"],["2-35","2-35"]],[["2-35","1"],["16-9","4-3","1"]]],
-      shape:'polygon(22% 20%,75% 20%,75% 30%,78% 30%,78% 50%,72% 50%,72% 70%,78% 70%,78% 80%,25% 80%,25% 70%,19% 70%,19% 50%,28% 50%,28% 30%,22% 30%)',
       copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
-      bands:[[["4-3","16-9","1"],["2-35","16-9"]],[["2-35","1"],["16-9","4-3","1"]],[["1","4-3","16-9"],["2-35","16-9"]],[["16-9","2-35"],["1","4-3","16-9"]],[["2-35","4-3"],["16-9","2-35"]]],
-      shape:'polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)',
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
-  const c=configs[kind]; let seed=kind==='about'?2:kind==='rightnow'?13:23;
-  const pieces=[]; const used=new Map(); const bandHeight=20;
-  c.bands.forEach((band,rowIndex)=>{
-    const left=band[0], right=band[1];
-    let x=0;
-    left.forEach((ratio,i)=>{
-      const w=RATIO[ratio]*bandHeight;
-      const p=chooseProject(ratio,seed++ + rowIndex*5 + i,used);
-      pieces.push(absoluteTile(p,x,rowIndex*bandHeight,w,bandHeight,"info-piece")); x+=w;
-    });
-    const rightWidth=right.reduce((sum,r)=>sum+RATIO[r]*bandHeight,0);
-    x=WALL_WIDTH-rightWidth;
-    right.forEach((ratio,i)=>{
-      const w=RATIO[ratio]*bandHeight;
-      const p=chooseProject(ratio,seed++ + rowIndex*7 + i,used);
-      pieces.push(absoluteTile(p,x,rowIndex*bandHeight,w,bandHeight,"info-piece")); x+=w;
-    });
-  });
+  const c = configs[kind];
+  const fullPatterns = [
+    [{ratio:"16-9",units:1600},{ratio:"16-9",units:1600},{ratio:"16-9",units:1600},{ratio:"2-35",units:2115},{ratio:"2-35",units:2115}],
+    [{ratio:"4-3",units:1200},{ratio:"4-3",units:1200},{ratio:"4-3",units:1200},{ratio:"4-3",units:1200},{ratio:"2-35",units:2115},{ratio:"2-35",units:2115}],
+    [{ratio:"1",units:900},{ratio:"1",units:900},{ratio:"1",units:900},{ratio:"1",units:900},{ratio:"4-3",units:1200},{ratio:"2-35",units:2115},{ratio:"2-35",units:2115}]
+  ];
+  const sidePatterns = kind === 'about' ? [
+    [{ratio:"2-35",units:2115},{ratio:"1",units:900}], [{ratio:"2-35",units:2115}],
+    [{ratio:"2-35",units:2115}], [{ratio:"1",units:900},{ratio:"2-35",units:2115}]
+  ] : kind === 'rightnow' ? [
+    [{ratio:"2-35",units:2115}], [{ratio:"1",units:900},{ratio:"2-35",units:2115}],
+    [{ratio:"2-35",units:2115},{ratio:"1",units:900}], [{ratio:"2-35",units:2115}]
+  ] : [
+    [{ratio:"1",units:900},{ratio:"2-35",units:2115}], [{ratio:"2-35",units:2115}],
+    [{ratio:"2-35",units:2115}], [{ratio:"2-35",units:2115},{ratio:"1",units:900}]
+  ];
+  const fullWidth = 9030;
+  let tileIndex = 0;
+  const pieces = [];
+  function addTile(spec, x, y, row) {
+    const candidates = projects.filter(p => p.ratio === spec.ratio);
+    const project = candidates[(tileIndex * 7 + (kind === 'about' ? 2 : kind === 'rightnow' ? 13 : 23)) % candidates.length]
+      || projects[tileIndex % projects.length];
+    const placement = `left:${x/36}svh;top:${y}svh;width:${spec.units/36}svh;height:25svh;`;
+    pieces.push(tile(project, 'wall-tile info-piece', false, placement));
+    tileIndex++;
+  }
+  for (let row = 0; row < 4; row++) {
+    const y = row * 25;
+    if (row === 0 || row === 3) {
+      const pattern = fullPatterns[(row + (kind === 'about' ? 0 : kind === 'rightnow' ? 1 : 2)) % fullPatterns.length];
+      let x = 0;
+      pattern.forEach(spec => { addTile(spec, x, y, row); x += spec.units; });
+      if (x !== fullWidth) throw new Error('Info mosaic full row failed to close');
+    } else {
+      const left = sidePatterns[row];
+      const right = sidePatterns[3-row];
+      let x = 0;
+      left.forEach(spec => { addTile(spec, x, y, row); x += spec.units; });
+      x = fullWidth - right.reduce((sum,spec)=>sum+spec.units,0);
+      right.forEach(spec => { addTile(spec, x, y, row); x += spec.units; });
+    }
+  }
   return `<section class="info-island ${kind}-island" aria-label="${kind}">${pieces.join('')}<div class="info-copy" data-anchor="${kind}">${c.copy}</div></section>`;
 }
 
