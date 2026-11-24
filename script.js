@@ -102,6 +102,9 @@ function layoutWidth(rows) {
 }
 const FIVE_WALL_WIDTH = layoutWidth(FIVE_ROW_COUNTS);
 const FOUR_WALL_WIDTH = layoutWidth(FOUR_ROW_COUNTS);
+// Shared width used by the stepped About / Right Now / Contact cut-outs.
+// Match the five-row wall so their tile edges align with the surrounding mosaic.
+const WALL_WIDTH = FIVE_WALL_WIDTH;
 const WALL_TOP_HEIGHT = FIVE_WALL_WIDTH / (2*2.35 + 3*(16/9));
 const REEL_MID_HEIGHT = 100 - 2*WALL_TOP_HEIGHT;
 const REEL_WIDTH = 2.35 * REEL_MID_HEIGHT;
