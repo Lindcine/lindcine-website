@@ -79,135 +79,167 @@ function reelTile() {
   </article>`;
 }
 
-function row(items, widths = null) {
-  const cols = widths || items.map(() => 100 / items.length);
-  const tracks = cols.map(v => `${v}%`).join(" ");
-  return `<div class="mosaic-row" style="grid-template-columns:${tracks}">${items.map(item => tile(projects[item])).join("")}</div>`;
+const WALL_WIDTH = 250.83333333333334;
+const RATIO_KEYS = ["1", "4-3", "16-9", "2-35"];
+const RATIO_VALUES = {"1":1, "4-3":4/3, "16-9":16/9, "2-35":2.35};
+
+function pickProject(ratio, seed) {
+  const candidates = projects.filter(p => p.ratio === ratio);
+  if (!candidates.length) throw new Error(`No project available for ratio ${ratio}`);
+  return candidates[((seed % candidates.length) + candidates.length) % candidates.length];
+}
+
+function shuffledRatios(counts, seed) {
+  const list = [];
+  RATIO_KEYS.forEach((ratio, i) => {
+    for (let n = 0; n < (counts[i] || 0); n++) list.push(ratio);
+  });
+  // Deterministic small shuffle: keeps the same exact ratio counts, but avoids
+  // the same left-to-right sequence repeating in every band.
+  let state = (seed + 1) * 2654435761 >>> 0;
+  for (let i = list.length - 1; i > 0; i--) {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    const j = state % (i + 1);
+    [list[i], list[j]] = [list[j], list[i]];
+  }
+  return list;
+}
+
+function exactRow(ratios, height, seed, className = "") {
+  const tiles = ratios.map((ratio, i) => {
+    const project = pickProject(ratio, seed * 11 + i * 7 + ratios.length);
+    return tile(project, "wall-tile", false, "");
+  }).join("");
+  return `<div class="mosaic-row exact-row ${className}" style="--tile-h:${height}svh">${tiles}</div>`;
 }
 
 function projectWall(seed = 0) {
-  // Exact-ratio four-band test layout.
-  // Each band is a flex row. Tile width is calculated from its locked ratio
-  // and the band's own height, so no grid cell can stretch a thumbnail.
-  const ratios = {"16-9": 16/9, "1": 1, "2-35": 2.35, "4-3": 4/3};
-  const bands = [
-    {counts:[1,1,1,3], order:["16-9","4-3","1","4-3","2-35","4-3"]},
-    {counts:[2,2,1,1], order:["4-3","16-9","1","2-35","16-9","1"]},
-    {counts:[2,2,1,2], order:["1","4-3","16-9","2-35","4-3","1","16-9"]},
-    {counts:[2,2,2,1], order:["16-9","1","4-3","2-35","1","16-9","4-3"]}
+  // Every thumbnail is a true aspect-ratio rectangle. Four-row walls use
+  // 25svh bands. Occasional five-row walls use mathematically solved band
+  // heights; the five heights sum to exactly 100svh and every band fills the
+  // same 250.833333svh wall width without stretching a tile.
+  const fourRowPatterns = [
+    [0, 0, 3, 2], // 3 x 16:9 + 2 x 2.35:1
+    [0, 4, 0, 2], // 4 x 4:3 + 2 x 2.35:1
+    [4, 1, 0, 2], // 4 x 1:1 + 1 x 4:3 + 2 x 2.35:1
+    [0, 0, 3, 2]
   ];
-  const sums = bands.map(b => b.order.reduce((sum, key) => sum + ratios[key], 0));
-  const wallRatio = 1 / sums.reduce((sum, value) => sum + 1/value, 0);
-  const wallWidth = wallRatio * 100;
-  let tileIndex = 0;
-  const rows = bands.map((band, rowIndex) => {
-    const sum = sums[rowIndex];
-    const height = wallRatio / sum * 100;
-    const items = band.order.map((ratioKey, colIndex) => {
-      const candidates = projects.filter(project => project.ratio === ratioKey);
-      const project = candidates[(seed + tileIndex * 3 + rowIndex + colIndex) % candidates.length];
-      const width = ratios[ratioKey] * height;
-      tileIndex++;
-      return tile(project, "wall-tile", false,
-        `height:${height}svh;width:${width}svh;flex:0 0 ${width}svh;`);
+  const fiveRows = [
+    {counts:[4,2,0,3], n:2469},
+    {counts:[5,2,0,2], n:2226},
+    {counts:[5,0,2,2], n:2386},
+    {counts:[6,0,2,1], n:2143},
+    {counts:[7,0,0,2], n:2106}
+  ];
+  const useFive = seed === 6;
+  let rows = [];
+  if (useFive) {
+    fiveRows.forEach((band, i) => {
+      const height = WALL_WIDTH * 180 / band.n;
+      const ratios = shuffledRatios(band.counts, seed * 13 + i * 5);
+      rows.push(exactRow(ratios, height.toFixed(10), seed + i, "five-row-band"));
     });
-    return `<div class="ratio-band" style="height:${height}svh;flex:0 0 ${height}svh;width:${wallWidth}svh">${items.join("")}</div>`;
-  });
-  return `<section class="project-wall ratio-locked-wall" aria-label="Selected work" style="width:${wallWidth}svh;min-width:${wallWidth}svh;flex-basis:${wallWidth}svh">${rows.join("")}</section>`;
-}
-
-function sideMosaic(items, patterns) {
-  return `<div class="reel-side-stack">
-    ${patterns.map((widths, rowIndex) => {
-      const rowItems = items.slice(patterns.slice(0, rowIndex).reduce((n, p) => n + p.length, 0),
-        patterns.slice(0, rowIndex + 1).reduce((n, p) => n + p.length, 0));
-      return `<div class="reel-side-row" style="grid-template-columns:${widths.map(w => `${w}fr`).join(" ")}">
-        ${rowItems.map((id, i) => tile(projects[id], "wall-tile")).join("")}
-      </div>`;
-    }).join("")}
-  </div>`;
+  } else {
+    fourRowPatterns.forEach((counts, i) => {
+      const ratios = shuffledRatios(counts, seed * 13 + i * 5);
+      rows.push(exactRow(ratios, 25, seed + i, "four-row-band"));
+    });
+  }
+  return `<section class="project-wall" aria-label="Selected work">${rows.join("")}</section>`;
 }
 
 function showreelIsland() {
-  // A five-band composition around the reel: one varied band above and below,
-  // plus three independently divided bands on either side. This avoids the
-  // repeated two-large-tile stacks that made the reel feel boxed in.
-  const top = [24, 9, 16, 3, 21, 7];
-  const bottom = [14, 26, 1, 24, 9, 16, 3];
+  // The reel itself remains the central fixed feature. Its ratio is 2.35:1;
+  // the side stacks and the top/bottom bands use only approved tile ratios.
+  const top = exactRow(shuffledRatios([0,0,3,2], 4), 25, 41, "reel-top");
+  const bottom = exactRow(shuffledRatios([4,1,0,2], 9), 25, 53, "reel-bottom");
+  const sideRowsLeft = [
+    ["4-3","4-3","4-3"],
+    ["1","1","1","1"],
+    ["4-3","4-3","4-3"]
+  ];
+  const sideRowsRight = [
+    ["1","1","1","1"],
+    ["4-3","4-3","4-3"],
+    ["1","1","1","1"]
+  ];
+  const side = (rows, seed) => `<div class="reel-side-stack">${rows.map((ratios, r) =>
+    exactRow(ratios, 50/3, seed + r * 7, "reel-side-row")
+  ).join("")}</div>`;
   return `<section class="showreel-island" aria-label="Cinematography showreel">
-    ${row(top, [12,18,21,14,19,16])}
+    ${top}
     <div class="reel-middle">
-      ${sideMosaic([3,9,14,21,7], [[1],[0.58,0.42],[0.36,0.64]])}
+      ${side(sideRowsLeft, 70)}
       ${reelTile()}
-      ${sideMosaic([16,7,26,24,1], [[0.46,0.54],[1],[0.62,0.38]])}
+      ${side(sideRowsRight, 90)}
     </div>
-    ${row(bottom, [15,12,18,13,17,11,14])}
+    ${bottom}
   </section>`;
 }
 
 function infoIsland(kind) {
-  // The info panel is a real absence in the wall: no thumbnails are placed
-  // inside the stepped polygon. Large surrounding tiles remain full-size.
+  // The stepped negative-space cut-out is preserved as a real hole in the
+  // mosaic. Side pieces are now sized from their exact ratio and a fixed
+  // 20svh band height; the opening width is the remaining space between them.
   const configs = {
     about: {
-      bands:[{y:0,h:2,left:null,right:null,parts:[7,9,8,8]},
-             {y:2,h:1,left:9,right:8},
-             {y:3,h:2,left:8,right:6},
-             {y:5,h:1,left:6,right:9},
-             {y:6,h:2,left:8,right:8},
-             {y:8,h:2,left:null,right:null,parts:[8,6,10,8]}],
-      shape:'polygon(28% 20%,75% 20%,75% 30%,81% 30%,81% 50%,72% 50%,72% 60%,75% 60%,75% 80%,31% 80%,31% 70%,25% 70%,25% 60%,19% 60%,19% 50%,25% 50%,25% 30%,28% 30%)',
+      bands:[
+        {left:["2-35","1"],right:["16-9","4-3"]},
+        {left:["16-9","4-3"],right:["2-35","1"]},
+        {left:["1","4-3"],right:["2-35","16-9"]},
+        {left:["4-3","1"],right:["1","2-35"]},
+        {left:["2-35","16-9"],right:["4-3","1"]}
+      ],
       copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
-      bands:[{y:0,h:2,left:null,right:null,parts:[8,8,7,9]},
-             {y:2,h:1,left:7,right:8},
-             {y:3,h:2,left:9,right:6},
-             {y:5,h:2,left:8,right:9},
-             {y:7,h:1,left:6,right:7},
-             {y:8,h:2,left:null,right:null,parts:[6,9,8,9]}],
-      shape:'polygon(22% 20%,75% 20%,75% 30%,78% 30%,78% 50%,72% 50%,72% 70%,78% 70%,78% 80%,25% 80%,25% 70%,19% 70%,19% 50%,28% 50%,28% 30%,22% 30%)',
+      bands:[
+        {left:["4-3","1"],right:["2-35","16-9"]},
+        {left:["2-35","1"],right:["16-9","4-3"]},
+        {left:["1","4-3"],right:["16-9","2-35"]},
+        {left:["2-35","16-9"],right:["4-3","1"]},
+        {left:["16-9","4-3"],right:["2-35","1"]}
+      ],
       copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
-      bands:[{y:0,h:2,left:null,right:null,parts:[8,7,9,8]},
-             {y:2,h:2,left:8,right:7},
-             {y:4,h:1,left:10,right:8},
-             {y:5,h:2,left:7,right:9},
-             {y:7,h:1,left:9,right:6},
-             {y:8,h:2,left:null,right:null,parts:[9,7,8,8]}],
-      shape:'polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)',
+      bands:[
+        {left:["16-9","4-3"],right:["2-35","1"]},
+        {left:["2-35","1"],right:["4-3","16-9"]},
+        {left:["1","2-35"],right:["16-9","4-3"]},
+        {left:["4-3","1"],right:["2-35","16-9"]},
+        {left:["2-35","16-9"],right:["1","4-3"]}
+      ],
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
-  const c = configs[kind];
-  let seed = kind === 'about' ? 2 : kind === 'rightnow' ? 13 : 23;
-  const nextProject = () => projects[(seed++ * 7 + 3) % projects.length];
-  const pieces = [];
-  const split = total => [total];
-  c.bands.forEach(band => {
-    if (band.parts) {
-      let x = 0;
-      band.parts.forEach(w => {
-        pieces.push(tile(nextProject(), 'wall-tile info-piece', false,
-          `grid-column:${x+1} / span ${w};grid-row:${band.y+1} / span ${band.h};`));
-        x += w;
-      });
-      return;
-    }
-    let x = 0;
-    [band.left, 32-band.left-band.right, band.right].forEach((width, index) => {
-      if (index === 1) { x += width; return; } // the central negative-space cutout
-      split(width).forEach(w => {
-        pieces.push(tile(nextProject(), 'wall-tile info-piece', false,
-          `grid-column:${x+1} / span ${w};grid-row:${band.y+1} / span ${band.h};`));
-        x += w;
-      });
-    });
-  });
+  const config = configs[kind];
+  const leftWidths = [];
+  const rightWidths = [];
+  const bands = config.bands.map((band, rowIndex) => {
+    const leftWidth = band.left.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * 20;
+    const rightWidth = band.right.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * 20;
+    leftWidths.push(leftWidth / WALL_WIDTH * 100);
+    rightWidths.push(100 - rightWidth / WALL_WIDTH * 100);
+    const left = band.left.map((ratio, i) => tile(pickProject(ratio, 100 + rowIndex * 17 + i * 3), "wall-tile info-piece", false, "")).join("");
+    const right = band.right.map((ratio, i) => tile(pickProject(ratio, 180 + rowIndex * 19 + i * 5), "wall-tile info-piece", false, "")).join("");
+    return `<div class="info-band" style="--tile-h:20svh"><div class="info-side info-left">${left}</div><div class="info-side info-right">${right}</div></div>`;
+  }).join("");
+  const points = [];
+  points.push(`${leftWidths[0]}% 0%`, `${rightWidths[0]}% 0%`);
+  for (let i = 0; i < 5; i++) {
+    points.push(`${rightWidths[i]}% ${(i + 1) * 20}%`);
+    if (i < 4) points.push(`${rightWidths[i + 1]}% ${(i + 1) * 20}%`);
+  }
+  points.push(`${leftWidths[4]}% 100%`);
+  for (let i = 4; i >= 1; i--) {
+    points.push(`${leftWidths[i]}% ${i * 20}%`, `${leftWidths[i - 1]}% ${i * 20}%`);
+  }
+  points.push(`${leftWidths[0]}% 0%`);
+  const shape = `polygon(${points.join(",")})`;
   return `<section class="info-island ${kind}-island" aria-label="${kind}">
-    ${pieces.join('')}
-    <div class="info-copy" data-anchor="${kind}">${c.copy}</div>
+    ${bands}
+    <div class="info-copy" data-anchor="${kind}" style="--cutout-shape:${shape}">${config.copy}</div>
   </section>`;
 }
 
