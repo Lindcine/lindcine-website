@@ -79,191 +79,46 @@ function reelTile() {
   </article>`;
 }
 
-const WALL_WIDTH = 250.83333333333334;
-const RATIO_KEYS = ["1", "4-3", "16-9", "2-35"];
-const RATIO_VALUES = {"1":1, "4-3":4/3, "16-9":16/9, "2-35":2.35};
-
-function pickProject(ratio, seed) {
-  const candidates = projects.filter(p => p.ratio === ratio);
-  if (!candidates.length) throw new Error(`No project available for ratio ${ratio}`);
-  return candidates[((seed % candidates.length) + candidates.length) % candidates.length];
+/* ---- Layout generator: every row is 25svh high and exactly as wide as the wall.
+   Tiles are drawn at random with the weights below, then flex-scaled by <1% (main rows)
+   so each row fills edge to edge with no gaps. ---- */
+const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "1":1, "4-3":4/3};
+const WEIGHTS = [["16-9",.52],["2-35",.31],["1",.12],["4-3",.05]]; // most → least common
+const WALL_U = 12;                       // wall width in row-heights (CSS --W = 12 × 25svh)
+const SIDE_U = (WALL_U - REEL_RATIO*2) / 2; // block each side of the reel/text panel
+let seed = 20260;
+const rand = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+function pickRatio() {
+  let x = rand(), acc = 0;
+  for (const [key, w] of WEIGHTS) { acc += w; if (x < acc) return key; }
+  return "16-9";
 }
-
-function shuffledRatios(counts, seed) {
-  const list = [];
-  RATIO_KEYS.forEach((ratio, i) => {
-    for (let n = 0; n < (counts[i] || 0); n++) list.push(ratio);
-  });
-  // Deterministic small shuffle: keeps the same exact ratio counts, but avoids
-  // the same left-to-right sequence repeating in every band.
-  let state = (seed + 1) * 2654435761 >>> 0;
-  for (let i = list.length - 1; i > 0; i--) {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    const j = state % (i + 1);
-    [list[i], list[j]] = [list[j], list[i]];
+function makeRow(target, tol) {
+  let best = null, bestErr = Infinity;
+  for (let t = 0; t < 600; t++) {
+    const list = []; let sum = 0;
+    while (sum < target * (1 - tol)) { const k = pickRatio(); list.push(k); sum += TILE_RATIOS[k]; }
+    const err = Math.abs(sum - target) / target;
+    if (err < bestErr) { best = list; bestErr = err; if (err <= tol) break; }
   }
-  return list;
+  return best;
 }
-
-function exactRow(ratios, height, seed, className = "") {
-  const tiles = ratios.map((ratio, i) => {
-    const project = pickProject(ratio, seed * 11 + i * 7 + ratios.length);
-    return tile(project, "wall-tile", false, "");
-  }).join("");
-  return `<div class="mosaic-row exact-row ${className}" style="--tile-h:${height}svh">${tiles}</div>`;
+//--pure-end
+const cursor = {};
+function pickProject(ratio) {
+  const list = projects.filter(p => p.ratio === ratio);
+  cursor[ratio] = (cursor[ratio] ?? -1) + 1;
+  return list[cursor[ratio] % list.length];
 }
-
-function projectWall(seed = 0) {
-  // Every thumbnail is a true aspect-ratio rectangle. Four-row walls use
-  // 25svh bands. Occasional five-row walls use mathematically solved band
-  // heights; the five heights sum to exactly 100svh and every band fills the
-  // same 250.833333svh wall width without stretching a tile.
-  const fourRowPatterns = [
-    [0, 0, 3, 2], // 3 x 16:9 + 2 x 2.35:1
-    [0, 4, 0, 2], // 4 x 4:3 + 2 x 2.35:1
-    [4, 1, 0, 2], // 4 x 1:1 + 1 x 4:3 + 2 x 2.35:1
-    [0, 0, 3, 2]
-  ];
-  const fiveRows = [
-    {counts:[4,2,0,3], n:2469},
-    {counts:[5,2,0,2], n:2226},
-    {counts:[5,0,2,2], n:2386},
-    {counts:[6,0,2,1], n:2143},
-    {counts:[7,0,0,2], n:2106}
-  ];
-  const useFive = seed === 6;
-  let rows = [];
-  if (useFive) {
-    fiveRows.forEach((band, i) => {
-      const height = WALL_WIDTH * 180 / band.n;
-      const ratios = shuffledRatios(band.counts, seed * 13 + i * 5);
-      rows.push(exactRow(ratios, height.toFixed(10), seed + i, "five-row-band"));
-    });
-  } else {
-    fourRowPatterns.forEach((counts, i) => {
-      const ratios = shuffledRatios(counts, seed * 13 + i * 5);
-      rows.push(exactRow(ratios, 25, seed + i, "four-row-band"));
-    });
-  }
-  return `<section class="project-wall" aria-label="Selected work">${rows.join("")}</section>`;
-}
-
-function showreelIsland() {
-  // The reel itself remains the central fixed feature. Its ratio is 2.35:1;
-  // the side stacks and the top/bottom bands use only approved tile ratios.
-  const top = exactRow(shuffledRatios([0,0,3,2], 4), 25, 41, "reel-top");
-  const bottom = exactRow(shuffledRatios([4,1,0,2], 9), 25, 53, "reel-bottom");
-  const sideRowsLeft = [
-    ["4-3","4-3","4-3"],
-    ["1","1","1","1"],
-    ["4-3","4-3","4-3"]
-  ];
-  const sideRowsRight = [
-    ["1","1","1","1"],
-    ["4-3","4-3","4-3"],
-    ["1","1","1","1"]
-  ];
-  const side = (rows, seed) => `<div class="reel-side-stack">${rows.map((ratios, r) =>
-    exactRow(ratios, 50/3, seed + r * 7, "reel-side-row")
-  ).join("")}</div>`;
-  return `<section class="showreel-island" aria-label="Cinematography showreel">
-    ${top}
-    <div class="reel-middle">
-      ${side(sideRowsLeft, 70)}
-      ${reelTile()}
-      ${side(sideRowsRight, 90)}
-    </div>
-    ${bottom}
-  </section>`;
-}
-
-function infoIsland(kind) {
-  // The stepped negative-space cut-out is preserved as a real hole in the
-  // mosaic. Side pieces are now sized from their exact ratio and a fixed
-  // 20svh band height; the opening width is the remaining space between them.
-  const configs = {
-    about: {
-      bands:[
-        {left:["2-35","1"],right:["16-9","4-3"]},
-        {left:["16-9","4-3"],right:["2-35","1"]},
-        {left:["1","4-3"],right:["2-35","16-9"]},
-        {left:["4-3","1"],right:["1","2-35"]},
-        {left:["2-35","16-9"],right:["4-3","1"]}
-      ],
-      copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
-    },
-    rightnow: {
-      bands:[
-        {left:["4-3","1"],right:["2-35","16-9"]},
-        {left:["2-35","1"],right:["16-9","4-3"]},
-        {left:["1","4-3"],right:["16-9","2-35"]},
-        {left:["2-35","16-9"],right:["4-3","1"]},
-        {left:["16-9","4-3"],right:["2-35","1"]}
-      ],
-      copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
-    },
-    contact: {
-      bands:[
-        {left:["16-9","4-3"],right:["2-35","1"]},
-        {left:["2-35","1"],right:["4-3","16-9"]},
-        {left:["1","2-35"],right:["16-9","4-3"]},
-        {left:["4-3","1"],right:["2-35","16-9"]},
-        {left:["2-35","16-9"],right:["1","4-3"]}
-      ],
-      copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
-    }
-  };
-  const config = configs[kind];
-  const leftWidths = [];
-  const rightWidths = [];
-  const bandHeights = [25, 50/3, 50/3, 50/3, 25];
-  const fullRow = ["16-9", "2-35", "16-9", "2-35", "16-9"];
-  const bands = config.bands.map((band, rowIndex) => {
-    const height = bandHeights[rowIndex];
-    if (rowIndex === 0 || rowIndex === 4) {
-      leftWidths.push(0); rightWidths.push(100);
-      const tiles = fullRow.map((ratio,i) => tile(pickProject(ratio, 300 + rowIndex*31+i*9), "wall-tile info-piece", false, "")).join("");
-      return `<div class="info-band info-full-band" style="--tile-h:${height}svh"><div class="info-side info-left">${tiles}</div></div>`;
-    }
-    const leftWidth = band.left.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * height;
-    const rightWidth = band.right.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * height;
-    leftWidths.push(leftWidth / WALL_WIDTH * 100);
-    rightWidths.push(100 - rightWidth / WALL_WIDTH * 100);
-    const left = band.left.map((ratio, i) => tile(pickProject(ratio, 100 + rowIndex * 17 + i * 3), "wall-tile info-piece", false, "")).join("");
-    const right = band.right.map((ratio, i) => tile(pickProject(ratio, 180 + rowIndex * 19 + i * 5), "wall-tile info-piece", false, "")).join("");
-    return `<div class="info-band" style="--tile-h:${height}svh"><div class="info-side info-left">${left}</div><div class="info-side info-right">${right}</div></div>`;
-  }).join("");
-  const boundaries = [0,25,25+50/3,25+100/3,75,100];
-  const points = [];
-  points.push(`${leftWidths[0]}% 0%`, `${rightWidths[0]}% 0%`);
-  for (let i = 0; i < 5; i++) {
-    points.push(`${rightWidths[i]}% ${boundaries[i+1]}%`);
-    if (i < 4) points.push(`${rightWidths[i+1]}% ${boundaries[i+1]}%`);
-  }
-  points.push(`${leftWidths[4]}% 100%`);
-  for (let i = 4; i >= 1; i--) {
-    points.push(`${leftWidths[i]}% ${boundaries[i]}%`, `${leftWidths[i-1]}% ${boundaries[i]}%`);
-  }
-  points.push(`${leftWidths[0]}% 0%`);
-  const shape = `polygon(${points.join(",")})`;
-  return `<section class="info-island ${kind}-island" aria-label="${kind}">
-    ${bands}
-    <div class="info-copy" data-anchor="${kind}" style="--cutout-shape:${shape}">${config.copy}</div>
-  </section>`;
-}
-
-function renderRun(copy) {
-  return `<div class="world-run" data-copy="${copy}">
-    ${showreelIsland()}
-    ${projectWall(0)}
-    ${infoIsland("about")}
-    ${projectWall(3)}
-    ${infoIsland("rightnow")}
-    ${projectWall(6)}
-    ${infoIsland("contact")}
-    ${projectWall(9)}
-  </div>`;
-}
+const mrow = list => `<div class="mrow">${list.map(k => tile(pickProject(k), "wall-tile", false, `flex:${TILE_RATIOS[k]} 1 0`)).join("")}</div>`;
+const fullRow = () => mrow(makeRow(WALL_U, .01));
+const sideBlock = () => `<div class="side">${mrow(makeRow(SIDE_U, .025))}${mrow(makeRow(SIDE_U, .025))}</div>`;
+const wall = () => `<section class="wall" aria-label="Selected work">${[0,1,2,3].map(fullRow).join("")}</section>`;
+const island = center => `<section class="wall">${fullRow()}<div class="mid">${sideBlock()}${center}${sideBlock()}</div>${fullRow()}</section>`;
+const infoPanel = kind => `<div class="info-copy" data-anchor="${kind}">${configs[kind].copy}</div>`;
+// Generated once and repeated 3× so the loop seam is invisible.
+const RUN_HTML = [island(reelTile()), wall(), island(infoPanel("about")), wall(), island(infoPanel("rightnow")), wall(), island(infoPanel("contact")), wall()].join("");
+const renderRun = copy => `<div class="world-run" data-copy="${copy}">${RUN_HTML}</div>`;
 
 function render() {
   track.innerHTML = [0,1,2].map(renderRun).join("");
