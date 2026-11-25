@@ -469,3 +469,29 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .reel-side-row.mosaic-row.exact-row{width:66.66666666666667svh!important;min-width:66.66666666666667svh!important;flex:0 0 16.66666666666667svh!important;height:16.66666666666667svh!important}
 
 .info-island .info-copy{clip-path:var(--cutout-shape)!important}
+
+/* Targeted fix: close the top/bottom of information cutouts with full, ratio-locked rows. */
+.info-band{height:var(--tile-h)!important;min-height:var(--tile-h)!important;flex:0 0 var(--tile-h)!important}
+.info-band .tile{height:var(--tile-h)!important}
+.info-band .tile.ratio-1{width:var(--tile-h)!important}
+.info-band .tile.ratio-4-3{width:calc(var(--tile-h) * 4 / 3)!important}
+.info-band .tile.ratio-16-9{width:calc(var(--tile-h) * 16 / 9)!important}
+.info-band .tile.ratio-2-35{width:calc(var(--tile-h) * 2.35)!important}
+.info-full-band .info-side{width:100%!important}
+.info-full-band .tile{flex-shrink:0!important}
+
+/* V38.2: full-width top/bottom mosaic rows around each cutout. */
+.info-island>.info-full-row{height:25svh!important;min-height:25svh!important;flex:0 0 25svh!important;width:var(--wall-width)!important;min-width:var(--wall-width)!important;display:flex!important;overflow:hidden!important}
+.info-island>.info-full-row>.tile{height:25svh!important;flex:0 0 auto!important}
+.info-island>.info-band{height:16.6666666667svh!important;min-height:16.6666666667svh!important;flex:0 0 16.6666666667svh!important}
+.info-island>.info-band .tile{height:16.6666666667svh!important}
+.info-island>.info-band .tile.ratio-1{width:16.6666666667svh!important}
+.info-island>.info-band .tile.ratio-4-3{width:22.2222222222svh!important}
+.info-island>.info-band .tile.ratio-16-9{width:29.6296296297svh!important}
+.info-island>.info-band .tile.ratio-2-35{width:39.1666666667svh!important}
+
+.info-island>.info-full-band{height:25svh!important;min-height:25svh!important;flex:0 0 25svh!important}
+.info-island>.info-full-band>.info-side{width:var(--wall-width)!important}
+.info-island>.info-full-band .tile{height:25svh!important}
+.info-island>.info-full-band .tile.ratio-16-9{width:44.4444444444svh!important}
+.info-island>.info-full-band .tile.ratio-2-35{width:58.75svh!important}

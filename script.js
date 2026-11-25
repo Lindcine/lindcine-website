@@ -216,24 +216,33 @@ function infoIsland(kind) {
   const config = configs[kind];
   const leftWidths = [];
   const rightWidths = [];
+  const bandHeights = [25, 50/3, 50/3, 50/3, 25];
+  const fullRow = ["16-9", "2-35", "16-9", "2-35", "16-9"];
   const bands = config.bands.map((band, rowIndex) => {
-    const leftWidth = band.left.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * 20;
-    const rightWidth = band.right.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * 20;
+    const height = bandHeights[rowIndex];
+    if (rowIndex === 0 || rowIndex === 4) {
+      leftWidths.push(0); rightWidths.push(100);
+      const tiles = fullRow.map((ratio,i) => tile(pickProject(ratio, 300 + rowIndex*31+i*9), "wall-tile info-piece", false, "")).join("");
+      return `<div class="info-band info-full-band" style="--tile-h:${height}svh"><div class="info-side info-left">${tiles}</div></div>`;
+    }
+    const leftWidth = band.left.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * height;
+    const rightWidth = band.right.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * height;
     leftWidths.push(leftWidth / WALL_WIDTH * 100);
     rightWidths.push(100 - rightWidth / WALL_WIDTH * 100);
     const left = band.left.map((ratio, i) => tile(pickProject(ratio, 100 + rowIndex * 17 + i * 3), "wall-tile info-piece", false, "")).join("");
     const right = band.right.map((ratio, i) => tile(pickProject(ratio, 180 + rowIndex * 19 + i * 5), "wall-tile info-piece", false, "")).join("");
-    return `<div class="info-band" style="--tile-h:20svh"><div class="info-side info-left">${left}</div><div class="info-side info-right">${right}</div></div>`;
+    return `<div class="info-band" style="--tile-h:${height}svh"><div class="info-side info-left">${left}</div><div class="info-side info-right">${right}</div></div>`;
   }).join("");
+  const boundaries = [0,25,25+50/3,25+100/3,75,100];
   const points = [];
   points.push(`${leftWidths[0]}% 0%`, `${rightWidths[0]}% 0%`);
   for (let i = 0; i < 5; i++) {
-    points.push(`${rightWidths[i]}% ${(i + 1) * 20}%`);
-    if (i < 4) points.push(`${rightWidths[i + 1]}% ${(i + 1) * 20}%`);
+    points.push(`${rightWidths[i]}% ${boundaries[i+1]}%`);
+    if (i < 4) points.push(`${rightWidths[i+1]}% ${boundaries[i+1]}%`);
   }
   points.push(`${leftWidths[4]}% 100%`);
   for (let i = 4; i >= 1; i--) {
-    points.push(`${leftWidths[i]}% ${i * 20}%`, `${leftWidths[i - 1]}% ${i * 20}%`);
+    points.push(`${leftWidths[i]}% ${boundaries[i]}%`, `${leftWidths[i-1]}% ${boundaries[i]}%`);
   }
   points.push(`${leftWidths[0]}% 0%`);
   const shape = `polygon(${points.join(",")})`;
