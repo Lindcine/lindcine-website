@@ -394,89 +394,18 @@ body.has-active .tile.is-active{filter:brightness(1)}
 .rightnow-island .info-copy{clip-path:polygon(22% 20%,75% 20%,75% 30%,78% 30%,78% 50%,72% 50%,72% 70%,78% 70%,78% 80%,25% 80%,25% 70%,19% 70%,19% 50%,28% 50%,28% 30%,22% 30%)!important}
 .contact-island .info-copy{clip-path:polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)!important}
 
-
-/* v38 ratio correction only: preserve the v38 composition and negative-space
-   silhouettes, but give each mosaic tile a grid span matching its approved ratio. */
-.project-wall{
-  display:grid!important;
-  grid-template-columns:repeat(128,minmax(0,1fr))!important;
-  grid-template-rows:repeat(10,minmax(0,1fr))!important;
-  gap:0!important;
+/* V38 ratio test: only ordinary project walls are changed here.
+   Rows use exact aspect-ratio-derived widths; no grid stretching or gaps. */
+.project-wall.ratio-locked-wall{
+  display:flex!important;flex-direction:column!important;align-items:stretch!important;
+  height:100svh!important;overflow:hidden!important;gap:0!important;
 }
-.info-island{
-  display:grid!important;
-  grid-template-columns:repeat(128,minmax(0,1fr))!important;
-  grid-template-rows:repeat(10,minmax(0,1fr))!important;
-  gap:0!important;
+.project-wall.ratio-locked-wall>.ratio-band{
+  display:flex!important;flex-direction:row!important;align-items:stretch!important;
+  gap:0!important;min-height:0!important;overflow:hidden!important;
 }
-.project-wall>.tile,.info-island>.info-piece{
-  width:auto!important;height:auto!important;
-  min-width:0!important;min-height:0!important;
-  max-width:none!important;max-height:none!important;
+.project-wall.ratio-locked-wall .tile{
+  display:block!important;position:relative!important;min-width:0!important;min-height:0!important;
+  max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;
+  flex-shrink:0!important;aspect-ratio:auto!important;
 }
-.project-wall>.tile .tile-media,
-.project-wall>.tile .tile-media img,
-.project-wall>.tile .tile-media video,
-.info-island>.info-piece .tile-media,
-.info-island>.info-piece .tile-media img,
-.info-island>.info-piece .tile-media video{
-  width:100%!important;height:100%!important;
-}
-
-/* v43: exact aspect-ratio packing. Only tile geometry is replaced; typography,
-   navigation, interactions, project data and negative-space silhouettes remain. */
-:root{--wall-width:250.769789svh}
-.showreel-island,.project-wall,.info-island{
-  position:relative!important;display:block!important;
-  width:var(--wall-width)!important;min-width:var(--wall-width)!important;
-  height:100svh!important;min-height:100svh!important;
-  flex:0 0 var(--wall-width)!important;overflow:hidden!important;
-  margin:0!important;padding:0!important;gap:0!important;
-}
-.project-wall>.tile,.showreel-island>.tile,.reel-middle>.tile,.reel-side-stack>.tile,.info-island>.tile{
-  position:absolute!important;inset:auto!important;
-  width:auto;height:auto;min-width:0!important;min-height:0!important;
-  max-width:none!important;max-height:none!important;flex:none!important;
-}
-.project-wall>.tile .tile-media,.project-wall>.tile .tile-media img,.project-wall>.tile .tile-media video,
-.showreel-island>.tile .tile-media,.showreel-island>.tile .tile-media img,.showreel-island>.tile .tile-media video,
-.reel-middle>.tile .tile-media,.reel-middle>.tile .tile-media img,.reel-middle>.tile .tile-media video,
-.reel-side-stack>.tile .tile-media,.reel-side-stack>.tile .tile-media img,.reel-side-stack>.tile .tile-media video,
-.info-island>.tile .tile-media,.info-island>.tile .tile-media img,.info-island>.tile .tile-media video{width:100%!important;height:100%!important}
-.reel-middle{
-  position:absolute!important;left:0!important;top:var(--reel-top,24.9992svh)!important;
-  width:var(--wall-width)!important;height:50.0016svh!important;
-  min-width:var(--wall-width)!important;display:block!important;overflow:hidden!important;
-}
-.reel-side-stack{position:absolute!important;top:0!important;height:100%!important;width:66.633svh!important;overflow:hidden!important}
-.reel-side-stack.left{left:0!important}
-.reel-side-stack.right{right:0!important}
-.reel-middle>.reel-tile{z-index:4!important;aspect-ratio:2.35/1!important}
-.info-island{display:block!important;background:#08090a!important}
-.info-island>.info-piece{position:absolute!important;inset:auto!important}
-.info-island .info-copy{
-  position:absolute!important;left:0!important;top:0!important;width:100%!important;height:100%!important;
-  display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
-  padding:0!important;background:transparent!important;pointer-events:none!important;
-}
-.info-island .info-copy>*{position:relative;z-index:1;max-width:70svh}
-.info-island .info-copy a{pointer-events:auto!important}
-@media(max-width:760px){
-  .info-island .info-copy>*{max-width:80svh}
-}
-
-
-/* v46: per-wall solved width; do not let legacy fixed-width rules clip it. */
-.project-wall{
-  position:relative!important;display:block!important;
-  width:var(--wall-width)!important;min-width:var(--wall-width)!important;
-  max-width:none!important;height:100svh!important;min-height:100svh!important;
-  flex:0 0 var(--wall-width)!important;overflow:hidden!important;
-  margin:0!important;padding:0!important;gap:0!important;
-}
-.project-wall>.tile{
-  position:absolute!important;inset:auto!important;width:auto!important;height:auto!important;
-  min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;flex:none!important;
-}
-.project-wall>.tile .tile-media,.project-wall>.tile .tile-media img,.project-wall>.tile .tile-media video{width:100%!important;height:100%!important;}
-.world-track,.world-run{width:max-content!important;min-width:max-content!important;flex-shrink:0!important;}
