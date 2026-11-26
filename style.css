@@ -1,593 +1,94 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');
-
-:root{
-  --bg:#08090a;
-  --fg:#e9e7e2;
-  --muted:#a5a39e;
-  --accent:#b7a17e;
-  --mono:"DM Mono",monospace;
-  --sans:"Manrope",Arial,sans-serif;
-  --row:25svh;
-  --gap:3px;
-}
+:root{--bg:#08090a;--fg:#e9e7e2;--accent:#b7a17e;--mono:"DM Mono",monospace;--sans:"Manrope",Arial,sans-serif;
+  --row:25svh;--W:300svh;--L:91.25svh;--R:117.5svh} /* 2×L + R = W */
 *{box-sizing:border-box}
-html,body{
-  width:100%;height:100%;margin:0;overflow:hidden;
-  background:var(--bg);color:var(--fg);
-  font-family:var(--sans);-webkit-font-smoothing:antialiased;
-}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--fg);font-family:var(--sans);-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit}
-.site-header{
-  position:fixed;z-index:50;left:0;right:0;top:0;height:42px;
-  padding:0 2.5vw;display:flex;align-items:center;justify-content:space-between;
-  pointer-events:none;background:linear-gradient(180deg,rgba(5,6,7,.66),transparent);
-}
+.site-header{position:fixed;z-index:50;left:0;right:0;top:0;height:42px;padding:0 2.5vw;display:flex;align-items:center;justify-content:space-between;pointer-events:none;background:linear-gradient(180deg,rgba(5,6,7,.66),transparent)}
 .wordmark,.main-nav{pointer-events:auto}
 .wordmark{font-size:13px;font-weight:700;letter-spacing:-.09em;text-shadow:0 1px 10px #000}
 .wordmark span{font:7px var(--mono);vertical-align:top;margin-left:3px;letter-spacing:0}
-.main-nav{display:flex;align-items:center;gap:clamp(18px,2vw,34px)}
-.main-nav button{
-  border:0;background:none;padding:8px 0;cursor:pointer;
-  font:8px var(--mono);letter-spacing:.13em;color:rgba(235,233,226,.8);
-  transition:color .2s;
-}
+.main-nav{display:flex;gap:clamp(18px,2vw,34px)}
+.main-nav button{border:0;background:none;padding:8px 0;cursor:pointer;font:8px var(--mono);letter-spacing:.13em;color:rgba(235,233,226,.8);transition:color .2s}
 .main-nav button:hover{color:var(--accent)}
-.world-viewport{
-  position:fixed;inset:0;width:100vw;height:100svh;overflow-x:auto;overflow-y:hidden;
-  overscroll-behavior-x:contain;scrollbar-width:none;touch-action:pan-x pan-y;
-  cursor:grab;outline:none;
-}
+
+/* World: three identical runs; script.js jumps between them for the endless loop */
+.world-viewport{position:fixed;inset:0;height:100svh;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;touch-action:pan-x pan-y;cursor:grab;outline:none}
 .world-viewport::-webkit-scrollbar{display:none}
 .world-viewport.is-dragging{cursor:grabbing}
-.world-track{height:100svh;width:max-content;display:flex;gap:0;align-items:stretch;padding:0;will-change:scroll-position}
-.world-run{height:100svh;flex:0 0 auto;display:flex;gap:0;align-items:stretch;width:max-content}
-.showreel-island,.project-wall{height:100svh;flex:0 0 auto;width:250.833333svh;display:flex;flex-direction:column;gap:0;margin:0;padding:0;overflow:hidden}
-.info-island{height:100svh;flex:0 0 auto;width:251.69svh;display:flex;flex-direction:column;gap:0;margin:0;padding:0;overflow:hidden}
+.world-track{display:flex;height:100svh;width:max-content}
 
-.mosaic-row{height:25svh;flex:0 0 25svh;display:grid;grid-auto-flow:column;gap:0;width:250.833333svh;overflow:hidden}
-.tile{
-  position:relative;display:block;flex:0 0 auto;height:25svh;min-width:0;min-height:0;
-  margin:0;padding:0;overflow:hidden;border:0;border-radius:0;background:#171a1c;
-  isolation:isolate;cursor:pointer;color:var(--fg);
-}
-.ratio-1{width:24.143333svh}
-.ratio-4-3{width:33.333333svh}
-.ratio-16-9{width:44.444444svh}
-.ratio-2-35{width:58.75svh}
+/* Tiles: width comes from flex-grow = aspect ratio (set in script.js) */
+.tile{position:relative;height:100%;min-width:0;overflow:hidden;background:#171a1c;isolation:isolate;cursor:pointer;color:var(--fg)}
 .tile-media{position:absolute;inset:0;overflow:hidden;background:linear-gradient(140deg,#242a2d,#0c0e10 78%)}
-.tile-media::after{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(0deg,rgba(0,0,0,.68),transparent 42%),linear-gradient(135deg,rgba(255,255,255,.045),transparent 55%);
-}
-.tile-media img,.tile-media video{
-  position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;
-  transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .25s;
-}
+.tile-media::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(0,0,0,.68),transparent 42%)}
+.tile-media img,.tile-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .25s}
 .tile-media video{opacity:0}
 .tile:hover .tile-media img{transform:scale(1.025)}
 .tile.is-active .tile-media video{opacity:1}
-.placeholder-mark{
-  position:absolute;inset:0;display:grid;place-items:center;
-  color:rgba(255,255,255,.105);font-size:clamp(40px,7vh,84px);font-weight:500;letter-spacing:-.12em;
-}
-.tile-meta{
-  position:absolute;z-index:2;left:14px;right:14px;bottom:12px;
-  color:rgba(245,244,240,.94);font-size:clamp(11px,1vw,15px);font-weight:500;
-  letter-spacing:-.045em;line-height:1.2;text-shadow:0 1px 12px #000;
-}
-.tile:hover{filter:brightness(1.04)}
-body.has-active .tile:not(.is-active){filter:brightness(.58)}
-body.has-active .tile.is-active{filter:brightness(1)}
-/* Reel: the middle strip is exactly 4:3 + 2.35:1 + 4:3 at 50vh high. */
-.reel-middle{height:50svh;flex:0 0 50svh;width:250.833333svh;display:flex;gap:0;overflow:hidden}
-.tile-tall{height:50svh;width:65.666667svh;flex:0 0 65.666667svh}
-.reel-tile{
-  position:relative;z-index:2;flex:0 0 119.5svh;width:119.5svh;height:50svh;
-  aspect-ratio:2.39/1;overflow:hidden;background:#090a0b;cursor:pointer;
-}
-.reel-tile:hover,.reel-tile.is-active,.reel-tile.is-playing,.reel-tile.is-full{transform:none!important}
-.reel-frame{
-  position:absolute;z-index:4;inset:0;width:100%;height:100%;display:block;
-  border:0;margin:0;padding:0;background:transparent;opacity:0;pointer-events:none;
-  max-width:none;max-height:none;transform:none;
-}
+.placeholder-mark{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.105);font-size:clamp(40px,7vh,84px);font-weight:500;letter-spacing:-.12em}
+.tile-meta{position:absolute;z-index:2;left:14px;right:14px;bottom:12px;font-size:clamp(11px,1vw,15px);font-weight:500;letter-spacing:-.045em;line-height:1.2;text-shadow:0 1px 12px #000}
+
+/* Showreel: 2.35:1, 50svh high, same geometry for hover and click */
+.reel-tile{flex:0 0 var(--R);width:var(--R);height:100%;background:#090a0b}
+.reel-frame{position:absolute;z-index:4;inset:0;width:100%;height:100%;border:0;opacity:0;pointer-events:none}
 .reel-tile.is-playing .reel-frame{opacity:1}
 .reel-tile.is-full .reel-frame{pointer-events:auto}
-.reel-invite{
-  position:absolute;z-index:6;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:9px;pointer-events:none;transition:opacity .2s;
-}
-.reel-play{
-  width:44px;height:44px;border:1px solid rgba(255,255,255,.65);border-radius:50%;
-  display:grid;place-items:center;font-size:12px;padding-left:2px;
-}
+.reel-invite{position:absolute;z-index:6;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;pointer-events:none;transition:opacity .2s}
+.reel-play{width:44px;height:44px;border:1px solid rgba(255,255,255,.65);border-radius:50%;display:grid;place-items:center;font-size:12px;padding-left:2px}
 .reel-label{font:7px var(--mono);letter-spacing:.18em;color:#d6d2c8}
 .reel-tile.is-playing .reel-invite{opacity:0}
-/* About / Right Now / Contact: 25vh image bands sandwich a 50vh middle.
-   The copy is a reserved hole in the mosaic, not a card layered over thumbnails. */
-.info-middle{height:50svh;flex:0 0 50svh;width:250.833333svh;display:flex;gap:3px;overflow:hidden}
-.info-collage{height:50svh;flex:0 0 133.333333svh;width:133.333333svh;display:flex;flex-direction:column;gap:3px;overflow:hidden}
-.info-collage-row{height:calc((50svh - 3px)/2);flex:0 0 calc((50svh - 3px)/2);width:133.333333svh;display:flex;gap:3px;overflow:hidden}
-.info-collage-row .tile{height:100%;flex:0 0 auto}
-.info-collage-row .tile:nth-child(1){width:58.75svh}
-.info-collage-row .tile:nth-child(2){width:44.44svh}
-.info-collage-row .tile:nth-child(3){width:24.143333svh}
-.info-copy{
-  position:relative;z-index:1;flex:0 0 114.5svh;width:114.5svh;height:50svh;
-  padding:clamp(28px,3.4vw,62px);display:flex;flex-direction:column;justify-content:center;
-  overflow:hidden;background:
-    radial-gradient(ellipse at 18% 22%,rgba(116,126,126,.20),transparent 60%),
-    linear-gradient(120deg,#15191b 0%,#0d1012 76%,#111416 100%);
-}
-.info-copy::after{
-  content:"";position:absolute;inset:0;pointer-events:none;opacity:.4;
-  background:linear-gradient(135deg,rgba(255,255,255,.035),transparent 50%);
-}
-.about-island .info-copy{clip-path:polygon(0 0,100% 0,100% 84%,94% 84%,94% 100%,0 100%)}
-.rightnow-island .info-copy{clip-path:polygon(0 0,95% 0,95% 10%,100% 10%,100% 100%,0 100%)}
-.contact-island .info-copy{clip-path:polygon(0 0,100% 0,100% 100%,6% 100%,6% 90%,0 90%)}
-.kicker{font:7px var(--mono);letter-spacing:.18em;color:var(--accent)}
-.info-copy h1,.info-copy h2{
-  position:relative;margin:12px 0 20px;font-size:clamp(52px,5.8vw,94px);
-  line-height:.86;letter-spacing:-.095em;font-weight:500;
-}
+
+/* About / Right now / Contact: text panel takes the same slot as the reel */
+.info-copy{flex:0 0 var(--R);width:var(--R);height:100%;padding:clamp(20px,3vw,56px);display:flex;flex-direction:column;justify-content:center;gap:14px;background:#0b0c0e;overflow:hidden}
+.info-copy h1,.info-copy h2{font-size:clamp(36px,4.6vw,76px);line-height:.9;margin:0;letter-spacing:-.04em;font-weight:600}
 .info-copy h1 span,.info-copy h2 span{color:var(--accent)}
-.info-lead{position:relative;max-width:70svh;font-size:clamp(15px,1.15vw,20px);line-height:1.45;letter-spacing:-.035em;margin:0 0 12px}
-.info-body{position:relative;max-width:76svh;color:#b0afaa;font-size:clamp(10px,.76vw,13px);line-height:1.7}
-.info-body p{margin:0 0 9px}
-.current-work{position:relative;max-width:78svh;margin-top:3px}
-.current-work h3{font-size:clamp(24px,2.5vw,40px);font-weight:500;letter-spacing:-.07em;margin:10px 0}
-.current-work p{max-width:70svh;color:#b0afaa;font-size:clamp(11px,.78vw,13px);line-height:1.7;margin:0 0 12px}
-.current-meta,.contact-location{font:7px var(--mono);letter-spacing:.15em;color:#8e8b82}
-.contact-email{position:relative;display:inline-block;margin-top:8px;font-size:clamp(20px,2.15vw,35px);letter-spacing:-.065em;overflow-wrap:anywhere}
-.contact-email span{font:14px var(--mono);color:var(--accent);vertical-align:top}
-.contact-location{position:relative;margin-top:18px}
-/* No tile can overlap another: every row is a flex line with zero gap. */
-.project-wall .mosaic-row:nth-child(odd) .tile:nth-child(1){ }
-.grain{
-  position:fixed;z-index:40;inset:0;pointer-events:none;opacity:.12;mix-blend-mode:soft-light;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.2'/%3E%3C/svg%3E");
-}
-.hover-note{
-  position:fixed;z-index:45;left:3vw;bottom:4vh;max-width:min(420px,42vw);
-  opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .35s,transform .35s;
-  text-shadow:0 1px 12px #000;
-}
-.hover-note.visible{opacity:1;transform:translateY(0)}
-.hover-note span{display:block;font:7px var(--mono);letter-spacing:.18em;color:var(--accent);margin-bottom:8px}
-.hover-note p{margin:0;font-size:clamp(14px,1.3vw,19px);line-height:1.4}
-@media(max-width:760px){
-  .site-header{height:48px;padding:0 16px}
-  .wordmark{font-size:12px}
-  .main-nav{gap:12px}
-  .main-nav button{font-size:7px;letter-spacing:.08em}
-  .tile-meta{left:9px;right:9px;bottom:9px;font-size:11px}
-  .info-copy{padding:22px}
-  .info-copy h1,.info-copy h2{font-size:clamp(40px,8vw,64px);margin:10px 0 14px}
-  .info-lead{font-size:14px}
-  .info-body,.current-work p{font-size:10px}
-  .contact-email{font-size:20px}
-  .hover-note{left:16px;bottom:20px;max-width:75vw}
-}
+.info-copy h3{margin:0;font-size:clamp(18px,2vw,30px);letter-spacing:-.03em}
+.info-copy p{margin:0 0 8px;font-size:clamp(11px,.95vw,15px);line-height:1.55;color:#bdbbb5;max-width:60ch}
+.info-copy .info-lead{color:var(--fg);font-size:clamp(13px,1.2vw,18px)}
+.kicker,.current-meta,.contact-location{font:8px var(--mono);letter-spacing:.16em;color:var(--accent)}
+.contact-email{font-size:clamp(18px,2.2vw,34px);font-weight:600;letter-spacing:-.04em}
+.contact-email:hover{color:var(--accent)}
 
-/* v25.1: subtle separators and a less repetitive rhythm, without changing
-   the central showreel frame or layering any thumbnail over another. */
-.mosaic-row{column-gap:0}
-.mosaic-row .tile{outline:0}
-.mosaic-row{background:#08090a}
+.hover-note{position:fixed;z-index:60;left:2.5vw;bottom:2.5vh;max-width:320px;padding:12px 14px;background:rgba(8,9,10,.86);border-left:2px solid var(--accent);opacity:0;transform:translateY(6px);transition:.3s;pointer-events:none}
+.hover-note.visible{opacity:1;transform:none}
+.hover-note span{font:7px var(--mono);letter-spacing:.16em;color:var(--accent)}
+.hover-note p{margin:6px 0 0;font-size:13px}
+.grain{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-/* v26: info collages use regular-height clips, never double-height side tiles. */
-.info-collage-row .tile{height:calc((50svh - 3px)/2)!important}
-.info-collage-row .tile-tall{height:calc((50svh - 3px)/2)!important;width:auto}
+/* Placeholder tones: varied so the wall reads as a mosaic until real stills are added */
+.placeholder-mark{color:rgba(255,255,255,.2)}
 
-/* v27: information islands temporarily removed; compact, gap-free mosaic.
-   Reel box is fixed at 2.39:1 for both hover playback and click-to-play. */
-.info-island{display:none!important}
-.mosaic-row{gap:0!important;column-gap:0!important}
-.reel-middle{gap:0!important}
+/* Continuous-run layout: rows are separate strips, middle layer holds blocks + panels */
 
-/* v28: varied mosaic grid, exact row fill, and small tiles beside the reel. */
-.mosaic-row{display:grid!important;grid-auto-flow:column;grid-auto-columns:unset}
-.mosaic-row>.tile{width:auto!important;min-width:0;flex:none}
-.reel-middle{display:flex;align-items:stretch;gap:0}
-.reel-side-stack{
-  height:50svh;flex:0 0 65.666667svh;width:65.666667svh;
-  display:flex;flex-direction:column;gap:0;overflow:hidden
-}
-.reel-side-stack>.mosaic-row{
-  height:25svh;flex:0 0 25svh;width:65.666667svh
-}
-.reel-side-stack .tile{height:25svh!important;width:auto!important}
-.reel-middle>.reel-tile{flex:0 0 119.5svh;width:119.5svh;height:50svh}
+/* v3: continuous rows, 2- or 3-row middle layer, 3px gutters, ragged info holes */
+.world-run{display:flex;flex-direction:column;flex:0 0 var(--T);width:var(--T);height:100svh}
+.mrow{display:flex;flex:0 0 var(--h,25svh);height:var(--h,25svh);width:100%}
+.tile::after{content:"";position:absolute;inset:0;z-index:7;pointer-events:none;box-shadow:inset 0 0 0 1.5px var(--bg)}
 
-/* v29: hard-closed percentage grid. Every row spans the full mosaic width. */
-.mosaic-row{
-  display:grid!important;
-  grid-auto-flow:initial!important;
-  grid-template-rows:minmax(0,1fr);
-  grid-auto-columns:unset!important;
-  width:250.833333svh!important;
-  min-width:250.833333svh!important;
-  flex:0 0 25svh!important;
-  overflow:hidden;
-}
-.mosaic-row>.tile{
-  width:100%!important;
-  min-width:0!important;
-  max-width:none!important;
-  height:25svh!important;
-  flex:none!important;
-  grid-row:1;
-}
-
-/* v30: true 2D mosaic. 12 columns x 8 rows, with no gaps or overlaps.
-   A 2x2 tile is the standard size; a 3x3 feature tile is 1.5x in width
-   AND height. The mixed 3x2 / 2x3 pieces interrupt vertical seam lines. */
-.project-wall{
-  display:grid!important;
-  grid-template-columns:repeat(12,minmax(0,1fr))!important;
-  grid-template-rows:repeat(8,minmax(0,1fr))!important;
-  grid-auto-flow:initial!important;
-  gap:0!important;
-  width:250.833333svh!important;
-  height:100svh!important;
-  flex:0 0 250.833333svh!important;
-  overflow:hidden;
-}
-.project-wall>.tile{
-  width:auto!important;
-  height:auto!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-width:none!important;
-  max-height:none!important;
-  flex:none!important;
-}
-.project-wall>.tile .tile-media,
-.project-wall>.tile .tile-media img,
-.project-wall>.tile .tile-media video{width:100%;height:100%}
-
-/* v31: irregular full-coverage mosaic with alternating four- and five-band layouts. */
-.project-wall{
-  display:grid!important;
-  grid-template-columns:repeat(24,minmax(0,1fr))!important;
-  grid-template-rows:repeat(10,minmax(0,1fr))!important;
-  grid-auto-flow:initial!important;
-  gap:0!important;
-  width:250.833333svh!important;
-  min-width:250.833333svh!important;
-  height:100svh!important;
-  flex:0 0 250.833333svh!important;
-  overflow:hidden;
-}
-.project-wall>.tile{
-  width:auto!important;
-  height:auto!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-width:none!important;
-  max-height:none!important;
-  flex:none!important;
-  grid-column:auto;
-  grid-row:auto;
-}
-.project-wall>.tile .tile-media,
-.project-wall>.tile .tile-media img,
-.project-wall>.tile .tile-media video{width:100%;height:100%}
-
-/* v32: bespoke, less repetitive five-band composition around the showreel.
-   The reel keeps its fixed 2.39:1 dimensions; only its neighbouring tiles change. */
-.reel-side-stack{
-  height:50svh!important;
-  flex:0 0 65.666667svh!important;
-  width:65.666667svh!important;
-  display:grid!important;
-  grid-template-rows:repeat(3,minmax(0,1fr))!important;
-  gap:0!important;
-  overflow:hidden;
-}
-.reel-side-row{
-  display:grid;
-  width:65.666667svh;
-  min-width:65.666667svh;
-  height:16.666667svh;
-  min-height:0;
-  gap:0;
-  overflow:hidden;
-}
-.reel-side-row>.tile{
-  width:100%!important;
-  height:16.666667svh!important;
-  min-width:0!important;
-  min-height:0!important;
-  max-width:none!important;
-  flex:none!important;
-}
-.reel-side-row>.tile .tile-media,
-.reel-side-row>.tile .tile-media img,
-.reel-side-row>.tile .tile-media video{width:100%;height:100%}
-
-/* v33: strict size ceiling for ordinary project thumbnails.
-   Exact-cover 24x10 layouts now cap each tile at 6 columns x 3 rows,
-   preventing oversized feature blocks such as the former Live & Events tile. */
-.project-wall{
-  grid-template-columns:repeat(24,minmax(0,1fr))!important;
-  grid-template-rows:repeat(10,minmax(0,1fr))!important;
-}
-.project-wall>.tile{
-  max-width:none!important;
-  max-height:none!important;
-}
-
-/* v34: staggered row cuts are generated in JS; preserve exact edge-to-edge packing. */
-.project-wall{
-  grid-template-columns:repeat(24,minmax(0,1fr))!important;
-  grid-template-rows:repeat(10,minmax(0,1fr))!important;
-  gap:0!important;
-}
-
-/* v35: global seam suppression. No vertical cut coordinate is reused
-   between horizontal bands within a project wall. */
-.project-wall{
-  grid-template-columns:repeat(32,minmax(0,1fr))!important;
-  grid-template-rows:repeat(10,minmax(0,1fr))!important;
-  gap:0!important;
-}
-.project-wall>.tile{
-  max-width:none!important;
-  max-height:none!important;
-}
-
-
-/* v36 — information is carved out of the mosaic, never layered on top.
-   Each island is a 32x10 packed field with a stepped, tile-free negative space. */
-.info-island{
-  position:relative!important;display:grid!important;
-  grid-template-columns:repeat(32,minmax(0,1fr))!important;
-  grid-template-rows:repeat(10,minmax(0,1fr))!important;
-  grid-auto-flow:initial!important;gap:0!important;
-  width:250.833333svh!important;min-width:250.833333svh!important;
-  height:100svh!important;flex:0 0 250.833333svh!important;
-  overflow:hidden;background:#08090a;
-}
-.info-island>.tile{position:relative!important;inset:auto!important;min-width:0!important;min-height:0!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;}
-.info-island>.tile .tile-media,.info-island>.tile .tile-media img,.info-island>.tile .tile-media video{width:100%;height:100%}
-.info-copy{
-  position:absolute!important;z-index:3!important;
-  left:21.8%!important;top:20%!important;width:48%!important;height:50%!important;
-  padding:clamp(20px,2.3vw,42px)!important;
-  display:flex!important;flex-direction:column!important;justify-content:center!important;
-  overflow:hidden!important;background:transparent!important;clip-path:none!important;
-  pointer-events:auto;
-}
-.about-island .info-copy{left:28%!important;width:40%!important;top:20%!important}
-.rightnow-island .info-copy{left:25%!important;width:42%!important;top:20%!important}
-.contact-island .info-copy{left:34%!important;width:32%!important;top:20%!important}
-.info-copy::after{display:none!important}
-.info-copy h1,.info-copy h2{font-size:clamp(42px,5.2vw,82px)!important;line-height:.88!important;margin:10px 0 16px!important}
-.info-lead{max-width:62svh!important}
-.info-body{max-width:68svh!important}
-.current-work{max-width:70svh!important}
-.contact-email{font-size:clamp(19px,2vw,32px)!important}
-@media(max-width:760px){.info-copy{padding:16px!important}.info-copy h1,.info-copy h2{font-size:clamp(34px,8vw,54px)!important}.info-body,.current-work p{font-size:9px!important}}
-
-/* v37 — true negative-space cut-outs. Tiles stop at the stepped edge;
-   the middle is intentionally empty, never filled with reduced miniatures. */
-.info-island{display:grid!important;position:relative!important;grid-template-columns:repeat(32,minmax(0,1fr))!important;grid-template-rows:repeat(10,minmax(0,1fr))!important;grid-auto-flow:initial!important;gap:0!important;background:#08090a!important;}
-.info-island>.info-piece{position:relative!important;inset:auto!important;grid-column:auto;grid-row:auto;width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;max-width:none!important;max-height:none!important;}
-.info-island>.info-piece .tile-media,.info-island>.info-piece .tile-media img,.info-island>.info-piece .tile-media video{width:100%;height:100%;}
-.info-island .info-copy{left:0!important;top:0!important;width:100%!important;height:100%!important;padding:0!important;display:flex!important;align-items:center!important;justify-content:center!important;background:transparent!important;clip-path:none!important;}
-.info-island .info-copy>*{position:relative;z-index:1;}
-.info-island .info-copy{pointer-events:none!important;}
-.info-island .info-copy a{pointer-events:auto!important;}
-.about-island .info-copy{clip-path:polygon(21.875% 20%,78.125% 20%,78.125% 40%,81.25% 40%,81.25% 60%,75% 60%,75% 80%,28.125% 80%,28.125% 60%,25% 60%,25% 40%,21.875% 40%)!important;}
-.rightnow-island .info-copy{clip-path:polygon(25% 20%,81.25% 20%,81.25% 40%,78.125% 40%,78.125% 60%,75% 60%,75% 80%,25% 80%,25% 60%,21.875% 60%,21.875% 40%,25% 40%)!important;}
-.contact-island .info-copy{clip-path:polygon(21.875% 20%,78.125% 20%,78.125% 40%,81.25% 40%,81.25% 60%,75% 60%,75% 80%,25% 80%,25% 60%,21.875% 60%,21.875% 40%)!important;}
-.info-copy h1,.info-copy h2{font-size:clamp(42px,5.2vw,82px)!important;line-height:.88!important;margin:10px 0 16px!important;}
-.info-copy .kicker,.info-copy .info-lead,.info-copy .info-body,.info-copy .current-work,.info-copy .contact-email,.info-copy .contact-location{max-width:70svh;}
-@media(max-width:760px){.info-island{display:grid!important}.info-copy h1,.info-copy h2{font-size:clamp(30px,5vw,50px)!important}.info-body,.current-work p{font-size:9px!important}}
-
-/* v38 — more irregular, stepped negative-space openings. Keep surrounding
-   tiles whole rather than subdividing them into narrow little slivers. */
-.about-island .info-copy{clip-path:polygon(28% 20%,75% 20%,75% 30%,81% 30%,81% 50%,72% 50%,72% 60%,75% 60%,75% 80%,31% 80%,31% 70%,25% 70%,25% 60%,19% 60%,19% 50%,25% 50%,25% 30%,28% 30%)!important}
-.rightnow-island .info-copy{clip-path:polygon(22% 20%,75% 20%,75% 30%,78% 30%,78% 50%,72% 50%,72% 70%,78% 70%,78% 80%,25% 80%,25% 70%,19% 70%,19% 50%,28% 50%,28% 30%,22% 30%)!important}
-.contact-island .info-copy{clip-path:polygon(25% 20%,78% 20%,78% 40%,81% 40%,81% 50%,72% 50%,72% 70%,78% 70%,78% 80%,28% 80%,28% 70%,22% 70%,22% 50%,31% 50%,31% 40%,25% 40%)!important}
-
-
-/* v38 ratio correction only: preserve the v38 composition and negative-space
-   silhouettes, but give each mosaic tile a grid span matching its approved ratio. */
-.project-wall{
-  display:grid!important;
-  grid-template-columns:repeat(128,minmax(0,1fr))!important;
-  grid-template-rows:repeat(10,minmax(0,1fr))!important;
-  gap:0!important;
-}
-.info-island{
-  display:grid!important;
-  grid-template-columns:repeat(128,minmax(0,1fr))!important;
-  grid-template-rows:repeat(10,minmax(0,1fr))!important;
-  gap:0!important;
-}
-.project-wall>.tile,.info-island>.info-piece{
-  width:auto!important;height:auto!important;
-  min-width:0!important;min-height:0!important;
-  max-width:none!important;max-height:none!important;
-}
-.project-wall>.tile .tile-media,
-.project-wall>.tile .tile-media img,
-.project-wall>.tile .tile-media video,
-.info-island>.info-piece .tile-media,
-.info-island>.info-piece .tile-media img,
-.info-island>.info-piece .tile-media video{
-  width:100%!important;height:100%!important;
-}
-
-
-/* V38 RATIO-SAFE GEOMETRY PATCH — only layout geometry is overridden below. */
-:root{--wall-width:250.83333333333334svh}
-.world-track,.world-run{align-items:stretch}
-.showreel-island,.project-wall,.info-island{width:var(--wall-width)!important;min-width:var(--wall-width)!important;flex:0 0 var(--wall-width)!important}
-.project-wall{display:flex!important;flex-direction:column!important;height:100svh!important;gap:0!important;overflow:hidden!important}
-.mosaic-row.exact-row{display:flex!important;flex:0 0 var(--tile-h)!important;height:var(--tile-h)!important;width:var(--wall-width)!important;min-width:var(--wall-width)!important;gap:0!important;overflow:hidden!important;align-items:stretch!important}
-.mosaic-row.exact-row>.tile{position:relative!important;inset:auto!important;height:var(--tile-h)!important;min-height:0!important;max-height:none!important;min-width:0!important;max-width:none!important;flex:0 0 auto!important;width:auto!important}
-.mosaic-row.exact-row>.tile.ratio-1{width:var(--tile-h)!important}
-.mosaic-row.exact-row>.tile.ratio-4-3{width:calc(var(--tile-h) * 1.3333333333333333)!important}
-.mosaic-row.exact-row>.tile.ratio-16-9{width:calc(var(--tile-h) * 1.7777777777777777)!important}
-.mosaic-row.exact-row>.tile.ratio-2-35{width:calc(var(--tile-h) * 2.35)!important}
-.mosaic-row.exact-row>.tile .tile-media,.mosaic-row.exact-row>.tile .tile-media img,.mosaic-row.exact-row>.tile .tile-media video{width:100%!important;height:100%!important}
-/* Showreel: preserve its location and interaction, but use the approved 2.35:1 frame. */
-.reel-middle{width:var(--wall-width)!important;min-width:var(--wall-width)!important;height:50svh!important;flex:0 0 50svh!important;gap:0!important;display:flex!important}
-.reel-side-stack{width:66.66666666666667svh!important;min-width:66.66666666666667svh!important;flex:0 0 66.66666666666667svh!important;height:50svh!important;display:flex!important;flex-direction:column!important;gap:0!important;overflow:hidden!important}
-.reel-side-row{width:66.66666666666667svh!important;min-width:66.66666666666667svh!important;height:16.66666666666667svh!important;min-height:16.66666666666667svh!important;flex:0 0 16.66666666666667svh!important;display:flex!important;gap:0!important;overflow:hidden!important}
-.reel-side-row>.tile{height:100%!important;flex:0 0 auto!important;width:auto!important}
-.reel-side-row>.tile.ratio-1{width:16.66666666666667svh!important}
-.reel-side-row>.tile.ratio-4-3{width:22.22222222222223svh!important}
-.reel-side-row>.tile .tile-media,.reel-side-row>.tile .tile-media img,.reel-side-row>.tile .tile-media video{width:100%!important;height:100%!important}
-.reel-tile{width:117.5svh!important;min-width:117.5svh!important;flex:0 0 117.5svh!important;height:50svh!important;aspect-ratio:2.35/1!important}
-/* Information islands: five exact 20vh bands with a true stepped empty centre. */
-.info-island{position:relative!important;display:flex!important;flex-direction:column!important;height:100svh!important;gap:0!important;overflow:hidden!important;background:#08090a!important}
-.info-band{height:20svh!important;min-height:20svh!important;flex:0 0 20svh!important;width:var(--wall-width)!important;display:flex!important;align-items:stretch!important;justify-content:space-between!important;gap:0!important;overflow:hidden!important}
-.info-side{height:100%!important;display:flex!important;flex:0 0 auto!important;gap:0!important;overflow:hidden!important}
-.info-band .tile{position:relative!important;inset:auto!important;height:100%!important;min-height:0!important;max-height:none!important;min-width:0!important;max-width:none!important;flex:0 0 auto!important;width:auto!important}
-.info-band .tile.ratio-1{width:20svh!important}
-.info-band .tile.ratio-4-3{width:26.66666666666667svh!important}
-.info-band .tile.ratio-16-9{width:35.55555555555556svh!important}
-.info-band .tile.ratio-2-35{width:47svh!important}
-.info-band .tile .tile-media,.info-band .tile .tile-media img,.info-band .tile .tile-media video{width:100%!important;height:100%!important}
-.info-copy{position:absolute!important;inset:0!important;left:0!important;top:0!important;width:100%!important;height:100%!important;padding:clamp(20px,2.3vw,42px)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:left!important;background:transparent!important;overflow:hidden!important;pointer-events:none!important}
-.info-copy>*{position:relative;z-index:1}
-.info-copy a{pointer-events:auto!important}
-.info-copy h1,.info-copy h2{font-size:clamp(42px,5.2vw,82px)!important;line-height:.88!important;margin:10px 0 16px!important}
-.info-copy .kicker,.info-copy .info-lead,.info-copy .info-body,.info-copy .current-work,.info-copy .contact-email,.info-copy .contact-location{max-width:min(70svh,80%)!important}
-@media(max-width:760px){
-  .info-copy{padding:14px!important}
-  .info-copy h1,.info-copy h2{font-size:clamp(30px,5vw,50px)!important}
-  .info-body,.current-work p{font-size:9px!important}
-}
-/* Side bands are narrower than full-width rows; their exact-ratio pieces sum to 66.6667svh. */
-.reel-side-row.mosaic-row.exact-row{width:66.66666666666667svh!important;min-width:66.66666666666667svh!important;flex:0 0 16.66666666666667svh!important;height:16.66666666666667svh!important}
-
-.info-island .info-copy{clip-path:var(--cutout-shape)!important}
-
-/* Targeted fix: close the top/bottom of information cutouts with full, ratio-locked rows. */
-.info-band{height:var(--tile-h)!important;min-height:var(--tile-h)!important;flex:0 0 var(--tile-h)!important}
-.info-band .tile{height:var(--tile-h)!important}
-.info-band .tile.ratio-1{width:var(--tile-h)!important}
-.info-band .tile.ratio-4-3{width:calc(var(--tile-h) * 4 / 3)!important}
-.info-band .tile.ratio-16-9{width:calc(var(--tile-h) * 16 / 9)!important}
-.info-band .tile.ratio-2-35{width:calc(var(--tile-h) * 2.35)!important}
-.info-full-band .info-side{width:100%!important}
-.info-full-band .tile{flex-shrink:0!important}
-
-/* V38.2: full-width top/bottom mosaic rows around each cutout. */
-.info-island>.info-full-row{height:25svh!important;min-height:25svh!important;flex:0 0 25svh!important;width:var(--wall-width)!important;min-width:var(--wall-width)!important;display:flex!important;overflow:hidden!important}
-.info-island>.info-full-row>.tile{height:25svh!important;flex:0 0 auto!important}
-.info-island>.info-band{height:16.6666666667svh!important;min-height:16.6666666667svh!important;flex:0 0 16.6666666667svh!important}
-.info-island>.info-band .tile{height:16.6666666667svh!important}
-.info-island>.info-band .tile.ratio-1{width:16.6666666667svh!important}
-.info-island>.info-band .tile.ratio-4-3{width:22.2222222222svh!important}
-.info-island>.info-band .tile.ratio-16-9{width:29.6296296297svh!important}
-.info-island>.info-band .tile.ratio-2-35{width:39.1666666667svh!important}
-
-.info-island>.info-full-band{height:25svh!important;min-height:25svh!important;flex:0 0 25svh!important}
-.info-island>.info-full-band>.info-side{width:var(--wall-width)!important}
-.info-island>.info-full-band .tile{height:25svh!important}
-.info-island>.info-full-band .tile.ratio-16-9{width:44.4444444444svh!important}
-.info-island>.info-full-band .tile.ratio-2-35{width:58.75svh!important}
-
-
-/* V38.4 — only the showreel side mosaics are changed.
-   Their three bands vary in height, but total exactly 50svh. All tile widths
-   are derived from the same band's height and the tile's approved ratio. */
-.reel-side-stack{
-  width:66.6666666667svh!important;
-  min-width:66.6666666667svh!important;
-  flex:0 0 66.6666666667svh!important;
-  height:50svh!important;
-  display:flex!important;
-  flex-direction:column!important;
-  gap:0!important;
-  overflow:hidden!important;
-}
-.reel-side-row.mosaic-row.exact-row{
-  width:66.6666666667svh!important;
-  min-width:66.6666666667svh!important;
-  height:var(--tile-h)!important;
-  min-height:var(--tile-h)!important;
-  flex:0 0 var(--tile-h)!important;
-  display:flex!important;
-  flex-direction:row!important;
-  gap:0!important;
-  overflow:hidden!important;
-  align-items:stretch!important;
-}
-.reel-side-row.mosaic-row.exact-row>.tile{
-  height:var(--tile-h)!important;
-  min-height:0!important;
-  max-height:none!important;
-  width:auto!important;
-  min-width:0!important;
-  flex:0 0 auto!important;
-}
-.reel-side-row.mosaic-row.exact-row>.tile.ratio-1{width:var(--tile-h)!important}
-.reel-side-row.mosaic-row.exact-row>.tile.ratio-4-3{width:calc(var(--tile-h) * 4 / 3)!important}
-.reel-side-row.mosaic-row.exact-row>.tile.ratio-16-9{width:calc(var(--tile-h) * 16 / 9)!important}
-.reel-side-row.mosaic-row.exact-row>.tile.ratio-2-35{width:calc(var(--tile-h) * 2.35)!important}
-.reel-side-row.mosaic-row.exact-row>.tile .tile-media,
-.reel-side-row.mosaic-row.exact-row>.tile .tile-media img,
-.reel-side-row.mosaic-row.exact-row>.tile .tile-media video{width:100%!important;height:100%!important}
-
-
-/* V38.4 — mixed-ratio side mosaics around the reel.
-   Two variable-height rows per side, each edge-to-edge and ratio-locked. */
-.reel-side-stack{
-  width:66.6666666667svh!important;
-  min-width:66.6666666667svh!important;
-  flex:0 0 66.6666666667svh!important;
-  height:50svh!important;
-  display:flex!important;
-  flex-direction:column!important;
-  gap:0!important;
-  overflow:hidden!important;
-}
-.reel-side-row.mosaic-row.exact-row{
-  width:66.6666666667svh!important;
-  min-width:66.6666666667svh!important;
-  height:var(--tile-h)!important;
-  min-height:var(--tile-h)!important;
-  flex:0 0 var(--tile-h)!important;
-  display:flex!important;
-  flex-direction:row!important;
-  gap:0!important;
-  overflow:hidden!important;
-  align-items:stretch!important;
-}
-.reel-side-row.mosaic-row.exact-row>.tile{
-  height:var(--tile-h)!important;
-  min-height:0!important;
-  max-height:none!important;
-  width:auto!important;
-  min-width:0!important;
-  flex:0 0 auto!important;
-}
-.reel-side-row.mosaic-row.exact-row>.tile.ratio-1{width:var(--tile-h)!important}
-.reel-side-row.mosaic-row.exact-row>.tile.ratio-4-3{width:calc(var(--tile-h) * 4 / 3)!important}
-.reel-side-row.mosaic-row.exact-row>.tile.ratio-16-9{width:calc(var(--tile-h) * 16 / 9)!important}
-.reel-side-row.mosaic-row.exact-row>.tile.ratio-2-35{width:calc(var(--tile-h) * 2.35)!important}
-.reel-side-row.mosaic-row.exact-row>.tile .tile-media,
-.reel-side-row.mosaic-row.exact-row>.tile .tile-media img,
-.reel-side-row.mosaic-row.exact-row>.tile .tile-media video{width:100%!important;height:100%!important}
-
-
-/* V38.5 — transient horizontal motion blur.
-   Applied to the viewport-sized layer only while the wall is moving. */
-.world-viewport{
-  filter:none;
-}
-.world-viewport.is-motion-blurred{
-  filter:url(#lindcine-motion-blur);
-}
-@media (prefers-reduced-motion: reduce){
-  .world-viewport.is-motion-blurred{filter:none}
-}
+/* v4: layers of block trees, stair-stepped info holes, hover dimming */
+:root{--T:2400svh;--R:112.8svh}
+.strip{width:var(--T)}
+.layer{display:flex;flex:0 0 var(--h);height:var(--h)}
+.mid{display:flex;flex:0 0 48svh;height:48svh;width:var(--T)}
+.mseg{display:flex;flex:0 0 auto;height:48svh}
+.cx{display:flex;min-width:0;min-height:0}
+.cx.row{flex-direction:row}
+.cx.col{flex-direction:column}
+.island{position:relative;flex:0 0 auto;height:48svh}
+.iside{position:absolute;top:0;height:100%;display:flex;flex-direction:column}
+.iside.l{left:0}
+.iside.r{right:0;align-items:flex-end}
+.iside .mrow{width:auto}
+.island .info-copy{position:absolute;left:58svh;top:0;width:100svh;height:48svh;flex:none;padding:2svh 0;background:none;z-index:2}
+.island .info-copy h1,.island .info-copy h2{font-size:clamp(28px,3.6vw,60px)}
+/* hover: after a moment the other tiles fade slowly darker; they recover quickly */
+.tile{transition:filter .5s ease}
+body.dim .tile:not(.is-active){filter:brightness(.3);transition:filter 1.8s ease}
+/* Placeholder tones (random per tile) until real stills are added */
+.tile[style*="--t:0;"] .tile-media{background:linear-gradient(140deg,#3d5560,#101a1f 85%)}
+.tile[style*="--t:1;"] .tile-media{background:linear-gradient(140deg,#6a5238,#1c140d 85%)}
+.tile[style*="--t:2;"] .tile-media{background:linear-gradient(140deg,#5a4561,#171019 85%)}
+.tile[style*="--t:3;"] .tile-media{background:linear-gradient(140deg,#445a48,#0f1812 85%)}
+.tile[style*="--t:4;"] .tile-media{background:linear-gradient(140deg,#6b655c,#1a1816 85%)}
+.tile[style*="--t:5;"] .tile-media{background:linear-gradient(140deg,#34497a,#0c101d 85%)}

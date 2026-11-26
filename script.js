@@ -48,16 +48,10 @@ let animationFrame = 0;
 let activeTile = null;
 let hoverTimer = 0;
 let noteTimer = 0;
+let dimTimer = 0;
 let dragging = false;
 let dragX = 0;
 let dragScroll = 0;
-let motionBlurNode = document.querySelector("#lindcine-motion-blur-x");
-let motionBlurRaf = 0;
-let motionBlurSigma = 0;
-let motionBoost = 1;
-let touchGesture = false;
-let touchLastScroll = 0;
-let touchBlurTimer = 0;
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -86,220 +80,158 @@ function reelTile() {
   </article>`;
 }
 
-const WALL_WIDTH = 250.83333333333334;
-const RATIO_KEYS = ["1", "4-3", "16-9", "2-35"];
-const RATIO_VALUES = {"1":1, "4-3":4/3, "16-9":16/9, "2-35":2.35};
-
-function pickProject(ratio, seed) {
-  const candidates = projects.filter(p => p.ratio === ratio);
-  if (!candidates.length) throw new Error(`No project available for ratio ${ratio}`);
-  return candidates[((seed % candidates.length) + candidates.length) % candidates.length];
+/* ---- Layout v4. All widths/heights in svh. Page = top layer (26) + middle layer (48) + bottom layer (26).
+   Each layer is an endless sequence of random "blocks". A block is one tile, or a tree of tiles stacked
+   (same width, heights ∝ 1/ratio) or side by side (same height, widths ∝ ratio), so EVERY tile is an exact
+   16:9 / 2.35:1 / 1:1 / 4:3 rectangle with no gaps. Layers are phase-shifted until no vertical edge runs
+   through more than ~half the page. Info areas are stair-stepped holes: left and right side tiles stop at
+   different x per row, and the two sides split the height differently. ---- */
+const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "1":1, "4-3":4/3};
+const WEIGHTS = [["16-9",.50],["2-35",.31],["1",.13],["4-3",.06]]; // most → least common
+const SMALL = new Set(["1","4-3"]);
+const T = 2400, HT = 26, HM = 48, HB = 26, PANEL = REEL_RATIO*HM, ISL = 210;
+let seed = 20264;
+const rand = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+function pickRatio(ctx) {
+  for (;;) {
+    let x = rand(), acc = 0, k = "16-9";
+    for (const [key, w] of WEIGHTS) { acc += w; if (x < acc) { k = key; break; } }
+    const a = ctx[ctx.length-1], b = ctx[ctx.length-2];
+    if (SMALL.has(k) && a && SMALL.has(a)) continue;
+    if (a === k && b === k) continue;
+    ctx.push(k); return k;
+  }
 }
-
-function ratioBoundaries(ratios) {
-  const total = ratios.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0);
-  let cursor = 0;
-  return ratios.slice(0, -1).map(ratio => {
-    cursor += RATIO_VALUES[ratio];
-    return cursor / total;
-  });
+const rho = n => n.leaf ? TILE_RATIOS[n.leaf] : n.h ? n.h.reduce((a,c) => a + rho(c), 0) : 1 / n.v.reduce((a,c) => a + 1/rho(c), 0);
+function leaves(n, x, y, w, h, out) {
+  if (n.leaf) { out.push({x, y, w, h}); return; }
+  if (n.h) { const s = rho(n); let cx = x; n.h.forEach(c => { const cw = w * rho(c) / s; leaves(c, cx, y, cw, h, out); cx += cw; }); }
+  else { const s = n.v.reduce((a,c) => a + 1/rho(c), 0); let cy = y; n.v.forEach(c => { const ch = h * (1/rho(c)) / s; leaves(c, x, cy, w, ch, out); cy += ch; }); }
 }
-
-function shuffledRatios(counts, seed, previousBoundaries = []) {
-  const source = [];
-  RATIO_KEYS.forEach((ratio, i) => {
-    for (let n = 0; n < (counts[i] || 0); n++) source.push(ratio);
-  });
-  // Choose a deterministic ordering that staggers seams against preceding rows.
-  let state = (seed + 1) * 2654435761 >>> 0;
-  let best = source.slice();
-  let bestScore = -Infinity;
-  const prior = previousBoundaries.flat();
-  for (let attempt = 0; attempt < 160; attempt++) {
-    const candidate = source.slice();
-    for (let i = candidate.length - 1; i > 0; i--) {
-      state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
-      const j = state % (i + 1);
-      [candidate[i], candidate[j]] = [candidate[j], candidate[i]];
-    }
-    const edges = ratioBoundaries(candidate);
-    let score = 0;
-    for (const edge of edges) {
-      let nearest = 1;
-      for (const oldEdge of prior) nearest = Math.min(nearest, Math.abs(edge - oldEdge));
-      score += Math.min(nearest, 0.08) * 100;
-      if (nearest < 0.018) score -= 18;
-      else if (nearest < 0.032) score -= 7;
-    }
-    for (let i = 1; i < candidate.length; i++) {
-      const small = r => r === "1" || r === "4-3";
-      if (small(candidate[i - 1]) && small(candidate[i])) score -= 2.5;
-    }
-    if (score > bestScore) { bestScore = score; best = candidate; }
+function genNode(ctx, depth, stackOK) {
+  const x = rand();
+  if (depth === 0 || x < .5) return {leaf: pickRatio(ctx)};
+  if (stackOK && x < .8) return {v: Array.from({length: rand() < .8 ? 2 : 3}, () => genNode(ctx, depth - 1, false))};
+  return {h: [genNode(ctx, depth - 1, true), genNode(ctx, depth - 1, true)]};
+}
+function okBlock(b, H) { const out = []; leaves(b, 0, 0, H * rho(b), H, out); return out.every(r => r.h >= 12 && r.w >= 22); }
+const genMid = ctx => { for (;;) { const c = ctx.slice(), b = genNode(c, 2, true); if (okBlock(b, HM)) { ctx.splice(0, ctx.length, ...c); return b; } } };
+const genEdge = (ctx, H) => { for (;;) { const c = ctx.slice(), b = rand() < .1 ? {v: [{leaf: pickRatio(c)}, {leaf: pickRatio(c)}]} : {leaf: pickRatio(c)}; if (okBlock(b, H)) { ctx.splice(0, ctx.length, ...c); return b; } } };
+function makeSeq(H, target, tol, gen) { // blocks whose natural widths sum to target ±tol (scaled to fit by flex)
+  let best = null, bestErr = Infinity;
+  for (let t = 0; t < 3000; t++) {
+    const ctx = [], list = []; let sum = 0;
+    while (sum < target * (1 - tol)) { const b = gen(ctx); list.push(b); sum += H * rho(b); }
+    const err = Math.abs(sum - target) / target;
+    if (err < bestErr) { best = list; bestErr = err; if (err <= tol) break; }
   }
   return best;
 }
-
-function exactRow(ratios, height, seed, className = "") {
-  const tiles = ratios.map((ratio, i) => {
-    const project = pickProject(ratio, seed * 11 + i * 7 + ratios.length);
-    return tile(project, "wall-tile", false, "");
-  }).join("");
-  return `<div class="mosaic-row exact-row ${className}" style="--tile-h:${height}svh">${tiles}</div>`;
+function rangeList(lo, hi, h) {
+  for (;;) { const ctx = [], list = []; let s = 0; while (s * h < lo) { list.push(pickRatio(ctx)); s += TILE_RATIOS[list[list.length-1]]; } if (s * h <= hi) return list; }
 }
-
-function projectWall(seed = 0) {
-  // Every thumbnail is a true aspect-ratio rectangle. Four-row walls use
-  // 25svh bands. Occasional five-row walls use mathematically solved band
-  // heights; the five heights sum to exactly 100svh and every band fills the
-  // same 250.833333svh wall width without stretching a tile.
-  const fourRowPatterns = [
-    [0, 0, 3, 2], // landscape-heavy row
-    [4, 1, 0, 2], // square / 4:3 row, separated by landscape rows
-    [0, 0, 3, 2], // landscape-heavy row
-    [0, 4, 0, 2]  // 4:3 row
-  ];
-  const fiveRows = [
-    {counts:[4,1,3,0]},
-    {counts:[1,1,2,4]},
-    {counts:[0,4,4,0]},
-    {counts:[1,1,2,4]},
-    {counts:[4,1,3,0]}
-  ];
-  const useFive = seed === 6;
-  let rows = [];
-  let previousEdges = [];
-  if (useFive) {
-    fiveRows.forEach((band, i) => {
-      const ratioTotal = band.counts.reduce((sum, count, index) => sum + count * RATIO_VALUES[RATIO_KEYS[index]], 0);
-      const height = WALL_WIDTH / ratioTotal;
-      const ratios = shuffledRatios(band.counts, seed * 13 + i * 5, previousEdges);
-      previousEdges.push(ratioBoundaries(ratios));
-      rows.push(exactRow(ratios, height.toFixed(10), seed + i, "five-row-band"));
-    });
-  } else {
-    fourRowPatterns.forEach((counts, i) => {
-      const ratios = shuffledRatios(counts, seed * 13 + i * 5, previousEdges);
-      previousEdges.push(ratioBoundaries(ratios));
-      rows.push(exactRow(ratios, 25, seed + i, "four-row-band"));
-    });
+const sumOf = list => list.reduce((a,k) => a + TILE_RATIOS[k], 0);
+function splitHeight() { // 2 or 3 rows summing to HM
+  for (;;) {
+    if (rand() < .4) { const a = 18 + rand()*12; return [a, HM - a]; }
+    const a = 14 + rand()*5, b = 14 + rand()*(34 - a - 14 + 5); if (HM - a - b >= 14) return [a, b, HM - a - b];
   }
-  return `<section class="project-wall" aria-label="Selected work">${rows.join("")}</section>`;
 }
-
-function showreelIsland() {
-  // Preserve the exact reel frame and overall island dimensions.
-  // Each 66.6667svh side is now a compact, mixed-ratio 2-band mosaic.
-  // The band heights vary (150/7 + 200/7 = 50svh) and every row fills its side exactly.
-  const top = exactRow(shuffledRatios([0,0,3,2], 4), 25, 41, "reel-top");
-  const bottom = exactRow(shuffledRatios([4,1,0,2], 9), 25, 53, "reel-bottom");
-
-  const sideRowsLeft = [
-    {height:150/7, ratios:["4-3","16-9"]},
-    {height:200/7, ratios:["4-3","1"]}
-  ];
-  const sideRowsRight = [
-    {height:200/7, ratios:["1","4-3"]},
-    {height:150/7, ratios:["16-9","4-3"]}
-  ];
-
-  const side = (rows, seed) => `<div class="reel-side-stack">${rows.map((band, rowIndex) =>
-    exactRow(band.ratios, band.height, seed + rowIndex * 13, "reel-side-row")
-  ).join("")}</div>`;
-
-  return `<section class="showreel-island" aria-label="Cinematography showreel">
-    ${top}
-    <div class="reel-middle">
-      ${side(sideRowsLeft, 70)}
-      ${reelTile()}
-      ${side(sideRowsRight, 90)}
-    </div>
-    ${bottom}
-  </section>`;
+function layerEvents(blocks, H, y0, total, out = []) {
+  const s = total / blocks.reduce((a,b) => a + H * rho(b), 0); let x = 0;
+  blocks.forEach(b => { const bw = H * rho(b) * s, lv = []; leaves(b, x, y0, bw, H, lv); lv.forEach(r => out.push({x: r.x, y0: r.y, y1: r.y + r.h}, {x: r.x + r.w, y0: r.y, y1: r.y + r.h})); x += bw; });
+  return out;
 }
-
-function infoIsland(kind) {
-  // The stepped negative-space cut-out is preserved as a real hole in the
-  // mosaic. Three irregular middle bands use larger landscape tiles; the
-  // full-width 25svh bands above and below close the cut-out at both ends.
+function hasLongSeam(ev) { // an edge running unbroken through ≥55svh?
+  return ev.some(e => {
+    const iv = ev.filter(f => { const d = Math.abs(f.x - e.x); return Math.min(d, T - d) < 1.2; }).map(f => [f.y0, f.y1]).sort((a,b) => a[0] - b[0]);
+    let cur = null, best = 0;
+    for (const [a,b] of iv) { if (cur && a <= cur[1] + .01) cur[1] = Math.max(cur[1], b); else cur = [a,b]; best = Math.max(best, cur[1] - cur[0]); }
+    return best >= 55;
+  });
+}
+const shifted = (ev, d) => ev.map(e => ({x: (((e.x - d) % T) + T) % T, y0: e.y0, y1: e.y1}));
+function chooseShift(layerEv, midEv) { for (let i = 0; i < 4000; i++) { const d = rand() * T; if (!hasLongSeam(shifted(layerEv, d).concat(midEv))) return d; } return 0; }
+function buildPlan() {
+  const mk = (H, target, tol, gen) => makeSeq(H, target, tol, gen);
+  const plan = {top: mk(HT, T, .003, c => genEdge(c, HT)), bottom: mk(HB, T, .003, c => genEdge(c, HB)), mid: []};
+  const free = T - PANEL - 3*ISL, wts = [0,1,2,3].map(() => .7 + rand()*.6), ws = wts.reduce((a,b) => a + b, 0), midEv = [];
+  let x = 0, si = 0;
+  for (const o of ["seg","reel","seg","about","seg","rightnow","seg","contact"]) {
+    if (o === "seg") { const w = free * wts[si++] / ws; const blocks = mk(HM, w, .006, genMid); plan.mid.push({kind:"seg", w, blocks});
+      const ev = layerEvents(blocks, HM, HT, w); ev.forEach(e => midEv.push({x: e.x + x, y0: e.y0, y1: e.y1})); x += w; }
+    else if (o === "reel") { plan.mid.push({kind:"reel", w: PANEL}); midEv.push({x, y0: HT, y1: HT+HM}, {x: x+PANEL, y0: HT, y1: HT+HM}); x += PANEL; }
+    else {
+      const isl = {kind: o, w: ISL, L: [], R: []};
+      for (const side of ["L","R"]) { let y = HT; splitHeight().forEach(h => { const list = rangeList(26, 52, h), wd = sumOf(list) * h;
+        const x0 = side === "L" ? x : x + ISL - wd; let c = 0; for (const k of [...list, null]) { midEv.push({x: x0 + c*h, y0: y, y1: y + h}); if (k) c += TILE_RATIOS[k]; }
+        isl[side].push({h, list}); y += h; }); }
+      plan.mid.push(isl); x += ISL;
+    }
+  }
+  plan.dT = chooseShift(layerEvents(plan.top, HT, 0, T), midEv); plan.dB = chooseShift(layerEvents(plan.bottom, HB, HT+HM, T), midEv);
+  return plan;
+}
+//--pure-end
+const lastPick = {};
+function pickProject(ratio) { // random project of this ratio, never the same twice in a row
+  const list = projects.filter(p => p.ratio === ratio); let i;
+  do { i = Math.floor(rand() * list.length); } while (list.length > 1 && i === lastPick[ratio]);
+  lastPick[ratio] = i; return list[i];
+}
+const tone = () => `--t:${Math.floor(rand() * 6)};`; // placeholder colour only
+function nodeHTML(n, parent) { // flex-grow = ratio along rows, 1/ratio down columns → exact proportions
+  const flex = parent === "col" ? 1 / rho(n) : rho(n);
+  if (n.leaf) return tile(pickProject(n.leaf), "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`);
+  const dir = n.h ? "row" : "col";
+  return `<div class="cx ${dir}" style="flex:${(flex*1000).toFixed(3)} 1 0">${(n.h || n.v).map(c => nodeHTML(c, dir)).join("")}</div>`;
+}
+const exact = list => list.map(k => tile(pickProject(k), "wall-tile", false, `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`)).join("");
+const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H}svh;transform:translateX(-${shift}svh)">${blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const configs = {
     about: {
       bands:[
-        {left:["2-35"],right:["16-9","16-9"]},
-        {left:["16-9","16-9"],right:["2-35"]},
-        {left:["16-9"],right:["2-35","2-35"]}
+        {left:["2-35","1"],right:["16-9","4-3"]},
+        {left:["16-9","4-3"],right:["2-35","1"]},
+        {left:["1","4-3"],right:["2-35","16-9"]},
+        {left:["4-3","1"],right:["1","2-35"]},
+        {left:["2-35","16-9"],right:["4-3","1"]}
       ],
       copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
     },
     rightnow: {
       bands:[
-        {left:["16-9","2-35"],right:["2-35"]},
-        {left:["2-35"],right:["16-9","16-9"]},
-        {left:["16-9","16-9"],right:["2-35"]}
+        {left:["4-3","1"],right:["2-35","16-9"]},
+        {left:["2-35","1"],right:["16-9","4-3"]},
+        {left:["1","4-3"],right:["16-9","2-35"]},
+        {left:["2-35","16-9"],right:["4-3","1"]},
+        {left:["16-9","4-3"],right:["2-35","1"]}
       ],
       copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
     },
     contact: {
       bands:[
-        {left:["16-9","16-9"],right:["2-35"]},
-        {left:["2-35"],right:["16-9"]},
-        {left:["16-9"],right:["2-35","2-35"]}
+        {left:["16-9","4-3"],right:["2-35","1"]},
+        {left:["2-35","1"],right:["4-3","16-9"]},
+        {left:["1","2-35"],right:["16-9","4-3"]},
+        {left:["4-3","1"],right:["2-35","16-9"]},
+        {left:["2-35","16-9"],right:["1","4-3"]}
       ],
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
-  const config = configs[kind];
-  const leftWidths = [];
-  const rightWidths = [];
-  const bandHeights = [25, 50/3, 50/3, 50/3, 25];
-  const fullCounts = [0,0,3,2];
-  const bands = bandHeights.map((height, rowIndex) => {
-    if (rowIndex === 0 || rowIndex === 4) {
-      leftWidths.push(0); rightWidths.push(100);
-      const ratios = shuffledRatios(fullCounts, 300 + rowIndex * 37 + kind.length);
-      const tiles = ratios.map((ratio,i) => tile(pickProject(ratio, 300 + rowIndex*31+i*9), "wall-tile info-piece", false, "")).join("");
-      return `<div class="info-band info-full-band" style="--tile-h:${height}svh"><div class="info-side info-left">${tiles}</div></div>`;
-    }
-    const band = config.bands[rowIndex - 1];
-    const leftWidth = band.left.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * height;
-    const rightWidth = band.right.reduce((sum, ratio) => sum + RATIO_VALUES[ratio], 0) * height;
-    leftWidths.push(leftWidth / WALL_WIDTH * 100);
-    rightWidths.push(100 - rightWidth / WALL_WIDTH * 100);
-    const left = band.left.map((ratio, i) => tile(pickProject(ratio, 100 + rowIndex * 17 + i * 3), "wall-tile info-piece", false, "")).join("");
-    const right = band.right.map((ratio, i) => tile(pickProject(ratio, 180 + rowIndex * 19 + i * 5), "wall-tile info-piece", false, "")).join("");
-    return `<div class="info-band" style="--tile-h:${height}svh"><div class="info-side info-left">${left}</div><div class="info-side info-right">${right}</div></div>`;
-  }).join("");
-  const boundaries = [0,25,25+50/3,25+100/3,75,100];
-  const points = [];
-  points.push(`${leftWidths[0]}% 0%`, `${rightWidths[0]}% 0%`);
-  for (let i = 0; i < 5; i++) {
-    points.push(`${rightWidths[i]}% ${boundaries[i+1]}%`);
-    if (i < 4) points.push(`${rightWidths[i+1]}% ${boundaries[i+1]}%`);
-  }
-  points.push(`${leftWidths[4]}% 100%`);
-  for (let i = 4; i >= 1; i--) {
-    points.push(`${leftWidths[i]}% ${boundaries[i]}%`, `${leftWidths[i-1]}% ${boundaries[i]}%`);
-  }
-  points.push(`${leftWidths[0]}% 0%`);
-  const shape = `polygon(${points.join(",")})`;
-  return `<section class="info-island ${kind}-island" aria-label="${kind}">
-    ${bands}
-    <div class="info-copy" data-anchor="${kind}" style="--cutout-shape:${shape}">${config.copy}</div>
-  </section>`;
+const infoPanel = kind => `<div class="info-copy" data-anchor="${kind}">${configs[kind].copy}</div>`;
+function segHTML(s) {
+  if (s.kind === "reel") return reelTile();
+  if (s.kind === "seg") return `<div class="mseg" style="width:${s.w}svh">${s.blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
+  const side = rows => rows.map(r => `<div class="mrow" style="--h:${r.h}svh">${exact(r.list)}</div>`).join("");
+  return `<div class="island" style="width:${ISL}svh"><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
 }
+// Built once and repeated 3× so the loop join is invisible.
+const plan = buildPlan();
+const RUN_HTML = layerHTML(plan.top, HT, plan.dT) + `<div class="mid">${plan.mid.map(segHTML).join("")}</div>` + layerHTML(plan.bottom, HB, plan.dB);
+const renderRun = copy => `<div class="world-run" data-copy="${copy}">${RUN_HTML}</div>`;
 
-function renderRun(copy) {
-  return `<div class="world-run" data-copy="${copy}">
-    ${showreelIsland()}
-    ${projectWall(0)}
-    ${infoIsland("about")}
-    ${projectWall(3)}
-    ${infoIsland("rightnow")}
-    ${projectWall(6)}
-    ${infoIsland("contact")}
-    ${projectWall(9)}
-  </div>`;
-}
 
 function render() {
   track.innerHTML = [0,1,2].map(renderRun).join("");
@@ -311,6 +243,8 @@ function middleRun() {
 
 function stopActive() {
   clearTimeout(noteTimer);
+  clearTimeout(dimTimer);
+  document.body.classList.remove("dim");
   noteBox.classList.remove("visible");
   if (activeTile) {
     activeTile.classList.remove("is-active");
@@ -363,6 +297,8 @@ function activate(tileNode) {
     tileNode.querySelector(".hover-video")?.play().catch(() => {});
   }
   noteTimer = window.setTimeout(() => showNote(tileNode), 650);
+  clearTimeout(dimTimer);
+  dimTimer = window.setTimeout(() => document.body.classList.add("dim"), 800);
 }
 
 function openReel(tileNode) {
@@ -432,79 +368,23 @@ function rebase() {
   }
 }
 
-function setMotionBlur(distance) {
-  if (!motionBlurNode || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const movement = Math.abs(distance);
-  if (movement < 0.75) return;
-
-  if (motionBlurRaf) {
-    cancelAnimationFrame(motionBlurRaf);
-    motionBlurRaf = 0;
-  }
-
-  // Blur scales with actual pixels moved per frame. A navigation flight
-  // therefore gets more blur than a gentle wheel nudge. X-only sigma keeps
-  // the effect directional and restrained.
-  const height = Math.max(1, viewport.clientHeight);
-  motionBlurSigma = Math.min(2.25, 0.07 + (movement / height) * 3.35 * motionBoost);
-  motionBlurNode.setAttribute("stdDeviation", `${motionBlurSigma.toFixed(2)} 0.035`);
-  viewport.classList.add("is-motion-blurred");
-}
-
-function releaseMotionBlur() {
-  if (!motionBlurNode || !motionBlurSigma) {
-    viewport.classList.remove("is-motion-blurred");
-    return;
-  }
-  if (motionBlurRaf) cancelAnimationFrame(motionBlurRaf);
-
-  const start = performance.now();
-  const initialSigma = motionBlurSigma;
-  const duration = 190;
-
-  const fade = now => {
-    const progress = Math.min(1, (now - start) / duration);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const sigma = initialSigma * (1 - eased);
-    motionBlurNode.setAttribute("stdDeviation", `${sigma.toFixed(2)} 0.035`);
-
-    if (progress < 1) {
-      motionBlurRaf = requestAnimationFrame(fade);
-    } else {
-      motionBlurRaf = 0;
-      motionBlurSigma = 0;
-      motionBlurNode.setAttribute("stdDeviation", "0 0");
-      viewport.classList.remove("is-motion-blurred");
-    }
-  };
-
-  motionBlurRaf = requestAnimationFrame(fade);
-}
-
 function animate() {
   const current = viewport.scrollLeft;
   const delta = targetScroll - current;
   const factor = 1 - Math.pow(.001, 16 / 1000);
-
   if (Math.abs(delta) < .5) {
     viewport.scrollLeft = targetScroll;
     rebase();
     animationFrame = 0;
-    motionBoost = 1;
-    releaseMotionBlur();
     return;
   }
-
-  const next = current + delta * factor;
-  viewport.scrollLeft = next;
-  setMotionBlur(next - current);
+  viewport.scrollLeft = current + delta * factor;
   rebase();
   animationFrame = requestAnimationFrame(animate);
 }
 
-function scrollToX(value, intensity = 1) {
+function scrollToX(value) {
   targetScroll = value;
-  motionBoost = Math.max(1, Math.min(1.4, intensity));
   if (!animationFrame) animationFrame = requestAnimationFrame(animate);
 }
 
@@ -513,14 +393,14 @@ function goToAnchor(name) {
   if (!node) return;
   const rect = node.getBoundingClientRect();
   const center = rect.left + rect.width / 2;
-  scrollToX(viewport.scrollLeft + center - viewport.clientWidth / 2, 1.3);
+  scrollToX(viewport.scrollLeft + center - viewport.clientWidth / 2);
 }
 
 function goToReel() {
   const node = middleRun()?.querySelector(".reel-tile");
   if (!node) return;
   const rect = node.getBoundingClientRect();
-  scrollToX(viewport.scrollLeft + rect.left + rect.width / 2 - viewport.clientWidth / 2, 1.18);
+  scrollToX(viewport.scrollLeft + rect.left + rect.width / 2 - viewport.clientWidth / 2);
 }
 
 viewport.addEventListener("wheel", event => {
@@ -534,33 +414,8 @@ viewport.addEventListener("wheel", event => {
   scrollToX(targetScroll + amount * 1.2);
 }, {passive:false});
 
-viewport.addEventListener("touchstart", () => {
-  touchGesture = true;
-  touchLastScroll = viewport.scrollLeft;
-}, {passive:true});
-
-viewport.addEventListener("touchend", () => {
-  clearTimeout(touchBlurTimer);
-  touchBlurTimer = window.setTimeout(() => {
-    touchGesture = false;
-    releaseMotionBlur();
-  }, 150);
-}, {passive:true});
-
 viewport.addEventListener("scroll", () => {
-  if (touchGesture && !animationFrame && !dragging) {
-    const current = viewport.scrollLeft;
-    const distance = current - touchLastScroll;
-    if (Math.abs(distance) < cycleWidth * .45) setMotionBlur(distance);
-    touchLastScroll = current;
-    targetScroll = current;
-    clearTimeout(touchBlurTimer);
-    touchBlurTimer = window.setTimeout(releaseMotionBlur, 110);
-  }
-  if (!animationFrame) {
-    rebase();
-    if (touchGesture) touchLastScroll = viewport.scrollLeft;
-  }
+  if (!animationFrame) rebase();
 });
 
 viewport.addEventListener("pointerdown", event => {
@@ -574,16 +429,13 @@ viewport.addEventListener("pointerdown", event => {
 });
 viewport.addEventListener("pointermove", event => {
   if (!dragging) return;
-  const previous = viewport.scrollLeft;
   viewport.scrollLeft = dragScroll - (event.clientX - dragX);
   targetScroll = viewport.scrollLeft;
-  setMotionBlur(viewport.scrollLeft - previous);
   rebase();
 });
 function endDrag() {
   dragging = false;
   viewport.classList.remove("is-dragging");
-  releaseMotionBlur();
 }
 viewport.addEventListener("pointerup", endDrag);
 viewport.addEventListener("pointercancel", endDrag);
@@ -606,7 +458,19 @@ render();
 bindTiles();
 requestAnimationFrame(measure);
 window.addEventListener("resize", () => requestAnimationFrame(measure));
-window.addEventListener("blur", releaseMotionBlur);
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) releaseMotionBlur();
-});
+
+/* Horizontal motion blur: strength follows scroll speed, filter is removed when still. */
+document.body.insertAdjacentHTML("beforeend", '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="mblur" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feGaussianBlur id="mblurStd" stdDeviation="0 0"/></filter></svg>');
+(function motionBlur() {
+  const std = document.querySelector("#mblurStd");
+  let last = viewport.scrollLeft, amt = 0, on = false;
+  (function loop() {
+    const x = viewport.scrollLeft; let dx = x - last; last = x;
+    if (cycleWidth && Math.abs(dx) > cycleWidth * 0.3) dx = 0; // ignore the loop jump
+    const target = Math.min(14, Math.abs(dx) * 0.35);
+    amt += (target - amt) * (target > amt ? 0.5 : 0.25);
+    if (amt > 0.4) { std.setAttribute("stdDeviation", amt.toFixed(2) + " 0"); if (!on) { viewport.style.filter = "url(#mblur)"; on = true; } }
+    else if (on) { viewport.style.filter = ""; on = false; amt = 0; }
+    requestAnimationFrame(loop);
+  })();
+})();
