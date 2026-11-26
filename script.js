@@ -4,21 +4,21 @@ const REEL_ID = "994186610";
 const REEL_RATIO = 2.35;
 
 const projects = [
-  {id:"doc",title:"Documentary",ratio:"4-3"},
-  {id:"commercial",title:"Commercial & Brand",ratio:"16-9"},
-  {id:"light",title:"A study in available light",ratio:"1",note:"A study in available light.",noteType:"A SMALL OBSERVATION"},
-  {id:"people",title:"People & Portraits",ratio:"4-3"},
-  {id:"wedding",title:"Wedding moment",ratio:"16-9",note:"The moments in between.",noteType:"A PERSONAL NOTE"},
-  {id:"narrative",title:"Narrative",ratio:"1"},
-  {id:"selected",title:"Selected Projects",ratio:"16-9"},
-  {id:"landscape",title:"Somewhere between here and nowhere",ratio:"4-3",note:"Somewhere between here and nowhere.",noteType:"A SMALL OBSERVATION"},
-  {id:"brand",title:"Brand Film",ratio:"1"},
-  {id:"bts",title:"Behind the Scenes",ratio:"4-3",note:"A little chaos behind the scenes.",noteType:"A PERSONAL NOTE"},
-  {id:"campaign",title:"Campaign",ratio:"1"},
-  {id:"events",title:"Live & Events",ratio:"16-9"},
-  {id:"chasing",title:"Chasing the last light",ratio:"1",note:"Chasing the last light.",noteType:"A SMALL OBSERVATION"},
-  {id:"music",title:"Music & Culture",ratio:"1"},
-  {id:"docfilm",title:"Documentary Film",ratio:"16-9"},
+  {id:"doc",title:"The Beauty Of Gold",ratio:"2-35",platform:"vimeo",videoId:"746774915",video:"https://vimeo.com/746774915",image:"https://vumbnail.com/746774915.jpg",note:"Gold, light and the details between.",noteType:"A STUDY IN LIGHT"},
+  {id:"commercial",title:"Lukas Graham",ratio:"16-9",platform:"youtube",videoId:"sKuBbALwygs",video:"https://www.youtube.com/watch?v=sKuBbALwygs",image:"https://img.youtube.com/vi/sKuBbALwygs/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/sKuBbALwygs/hqdefault.jpg",note:"A beat, a face, a moment that stays.",noteType:"MUSIC & MOVEMENT"},
+  {id:"light",title:"KTH, Oscar",ratio:"4-3",platform:"youtube",videoId:"XnGmN8iuQmk",video:"https://www.youtube.com/watch?v=XnGmN8iuQmk",image:"https://img.youtube.com/vi/XnGmN8iuQmk/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/XnGmN8iuQmk/hqdefault.jpg",note:"An idea begins with a conversation.",noteType:"A PORTRAIT"},
+  {id:"people",title:"Lärargalan 2023",ratio:"16-9",platform:"youtube",videoId:"f3GqDRXFZ_Y",video:"https://www.youtube.com/watch?v=f3GqDRXFZ_Y",image:"https://img.youtube.com/vi/f3GqDRXFZ_Y/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/f3GqDRXFZ_Y/hqdefault.jpg",note:"A room full of people making a difference.",noteType:"A NIGHT TO REMEMBER"},
+  {id:"wedding",title:"Spritfabriken",ratio:"16-9",platform:"youtube",videoId:"q4J1hM7gOYU",video:"https://www.youtube.com/watch?v=q4J1hM7gOYU",image:"https://img.youtube.com/vi/q4J1hM7gOYU/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/q4J1hM7gOYU/hqdefault.jpg",note:"Character lives in the details.",noteType:"A SENSE OF PLACE"},
+  {id:"narrative",title:"Vattenfall, Fjärrvärme",ratio:"16-9",platform:"vimeo",videoId:"772037309",video:"https://vimeo.com/772037309",image:"https://vumbnail.com/772037309.jpg",note:"Energy, just beneath the surface.",noteType:"A DIFFERENT CURRENT"},
+  {id:"selected",title:"Aleris, Art Clinic",ratio:"16-9",platform:"youtube",videoId:"O1T5kZkfx6U",video:"https://www.youtube.com/watch?v=O1T5kZkfx6U",image:"https://img.youtube.com/vi/O1T5kZkfx6U/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/O1T5kZkfx6U/hqdefault.jpg",note:"Quiet precision. Human stories.",noteType:"PEOPLE FIRST"},
+  {id:"landscape",title:"Ryder's Cup",ratio:"1",platform:"instagram",videoId:"CxutZ-Rt6jQ",video:"https://www.instagram.com/reel/CxutZ-Rt6jQ/",note:"A moment inside the noise.",noteType:"ON LOCATION",posterText:"RC"},
+  {id:"brand",title:"Skånetrafiken",ratio:"16-9",platform:"youtube",videoId:"UMjSnObIrWg",video:"https://www.youtube.com/watch?v=UMjSnObIrWg",image:"https://img.youtube.com/vi/UMjSnObIrWg/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/UMjSnObIrWg/hqdefault.jpg",note:"The everyday, in motion.",noteType:"A REGION IN MOTION"},
+  {id:"bts",title:"Demokrati Pågår",ratio:"16-9",platform:"youtube",videoId:"DoNzgCG3Fgs",video:"https://www.youtube.com/watch?v=DoNzgCG3Fgs",image:"https://img.youtube.com/vi/DoNzgCG3Fgs/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/DoNzgCG3Fgs/hqdefault.jpg",note:"A big idea, brought down to earth.",noteType:"IDEAS IN ACTION"},
+  {id:"campaign",title:"Demokrativerkstaden",ratio:"4-3",platform:"youtube",videoId:"voEMRubg3p8",video:"https://www.youtube.com/watch?v=voEMRubg3p8",image:"https://img.youtube.com/vi/voEMRubg3p8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/voEMRubg3p8/hqdefault.jpg",note:"Democracy is something we do together.",noteType:"PARTICIPATION"},
+  {id:"events",title:"Uppdrag Ledamot",ratio:"16-9",platform:"youtube",videoId:"g80oZRFmm_E",video:"https://www.youtube.com/watch?v=g80oZRFmm_E",image:"https://img.youtube.com/vi/g80oZRFmm_E/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/g80oZRFmm_E/hqdefault.jpg",note:"A closer look at the work behind the role.",noteType:"BEHIND THE ROLE"},
+  {id:"chasing",title:"Väddö",ratio:"2-35",platform:"youtube",videoId:"uZfV9U9B7TA",video:"https://www.youtube.com/watch?v=uZfV9U9B7TA",image:"https://img.youtube.com/vi/uZfV9U9B7TA/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/uZfV9U9B7TA/hqdefault.jpg",note:"A place, a rhythm, a little breathing room.",noteType:"A SMALL OBSERVATION"},
+  {id:"music",title:"KTH, Innovation",ratio:"16-9",platform:"youtube",videoId:"wR9AfemNIOM",video:"https://www.youtube.com/watch?v=wR9AfemNIOM",image:"https://img.youtube.com/vi/wR9AfemNIOM/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/wR9AfemNIOM/hqdefault.jpg",note:"Curiosity turning into possibility.",noteType:"A STARTING POINT"},
+  {id:"docfilm",title:"Skin — Short Film",ratio:"2-35",platform:"vimeo",videoId:"239191351",video:"https://vimeo.com/239191351",image:"https://vumbnail.com/239191351.jpg",note:"A story told in gestures and atmosphere.",noteType:"SHORT FILM"},
   {id:"afternoon",title:"An afternoon that turned into something else",ratio:"1",note:"Didn't plan this one. Glad it happened.",noteType:"A PERSONAL NOTE"},
   {id:"earlier",title:"Earlier Work",ratio:"4-3"},
   {id:"between",title:"Between takes",ratio:"16-9",note:"The in-between is often where things happen.",noteType:"A PERSONAL NOTE"},
@@ -41,6 +41,11 @@ const viewport = document.querySelector("#work");
 const noteBox = document.querySelector("#hoverNote");
 const noteKicker = noteBox.querySelector("span");
 const noteText = noteBox.querySelector("p");
+const projectModal = document.querySelector("#projectModal");
+const projectModalFrame = document.querySelector("#projectModalFrame");
+const projectModalTitle = document.querySelector("#projectModalTitle");
+const projectModalLink = document.querySelector("#projectModalLink");
+let lastFocusedTile = null;
 
 let cycleWidth = 0;
 let targetScroll = 0;
@@ -61,15 +66,18 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
 function tile(project, extra = "", tall = false, placement = "") {
   const ratio = tall ? "tile-tall" : `ratio-${project.ratio}`;
   const image = project.image
-    ? `<img src="${esc(project.image)}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
-    : `<span class="placeholder-mark" aria-hidden="true">L.</span>`;
+    ? `<img class="tile-poster" src="${esc(project.image)}" ${project.fallbackImage ? `data-fallback="${esc(project.fallbackImage)}"` : ""} alt="${esc(project.title)}" loading="lazy" decoding="async">`
+    : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
   const preview = project.preview
     ? `<video class="hover-video" muted loop playsinline preload="none" src="${esc(project.preview)}"></video>`
+    : "";
+  const platformData = project.platform
+    ? `data-platform="${esc(project.platform)}" data-video-id="${esc(project.videoId)}" data-video-url="${esc(project.video)}"`
     : "";
   const note = project.note
     ? `data-note="${esc(project.note)}" data-note-type="${esc(project.noteType || "A NOTE")}"`
     : "";
-  return `<article class="tile ${ratio} ${extra}" style="${placement}" data-id="${esc(project.id)}" ${note} tabindex="0" role="button" aria-label="${esc(project.title)}">
+  return `<article class="tile ${ratio} ${extra}" style="${placement}" data-id="${esc(project.id)}" ${platformData} ${note} tabindex="0" role="button" aria-label="${esc(project.title)}">
     <div class="tile-media">${image}${preview}</div>
     <div class="tile-meta">${esc(project.title)}</div>
   </article>`;
@@ -340,6 +348,7 @@ function stopActive() {
       activeTile.querySelector(".reel-frame")?.remove();
       activeTile.classList.remove("is-playing");
     }
+    activeTile.querySelector(".tile-preview-frame")?.remove();
     const video = activeTile.querySelector(".hover-video");
     if (video) {
       video.pause();
@@ -382,6 +391,117 @@ function mountReel(tileNode, full = false) {
   tileNode.classList.toggle("is-full", full);
 }
 
+function projectEmbedUrl(project, mode = "preview") {
+  const preview = mode === "preview";
+  if (project.platform === "youtube") {
+    const params = new URLSearchParams({
+      autoplay: "1",
+      mute: preview ? "1" : "0",
+      controls: preview ? "0" : "1",
+      playsinline: "1",
+      rel: "0",
+      modestbranding: "1",
+      iv_load_policy: "3",
+      disablekb: preview ? "1" : "0"
+    });
+    if (preview) {
+      params.set("loop", "1");
+      params.set("playlist", project.videoId);
+    }
+    return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(project.videoId)}?${params.toString()}`;
+  }
+  if (project.platform === "vimeo") {
+    const params = new URLSearchParams({
+      autoplay: "1",
+      muted: preview ? "1" : "0",
+      background: preview ? "1" : "0",
+      loop: preview ? "1" : "0",
+      autopause: "0",
+      title: "0",
+      byline: "0",
+      portrait: "0",
+      dnt: "1",
+      playsinline: "1",
+      controls: preview ? "0" : "1"
+    });
+    return `https://player.vimeo.com/video/${encodeURIComponent(project.videoId)}?${params.toString()}`;
+  }
+  if (project.platform === "instagram") {
+    // Instagram's public embed is the best available fallback; its own
+    // player controls autoplay, so hover autoplay cannot be guaranteed.
+    return `https://www.instagram.com/reel/${encodeURIComponent(project.videoId)}/embed/`;
+  }
+  return project.preview || "";
+}
+
+function fitPreviewFrame(frame, tileNode, project) {
+  if (project.platform === "instagram") {
+    frame.style.width = "100%";
+    frame.style.height = "100%";
+    return;
+  }
+  const rect = tileNode.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const tileRatio = rect.width / rect.height;
+  const playerRatio = 16 / 9;
+  if (tileRatio > playerRatio) {
+    frame.style.width = `${rect.width}px`;
+    frame.style.height = `${rect.width / playerRatio}px`;
+  } else {
+    frame.style.height = `${rect.height}px`;
+    frame.style.width = `${rect.height * playerRatio}px`;
+  }
+}
+
+function mountProjectPreview(tileNode, project) {
+  tileNode.querySelector(".tile-preview-frame")?.remove();
+  const frame = document.createElement("iframe");
+  frame.className = `tile-preview-frame ${project.platform}-preview-frame`;
+  frame.title = `${project.title} preview`;
+  frame.loading = "eager";
+  frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+  frame.referrerPolicy = "strict-origin-when-cross-origin";
+  frame.tabIndex = -1;
+  frame.src = projectEmbedUrl(project, "preview");
+  frame.style.pointerEvents = "none";
+  fitPreviewFrame(frame, tileNode, project);
+  tileNode.querySelector(".tile-media").appendChild(frame);
+  tileNode.classList.add("has-embed-preview");
+}
+
+function openProjectPlayer(tileNode, project) {
+  if (!project || !project.video) return;
+  stopActive();
+  lastFocusedTile = tileNode;
+  projectModalTitle.textContent = project.title;
+  projectModalLink.href = project.video;
+  projectModalLink.textContent = project.platform === "instagram" ? "OPEN ON INSTAGRAM ↗" : `OPEN ON ${project.platform.toUpperCase()} ↗`;
+  projectModalFrame.replaceChildren();
+
+  const frame = document.createElement("iframe");
+  frame.className = `project-player-frame ${project.platform}-player-frame`;
+  frame.title = `${project.title} player`;
+  frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen; web-share";
+  frame.allowFullscreen = true;
+  frame.referrerPolicy = "strict-origin-when-cross-origin";
+  frame.src = projectEmbedUrl(project, "full");
+  projectModalFrame.appendChild(frame);
+  projectModal.classList.add("open");
+  projectModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("player-open");
+  projectModal.querySelector(".project-modal-close").focus({preventScroll:true});
+}
+
+function closeProjectPlayer() {
+  if (!projectModal.classList.contains("open")) return;
+  projectModal.classList.remove("open");
+  projectModal.setAttribute("aria-hidden", "true");
+  projectModalFrame.replaceChildren();
+  document.body.classList.remove("player-open");
+  if (lastFocusedTile?.isConnected) lastFocusedTile.focus({preventScroll:true});
+  lastFocusedTile = null;
+}
+
 function activate(tileNode) {
   if (!tileNode || activeTile === tileNode) return;
   stopActive();
@@ -391,7 +511,9 @@ function activate(tileNode) {
   if (tileNode.classList.contains("reel-tile")) {
     mountReel(tileNode, false);
   } else {
-    tileNode.querySelector(".hover-video")?.play().catch(() => {});
+    const project = projects.find(item => item.id === tileNode.dataset.id);
+    if (project?.platform) mountProjectPreview(tileNode, project);
+    else tileNode.querySelector(".hover-video")?.play().catch(() => {});
   }
   noteTimer = window.setTimeout(() => showNote(tileNode), 650);
   clearTimeout(dimTimer);
@@ -409,6 +531,33 @@ function openReel(tileNode) {
 }
 
 function bindTiles() {
+  track.querySelectorAll(".tile-poster").forEach(image => {
+    image.addEventListener("error", () => {
+      const fallback = image.dataset.fallback;
+      if (fallback && image.dataset.fallbackTried !== "1") {
+        image.dataset.fallbackTried = "1";
+        image.src = fallback;
+      } else {
+        const media = image.closest(".tile-media");
+        image.remove();
+        if (media && !media.querySelector(".placeholder-mark")) {
+          const mark = document.createElement("span");
+          mark.className = "placeholder-mark";
+          mark.setAttribute("aria-hidden", "true");
+          mark.textContent = "L.";
+          media.prepend(mark);
+        }
+      }
+    }, {once:false});
+  });
+  projectModal.querySelectorAll("[data-close-project]").forEach(node => {
+    node.addEventListener("click", closeProjectPlayer);
+  });
+  projectModal.querySelector(".project-modal-close").addEventListener("click", closeProjectPlayer);
+  projectModalLink.addEventListener("click", event => event.stopPropagation());
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeProjectPlayer();
+  });
   track.querySelectorAll(".tile").forEach(tileNode => {
     tileNode.addEventListener("mouseenter", () => {
       clearTimeout(hoverTimer);
@@ -428,13 +577,17 @@ function bindTiles() {
         openReel(tileNode);
       } else {
         const project = projects.find(item => item.id === tileNode.dataset.id);
-        if (project?.video) window.open(project.video, "_blank", "noopener");
+        if (project?.video) openProjectPlayer(tileNode, project);
       }
     });
     tileNode.addEventListener("keydown", event => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         if (tileNode.classList.contains("reel-tile")) openReel(tileNode);
+        else {
+          const project = projects.find(item => item.id === tileNode.dataset.id);
+          if (project?.video) openProjectPlayer(tileNode, project);
+        }
       }
     });
   });
