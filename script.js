@@ -1,4 +1,4 @@
-/* LINDCINE v25 — a simple, edge-to-edge horizontal film wall.
+/* LINDCINE v26 — organic edge-to-edge horizontal film wall.
    Edit the projects array to add real stills, previews and links. */
 const REEL_ID = "994186610";
 const REEL_RATIO = 2.35;
@@ -52,6 +52,7 @@ let dimTimer = 0;
 let dragging = false;
 let dragX = 0;
 let dragScroll = 0;
+let motionBlurBoost = 1;
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
@@ -87,7 +88,7 @@ function reelTile() {
    through more than ~half the page. Info areas are stair-stepped holes: left and right side tiles stop at
    different x per row, and the two sides split the height differently. ---- */
 const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "1":1, "4-3":4/3};
-const WEIGHTS = [["16-9",.50],["2-35",.31],["1",.13],["4-3",.06]]; // most → least common
+const WEIGHTS = [["16-9",.40],["2-35",.23],["1",.21],["4-3",.16]]; // landscape-led, with a genuine mix of all four formats
 const SMALL = new Set(["1","4-3"]);
 const T = 2400, HT = 26, HM = 48, HB = 26, PANEL = REEL_RATIO*HM, ISL = 210;
 let seed = 20264;
@@ -97,7 +98,8 @@ function pickRatio(ctx) {
     let x = rand(), acc = 0, k = "16-9";
     for (const [key, w] of WEIGHTS) { acc += w; if (x < acc) { k = key; break; } }
     const a = ctx[ctx.length-1], b = ctx[ctx.length-2];
-    if (SMALL.has(k) && a && SMALL.has(a)) continue;
+    if (SMALL.has(k) && SMALL.has(a) && SMALL.has(b)) continue;
+    if (k === "2-35" && a === k) continue; // avoid adjacent panorama cards in the same run
     if (a === k && b === k) continue;
     ctx.push(k); return k;
   }
@@ -110,13 +112,53 @@ function leaves(n, x, y, w, h, out) {
 }
 function genNode(ctx, depth, stackOK) {
   const x = rand();
-  if (depth === 0 || x < .5) return {leaf: pickRatio(ctx)};
-  if (stackOK && x < .8) return {v: Array.from({length: rand() < .8 ? 2 : 3}, () => genNode(ctx, depth - 1, false))};
+  if (depth === 0 || x < .28) return {leaf: pickRatio(ctx)};
+  if (stackOK && x < .66) {
+    const count = rand() < .88 ? 2 : 3;
+    return {v: Array.from({length: count}, () => genNode(ctx, depth - 1, false))};
+  }
   return {h: [genNode(ctx, depth - 1, true), genNode(ctx, depth - 1, true)]};
 }
-function okBlock(b, H) { const out = []; leaves(b, 0, 0, H * rho(b), H, out); return out.every(r => r.h >= 12 && r.w >= 22); }
-const genMid = ctx => { for (;;) { const c = ctx.slice(), b = genNode(c, 2, true); if (okBlock(b, HM)) { ctx.splice(0, ctx.length, ...c); return b; } } };
-const genEdge = (ctx, H) => { for (;;) { const c = ctx.slice(), b = rand() < .1 ? {v: [{leaf: pickRatio(c)}, {leaf: pickRatio(c)}]} : {leaf: pickRatio(c)}; if (okBlock(b, H)) { ctx.splice(0, ctx.length, ...c); return b; } } };
+function okBlock(b, H) {
+  const out = [];
+  leaves(b, 0, 0, H * rho(b), H, out);
+  return out.length > 0 && out.every(r => r.h >= 12 && r.w >= 22);
+}
+const genMid = ctx => {
+  for (let tries = 0; ; tries++) {
+    const c = ctx.slice();
+    const depth = rand() < .28 ? 3 : 2;
+    const b = genNode(c, depth, true);
+    if (okBlock(b, HM)) { ctx.splice(0, ctx.length, ...c); return b; }
+    if (tries > 5000) { const fallback = {leaf: pickRatio(ctx)}; return fallback; }
+  }
+};
+const genEdge = (ctx, H) => {
+  for (let tries = 0; ; tries++) {
+    const c = ctx.slice();
+    const mode = rand();
+    let b;
+    if (mode < .43) {
+      // A loose horizontal run of 2–3 full-height tiles gives the outer
+      // bands more internal rhythm without introducing gaps or distortion.
+      const count = rand() < .62 ? 2 : 3;
+      b = {h:Array.from({length:count}, () => ({leaf:pickRatio(c)}))};
+    } else if (mode < .60) {
+      // Occasional two-tier stack; alternate the two wide formats so the
+      // stacked pair does not read like duplicated cards.
+      const first = rand() < .66 ? "16-9" : "2-35";
+      const second = first === "16-9" ? "2-35" : "16-9";
+      c.push(first,second);
+      b = {v:[{leaf:first},{leaf:second}]};
+    } else if (mode < .90) {
+      b = genNode(c, rand() < .7 ? 2 : 3, true);
+    } else {
+      b = {leaf:pickRatio(c)};
+    }
+    if (okBlock(b, H)) { ctx.splice(0, ctx.length, ...c); return b; }
+    if (tries > 5000) { const fallback = {leaf: pickRatio(ctx)}; return fallback; }
+  }
+};
 function makeSeq(H, target, tol, gen) { // blocks whose natural widths sum to target ±tol (scaled to fit by flex)
   let best = null, bestErr = Infinity;
   for (let t = 0; t < 3000; t++) {
@@ -127,8 +169,19 @@ function makeSeq(H, target, tol, gen) { // blocks whose natural widths sum to ta
   }
   return best;
 }
-function rangeList(lo, hi, h) {
-  for (;;) { const ctx = [], list = []; let s = 0; while (s * h < lo) { list.push(pickRatio(ctx)); s += TILE_RATIOS[list[list.length-1]]; } if (s * h <= hi) return list; }
+function rangeList(lo, hi, h, context = []) {
+  for (;;) {
+    const nextContext = context.slice(), list = [];
+    let s = 0;
+    while (s * h < lo) {
+      list.push(pickRatio(nextContext));
+      s += TILE_RATIOS[list[list.length-1]];
+    }
+    if (s * h <= hi) {
+      context.splice(0, context.length, ...nextContext);
+      return list;
+    }
+  }
 }
 const sumOf = list => list.reduce((a,k) => a + TILE_RATIOS[k], 0);
 function splitHeight() { // 2 or 3 rows summing to HM
@@ -142,30 +195,65 @@ function layerEvents(blocks, H, y0, total, out = []) {
   blocks.forEach(b => { const bw = H * rho(b) * s, lv = []; leaves(b, x, y0, bw, H, lv); lv.forEach(r => out.push({x: r.x, y0: r.y, y1: r.y + r.h}, {x: r.x + r.w, y0: r.y, y1: r.y + r.h})); x += bw; });
   return out;
 }
-function hasLongSeam(ev) { // an edge running unbroken through ≥55svh?
-  return ev.some(e => {
-    const iv = ev.filter(f => { const d = Math.abs(f.x - e.x); return Math.min(d, T - d) < 1.2; }).map(f => [f.y0, f.y1]).sort((a,b) => a[0] - b[0]);
+function hasLongSeam(ev) { // reject an almost-continuous vertical edge ≥55svh
+  const sorted = ev.map(e => ({
+    x: ((e.x % T) + T) % T,
+    y0: e.y0,
+    y1: e.y1
+  })).sort((a,b) => a.x - b.x);
+  const groups = [];
+  for (const e of sorted) {
+    let g = groups[groups.length - 1];
+    if (!g || e.x - g.startX >= 1.2) {
+      g = {startX:e.x, intervals:[]};
+      groups.push(g);
+    }
+    g.intervals.push([e.y0,e.y1]);
+  }
+  // Also test edges that coincide across the infinite-loop seam at x=0/T.
+  if (groups.length > 1 && groups[0].startX + T - sorted[sorted.length-1].x < 1.2) {
+    groups[0].intervals.push(...groups.pop().intervals);
+  }
+  for (const g of groups) {
+    const intervals = g.intervals.sort((a,b) => a[0] - b[0]);
     let cur = null, best = 0;
-    for (const [a,b] of iv) { if (cur && a <= cur[1] + .01) cur[1] = Math.max(cur[1], b); else cur = [a,b]; best = Math.max(best, cur[1] - cur[0]); }
-    return best >= 55;
-  });
+    for (const [a,b] of intervals) {
+      if (cur && a <= cur[1] + .01) cur[1] = Math.max(cur[1],b);
+      else cur = [a,b];
+      best = Math.max(best,cur[1]-cur[0]);
+      if (best >= 55) return true;
+    }
+  }
+  return false;
 }
 const shifted = (ev, d) => ev.map(e => ({x: (((e.x - d) % T) + T) % T, y0: e.y0, y1: e.y1}));
 function chooseShift(layerEv, midEv) { for (let i = 0; i < 4000; i++) { const d = rand() * T; if (!hasLongSeam(shifted(layerEv, d).concat(midEv))) return d; } return 0; }
 function buildPlan() {
   const mk = (H, target, tol, gen) => makeSeq(H, target, tol, gen);
-  const plan = {top: mk(HT, T, .003, c => genEdge(c, HT)), bottom: mk(HB, T, .003, c => genEdge(c, HB)), mid: []};
+  const plan = {top: mk(HT, T, .0003, c => genEdge(c, HT)), bottom: mk(HB, T, .0003, c => genEdge(c, HB)), mid: []};
   const free = T - PANEL - 3*ISL, wts = [0,1,2,3].map(() => .7 + rand()*.6), ws = wts.reduce((a,b) => a + b, 0), midEv = [];
   let x = 0, si = 0;
   for (const o of ["seg","reel","seg","about","seg","rightnow","seg","contact"]) {
-    if (o === "seg") { const w = free * wts[si++] / ws; const blocks = mk(HM, w, .006, genMid); plan.mid.push({kind:"seg", w, blocks});
+    if (o === "seg") { const w = free * wts[si++] / ws; const blocks = mk(HM, w, .0005, genMid); plan.mid.push({kind:"seg", w, blocks});
       const ev = layerEvents(blocks, HM, HT, w); ev.forEach(e => midEv.push({x: e.x + x, y0: e.y0, y1: e.y1})); x += w; }
     else if (o === "reel") { plan.mid.push({kind:"reel", w: PANEL}); midEv.push({x, y0: HT, y1: HT+HM}, {x: x+PANEL, y0: HT, y1: HT+HM}); x += PANEL; }
     else {
       const isl = {kind: o, w: ISL, L: [], R: []};
-      for (const side of ["L","R"]) { let y = HT; splitHeight().forEach(h => { const list = rangeList(26, 52, h), wd = sumOf(list) * h;
-        const x0 = side === "L" ? x : x + ISL - wd; let c = 0; for (const k of [...list, null]) { midEv.push({x: x0 + c*h, y0: y, y1: y + h}); if (k) c += TILE_RATIOS[k]; }
-        isl[side].push({h, list}); y += h; }); }
+      for (const side of ["L","R"]) {
+        let y = HT;
+        const sideContext = [];
+        splitHeight().forEach(h => {
+          const list = rangeList(26, 52, h, sideContext), wd = sumOf(list) * h;
+          const x0 = side === "L" ? x : x + ISL - wd;
+          let c = 0;
+          for (const k of [...list, null]) {
+            midEv.push({x: x0 + c*h, y0: y, y1: y + h});
+            if (k) c += TILE_RATIOS[k];
+          }
+          isl[side].push({h, list});
+          y += h;
+        });
+      }
       plan.mid.push(isl); x += ISL;
     }
   }
@@ -262,10 +350,19 @@ function stopActive() {
   document.body.classList.remove("has-active");
 }
 
+const NOTE_POSITIONS = ["bottom-left","bottom-right","top-left","top-right","mid-left","mid-right"];
+let lastNotePosition = "";
 function showNote(tileNode) {
   if (!tileNode.dataset.note) return;
   noteKicker.textContent = tileNode.dataset.noteType || "A NOTE";
   noteText.textContent = tileNode.dataset.note;
+  const options = NOTE_POSITIONS.filter(position => position !== lastNotePosition);
+  const position = options[Math.floor(rand() * options.length)];
+  lastNotePosition = position;
+  noteBox.dataset.position = position;
+  noteBox.classList.remove("visible");
+  // Restart the small reveal transition even when two notes appear quickly.
+  void noteBox.offsetWidth;
   noteBox.classList.add("visible");
 }
 
@@ -376,6 +473,7 @@ function animate() {
     viewport.scrollLeft = targetScroll;
     rebase();
     animationFrame = 0;
+    motionBlurBoost = 1;
     return;
   }
   viewport.scrollLeft = current + delta * factor;
@@ -383,8 +481,9 @@ function animate() {
   animationFrame = requestAnimationFrame(animate);
 }
 
-function scrollToX(value) {
+function scrollToX(value, navigationFlight = false) {
   targetScroll = value;
+  if (navigationFlight) motionBlurBoost = 1.25;
   if (!animationFrame) animationFrame = requestAnimationFrame(animate);
 }
 
@@ -393,14 +492,14 @@ function goToAnchor(name) {
   if (!node) return;
   const rect = node.getBoundingClientRect();
   const center = rect.left + rect.width / 2;
-  scrollToX(viewport.scrollLeft + center - viewport.clientWidth / 2);
+  scrollToX(viewport.scrollLeft + center - viewport.clientWidth / 2, true);
 }
 
 function goToReel() {
   const node = middleRun()?.querySelector(".reel-tile");
   if (!node) return;
   const rect = node.getBoundingClientRect();
-  scrollToX(viewport.scrollLeft + rect.left + rect.width / 2 - viewport.clientWidth / 2);
+  scrollToX(viewport.scrollLeft + rect.left + rect.width / 2 - viewport.clientWidth / 2, true);
 }
 
 viewport.addEventListener("wheel", event => {
@@ -459,18 +558,29 @@ bindTiles();
 requestAnimationFrame(measure);
 window.addEventListener("resize", () => requestAnimationFrame(measure));
 
-/* Horizontal motion blur: strength follows scroll speed, filter is removed when still. */
-document.body.insertAdjacentHTML("beforeend", '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="mblur" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feGaussianBlur id="mblurStd" stdDeviation="0 0"/></filter></svg>');
+/* Subtle horizontal motion blur. Navigation flights get a small extra lift;
+   the filter fades away as soon as horizontal movement settles. */
+document.body.insertAdjacentHTML("beforeend", '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="mblur" x="-18%" y="-8%" width="136%" height="116%" color-interpolation-filters="sRGB"><feGaussianBlur id="mblurStd" stdDeviation="0 0"/></filter></svg>');
 (function motionBlur() {
   const std = document.querySelector("#mblurStd");
-  let last = viewport.scrollLeft, amt = 0, on = false;
+  let last = viewport.scrollLeft, amount = 0, active = false;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
   (function loop() {
-    const x = viewport.scrollLeft; let dx = x - last; last = x;
-    if (cycleWidth && Math.abs(dx) > cycleWidth * 0.3) dx = 0; // ignore the loop jump
-    const target = Math.min(14, Math.abs(dx) * 0.35);
-    amt += (target - amt) * (target > amt ? 0.5 : 0.25);
-    if (amt > 0.4) { std.setAttribute("stdDeviation", amt.toFixed(2) + " 0"); if (!on) { viewport.style.filter = "url(#mblur)"; on = true; } }
-    else if (on) { viewport.style.filter = ""; on = false; amt = 0; }
+    const current = viewport.scrollLeft;
+    let dx = current - last;
+    last = current;
+    if (cycleWidth && Math.abs(dx) > cycleWidth * .3) dx = 0; // ignore seamless-loop rebasing
+    const target = reduced.matches ? 0 : Math.min(3.2, Math.abs(dx) * .065 * motionBlurBoost);
+    amount += (target - amount) * (target > amount ? .38 : .17);
+    if (amount > .28) {
+      std.setAttribute("stdDeviation", `${amount.toFixed(2)} 0.025`);
+      if (!active) { viewport.style.filter = "url(#mblur)"; active = true; }
+    } else if (active) {
+      std.setAttribute("stdDeviation", "0 0");
+      viewport.style.filter = "";
+      active = false;
+      amount = 0;
+    }
     requestAnimationFrame(loop);
   })();
 })();

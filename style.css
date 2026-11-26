@@ -92,3 +92,37 @@ body.dim .tile:not(.is-active){filter:brightness(.3);transition:filter 1.8s ease
 .tile[style*="--t:3;"] .tile-media{background:linear-gradient(140deg,#445a48,#0f1812 85%)}
 .tile[style*="--t:4;"] .tile-media{background:linear-gradient(140deg,#6b655c,#1a1816 85%)}
 .tile[style*="--t:5;"] .tile-media{background:linear-gradient(140deg,#34497a,#0c101d 85%)}
+
+
+/* V26 — hover notes reveal in changing screen positions. */
+.hover-note{
+  left:auto; right:auto; top:auto; bottom:auto;
+  width:min(330px,34vw);
+  max-width:calc(100vw - 40px);
+  padding:14px 16px 15px;
+  background:linear-gradient(120deg,rgba(8,9,10,.88),rgba(8,9,10,.66));
+  border-left:1px solid rgba(183,161,126,.8);
+  box-shadow:0 12px 38px rgba(0,0,0,.16);
+  backdrop-filter:blur(8px);
+  opacity:0;
+  transform:translate3d(0,10px,0);
+  filter:blur(2px);
+  transition:opacity .48s ease,transform .58s cubic-bezier(.2,.75,.25,1),filter .58s ease;
+}
+.hover-note.visible{opacity:1;transform:translate3d(0,0,0);filter:blur(0)}
+.hover-note[data-position="top-left"]{left:4vw;top:12vh;bottom:auto;right:auto}
+.hover-note[data-position="top-right"]{right:4vw;top:12vh;bottom:auto;left:auto}
+.hover-note[data-position="mid-left"]{left:4vw;top:43vh;bottom:auto;right:auto}
+.hover-note[data-position="mid-right"]{right:4vw;top:43vh;bottom:auto;left:auto}
+.hover-note[data-position="bottom-left"]{left:4vw;bottom:5vh;top:auto;right:auto}
+.hover-note[data-position="bottom-right"]{right:4vw;bottom:5vh;top:auto;left:auto}
+.hover-note span{display:block;margin-bottom:2px}
+.hover-note p{line-height:1.45;letter-spacing:-.015em}
+@media (max-width:700px){
+  .hover-note{width:min(290px,72vw);padding:11px 13px}
+  .hover-note[data-position="top-left"],.hover-note[data-position="mid-left"],.hover-note[data-position="bottom-left"]{left:5vw}
+  .hover-note[data-position="top-right"],.hover-note[data-position="mid-right"],.hover-note[data-position="bottom-right"]{right:5vw}
+}
+@media (prefers-reduced-motion:reduce){
+  .hover-note{transition:opacity .2s ease}
+}
