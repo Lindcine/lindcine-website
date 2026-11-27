@@ -19,6 +19,17 @@ const projects = [
   {id:"chasing",title:"Väddö",ratio:"2-35",platform:"youtube",videoId:"uZfV9U9B7TA",video:"https://www.youtube.com/watch?v=uZfV9U9B7TA",image:"https://img.youtube.com/vi/uZfV9U9B7TA/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/uZfV9U9B7TA/hqdefault.jpg",note:"A place, a rhythm, a little breathing room.",noteType:"A SMALL OBSERVATION"},
   {id:"music",title:"KTH, Innovation",ratio:"16-9",platform:"youtube",videoId:"wR9AfemNIOM",video:"https://www.youtube.com/watch?v=wR9AfemNIOM",image:"https://img.youtube.com/vi/wR9AfemNIOM/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/wR9AfemNIOM/hqdefault.jpg",note:"Curiosity turning into possibility.",noteType:"A STARTING POINT"},
   {id:"docfilm",title:"Skin — Short Film",ratio:"2-35",platform:"vimeo",videoId:"239191351",video:"https://vimeo.com/239191351",image:"https://vumbnail.com/239191351.jpg",note:"A story told in gestures and atmosphere.",noteType:"SHORT FILM"},
+  {id:"new01",title:"Project 01",ratio:"16-9",platform:"youtube",videoId:"97A397zoDRQ",video:"https://www.youtube.com/watch?v=97A397zoDRQ",image:"https://img.youtube.com/vi/97A397zoDRQ/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/97A397zoDRQ/hqdefault.jpg"},
+  {id:"new02",title:"Project 02",ratio:"16-9",platform:"youtube",videoId:"7bjct80YFVU",video:"https://www.youtube.com/watch?v=7bjct80YFVU",image:"https://img.youtube.com/vi/7bjct80YFVU/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/7bjct80YFVU/hqdefault.jpg"},
+  {id:"new03",title:"Project 03",ratio:"16-9",platform:"mediaflow",videoId:"03LEWFM2AD",video:"https://m.mediaflow.com/m3u8/03LEWFM2AD?multiRes=1",image:"",posterText:"MF"},
+  {id:"new04",title:"Project 04",ratio:"9-16",platform:"youtube",videoId:"XDRftVQ9QGM",video:"https://www.youtube.com/shorts/XDRftVQ9QGM",image:"https://img.youtube.com/vi/XDRftVQ9QGM/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/XDRftVQ9QGM/hqdefault.jpg"},
+  {id:"new05",title:"Project 05",ratio:"16-9",platform:"youtube",videoId:"rEvU1r6oW34",video:"https://www.youtube.com/watch?v=rEvU1r6oW34",image:"https://img.youtube.com/vi/rEvU1r6oW34/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/rEvU1r6oW34/hqdefault.jpg"},
+  {id:"new06",title:"Project 06",ratio:"16-9",platform:"youtube",videoId:"SRKoVi9C5b8",video:"https://www.youtube.com/watch?v=SRKoVi9C5b8",image:"https://img.youtube.com/vi/SRKoVi9C5b8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/SRKoVi9C5b8/hqdefault.jpg"},
+  {id:"new07",title:"Project 07",ratio:"16-9",platform:"youtube",videoId:"Zq7xl2nZD2M",video:"https://www.youtube.com/watch?v=Zq7xl2nZD2M",image:"https://img.youtube.com/vi/Zq7xl2nZD2M/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/Zq7xl2nZD2M/hqdefault.jpg"},
+  {id:"new08",title:"Project 08",ratio:"16-9",platform:"youtube",videoId:"j-7in2cY4rA",video:"https://www.youtube.com/watch?v=j-7in2cY4rA",image:"https://img.youtube.com/vi/j-7in2cY4rA/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/j-7in2cY4rA/hqdefault.jpg"},
+  {id:"new09",title:"Project 09",ratio:"16-9",platform:"youtube",videoId:"acMafsKQiK8",video:"https://www.youtube.com/watch?v=acMafsKQiK8",image:"https://img.youtube.com/vi/acMafsKQiK8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/acMafsKQiK8/hqdefault.jpg"},
+  {id:"new10",title:"Project 10",ratio:"16-9",platform:"youtube",videoId:"lcQXgpyjHrw",video:"https://www.youtube.com/watch?v=lcQXgpyjHrw",image:"https://img.youtube.com/vi/lcQXgpyjHrw/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/lcQXgpyjHrw/hqdefault.jpg"},
+  {id:"new11",title:"Project 11",ratio:"16-9",platform:"youtube",videoId:"hHhT0DtJwB4",video:"https://www.youtube.com/watch?v=hHhT0DtJwB4",image:"https://img.youtube.com/vi/hHhT0DtJwB4/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/hHhT0DtJwB4/hqdefault.jpg"}
 ];
 
 const track = document.querySelector("#worldTrack");
@@ -68,12 +79,16 @@ function tile(project, extra = "", tall = false, placement = "", tileRatio = pro
         <strong>RYDER'S<br>CUP</strong>
         <span class="instagram-poster-cta"><span class="instagram-poster-play">▶</span> VIEW REEL</span>
       </div>`
-    : thumb
-      ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
-      : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
-  const preview = project.preview
-    ? `<video class="hover-video" muted loop playsinline preload="none" src="${esc(project.preview)}"></video>`
-    : "";
+    : project.platform === "mediaflow"
+      ? `<div class="mediaflow-poster" aria-hidden="true"><span>MEDIAFLOW</span><strong>PROJECT 03</strong><em>PLAY FILM</em></div>`
+      : thumb
+        ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
+        : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
+  const preview = project.platform === "mediaflow"
+    ? `<video class="hover-video mediaflow-preview" muted loop playsinline preload="none"></video>`
+    : project.preview
+      ? `<video class="hover-video" muted loop playsinline preload="none" src="${esc(project.preview)}"></video>`
+      : "";
   const platformData = project.platform
     ? `data-platform="${esc(project.platform)}" data-video-id="${esc(project.videoId)}" data-video-url="${esc(project.video)}"`
     : "";
@@ -99,9 +114,9 @@ function reelTile() {
    16:9 / 2.35:1 / 1:1 / 4:3 rectangle with no gaps. Layers are phase-shifted until no vertical edge runs
    through more than ~half the page. Info areas are stair-stepped holes: left and right side tiles stop at
    different x per row, and the two sides split the height differently. ---- */
-const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "1":1, "4-3":4/3};
-const WEIGHTS = [["16-9",.40],["2-35",.23],["1",.21],["4-3",.16]]; // landscape-led, with a genuine mix of all four formats
-const SMALL = new Set(["1","4-3"]);
+const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "1":1, "4-3":4/3, "9-16":9/16};
+const WEIGHTS = [["16-9",.36],["2-35",.20],["1",.18],["4-3",.14],["9-16",.12]]; // includes portrait Shorts tiles at a restrained frequency
+const SMALL = new Set(["1","4-3","9-16"]);
 const T = 2400, HT = 26, HM = 48, HB = 26, PANEL = REEL_RATIO*HM, ISL = 210;
 let seed = 20264;
 const rand = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
@@ -283,7 +298,7 @@ const COMMENT_PROJECT_IDS = new Set([
 const projectPools = Object.fromEntries(ratioKeys.map(ratio => [
   ratio,
   // Instagram uses its own tile poster, so it remains eligible without a hotlinked thumbnail URL.
-  projects.filter(p => p.ratio === ratio && p.platform && p.video && (p.image || p.platform === "instagram"))
+  projects.filter(p => p.ratio === ratio && p.platform && p.video && (p.image || p.platform === "instagram" || p.platform === "mediaflow"))
 ]));
 const projectBags = Object.fromEntries(ratioKeys.map(ratio => [ratio, []]));
 const lastProjectByRatio = {};
@@ -400,8 +415,12 @@ function stopActive() {
     activeTile.querySelector(".tile-preview-frame")?.remove();
     const video = activeTile.querySelector(".hover-video");
     if (video) {
-      video.pause();
-      video.currentTime = 0;
+      if (video.classList.contains("mediaflow-preview")) {
+        releaseHlsVideo(video);
+      } else {
+        video.pause();
+        video.currentTime = 0;
+      }
     }
   }
   activeTile = null;
@@ -454,6 +473,75 @@ function mountReel(tileNode, full = false) {
   tileNode.appendChild(iframe);
   tileNode.classList.add("is-playing");
   tileNode.classList.toggle("is-full", full);
+}
+
+const HLS_INSTANCES = new WeakMap();
+let hlsLibraryPromise = null;
+
+function loadHlsLibrary() {
+  if (window.Hls) return Promise.resolve(window.Hls);
+  if (hlsLibraryPromise) return hlsLibraryPromise;
+  hlsLibraryPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/hls.js@1";
+    script.async = true;
+    script.onload = () => window.Hls ? resolve(window.Hls) : reject(new Error("HLS.js did not expose Hls"));
+    script.onerror = () => reject(new Error("Could not load HLS.js"));
+    document.head.appendChild(script);
+  });
+  return hlsLibraryPromise;
+}
+
+function releaseHlsVideo(video) {
+  if (!video) return;
+  const instance = HLS_INSTANCES.get(video);
+  if (instance) {
+    instance.destroy();
+    HLS_INSTANCES.delete(video);
+  }
+  video.pause();
+  video.removeAttribute("src");
+  try { video.load(); } catch (_) {}
+}
+
+function startHlsVideo(video, source, autoplay = true) {
+  if (!video || !source) return;
+  releaseHlsVideo(video);
+  video.controls = !video.classList.contains("mediaflow-preview");
+  video.playsInline = true;
+  video.muted = video.classList.contains("mediaflow-preview");
+
+  const useNative = () => {
+    video.src = source;
+    video.load();
+    if (autoplay) video.play().catch(() => {});
+  };
+
+  loadHlsLibrary().then(Hls => {
+    if (!video.isConnected) return;
+    if (Hls && Hls.isSupported()) {
+      const instance = new Hls({enableWorker:true});
+      HLS_INSTANCES.set(video, instance);
+      instance.loadSource(source);
+      instance.attachMedia(video);
+      instance.on(Hls.Events.MANIFEST_PARSED, () => {
+        if (autoplay && video.isConnected) video.play().catch(() => {});
+      });
+      instance.on(Hls.Events.ERROR, (_event, data) => {
+        if (data && data.fatal) {
+          video.dataset.streamError = "1";
+          releaseHlsVideo(video);
+        }
+      });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      useNative();
+    } else {
+      video.dataset.streamError = "1";
+    }
+  }).catch(() => {
+    if (video.isConnected && video.canPlayType("application/vnd.apple.mpegurl")) useNative();
+    else video.dataset.streamError = "1";
+  });
 }
 
 function projectEmbedUrl(project, mode = "preview") {
@@ -540,21 +628,36 @@ function openProjectPlayer(tileNode, project) {
   stopActive();
   lastFocusedTile = tileNode;
   const instagramMode = project.platform === "instagram";
+  const mediaflowMode = project.platform === "mediaflow";
   projectModal.querySelector(".project-modal-dialog").classList.toggle("instagram-mode", instagramMode);
   projectModalFrame.classList.toggle("instagram-mode", instagramMode);
+  projectModal.querySelector(".project-modal-dialog").classList.toggle("mediaflow-mode", mediaflowMode);
+  projectModalFrame.classList.toggle("mediaflow-mode", mediaflowMode);
   projectModalTitle.textContent = project.title;
   projectModalLink.href = project.video;
-  projectModalLink.textContent = project.platform === "instagram" ? "OPEN ON INSTAGRAM ↗" : `OPEN ON ${project.platform.toUpperCase()} ↗`;
+  projectModalLink.textContent = instagramMode ? "OPEN ON INSTAGRAM ↗" : mediaflowMode ? "OPEN VIDEO STREAM ↗" : `OPEN ON ${project.platform.toUpperCase()} ↗`;
   projectModalFrame.replaceChildren();
 
-  const frame = document.createElement("iframe");
-  frame.className = `project-player-frame ${project.platform}-player-frame`;
-  frame.title = `${project.title} player`;
-  frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen; web-share";
-  frame.allowFullscreen = true;
-  frame.referrerPolicy = "strict-origin-when-cross-origin";
-  frame.src = projectEmbedUrl(project, "full");
-  projectModalFrame.appendChild(frame);
+  if (mediaflowMode) {
+    const video = document.createElement("video");
+    video.className = "project-player-frame mediaflow-player-frame";
+    video.title = `${project.title} player`;
+    video.controls = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = "auto";
+    projectModalFrame.appendChild(video);
+    startHlsVideo(video, project.video, true);
+  } else {
+    const frame = document.createElement("iframe");
+    frame.className = `project-player-frame ${project.platform}-player-frame`;
+    frame.title = `${project.title} player`;
+    frame.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen; web-share";
+    frame.allowFullscreen = true;
+    frame.referrerPolicy = "strict-origin-when-cross-origin";
+    frame.src = projectEmbedUrl(project, "full");
+    projectModalFrame.appendChild(frame);
+  }
   projectModal.classList.add("open");
   projectModal.setAttribute("aria-hidden", "false");
   document.body.classList.add("player-open");
@@ -565,9 +668,11 @@ function closeProjectPlayer() {
   if (!projectModal.classList.contains("open")) return;
   projectModal.classList.remove("open");
   projectModal.setAttribute("aria-hidden", "true");
+  const mediaflowVideo = projectModalFrame.querySelector(".mediaflow-player-frame");
+  if (mediaflowVideo) releaseHlsVideo(mediaflowVideo);
   projectModalFrame.replaceChildren();
-  projectModalFrame.classList.remove("instagram-mode");
-  projectModal.querySelector(".project-modal-dialog").classList.remove("instagram-mode");
+  projectModalFrame.classList.remove("instagram-mode", "mediaflow-mode");
+  projectModal.querySelector(".project-modal-dialog").classList.remove("instagram-mode", "mediaflow-mode");
   document.body.classList.remove("player-open");
   if (lastFocusedTile?.isConnected) lastFocusedTile.focus({preventScroll:true});
   lastFocusedTile = null;
@@ -585,6 +690,8 @@ function activate(tileNode) {
     const project = projects.find(item => item.id === tileNode.dataset.id);
     if (project?.platform === "instagram") {
       // Keep the poster static in the mosaic; Instagram controls its own playback.
+    } else if (project?.platform === "mediaflow" && project.ratio === tileNode.dataset.ratio) {
+      startHlsVideo(tileNode.querySelector(".mediaflow-preview"), project.video, true);
     } else if (project?.platform && project.ratio === tileNode.dataset.ratio) {
       mountProjectPreview(tileNode, project);
     } else {

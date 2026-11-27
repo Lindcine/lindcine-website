@@ -197,6 +197,14 @@ body.dim .tile:not(.is-active){filter:brightness(.3);transition:filter 1.8s ease
 .project-modal-frame.instagram-mode .project-player-frame{background:#08090a}
 .project-modal-dialog.instagram-mode .project-modal-caption{width:min(92vw,440px,44svh);margin:0 auto}
 
+
+/* Mediaflow HLS project tile: editorial placeholder until the stream's first frame. */
+.mediaflow-poster{position:absolute;z-index:0;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10%;text-align:center;color:#e9e7e2;background:radial-gradient(ellipse at 50% 35%,rgba(91,103,104,.32),transparent 60%),linear-gradient(145deg,#202728,#0c0f10 72%)}
+.mediaflow-poster::before{content:"";position:absolute;inset:8%;border:1px solid rgba(235,233,226,.16)}
+.mediaflow-poster span,.mediaflow-poster em{font:8px var(--mono);letter-spacing:.18em;color:var(--accent);font-style:normal}
+.mediaflow-poster strong{font:600 clamp(18px,2.1vw,30px)/.95 var(--sans);letter-spacing:-.05em}
+.mediaflow-player-frame{object-fit:contain;background:#050607}
+
 .instagram-player-frame{background:#0b0c0e}
 .project-modal-close{position:absolute;z-index:5;top:-42px;right:0;width:34px;height:34px;border:1px solid rgba(255,255,255,.32);border-radius:50%;background:rgba(8,9,10,.72);font:24px/1 var(--sans);font-weight:300;color:var(--fg);cursor:pointer;display:grid;place-items:center;transition:background .2s,border-color .2s,transform .2s}
 .project-modal-close:hover{background:rgba(183,161,126,.22);border-color:var(--accent);transform:rotate(90deg)}
@@ -224,6 +232,6 @@ body.player-open{overflow:hidden}
 .island>.info-backdrop{position:absolute;inset:0;z-index:0;width:100%;height:100%}
 .island>.info-backdrop::before{transform:none;opacity:var(--backdrop-opacity,.25)}
 .island .iside{z-index:1}
-.island.info-copy--about>.info-backdrop::before{background-position:56% 30%}
-.island.info-copy--rightnow>.info-backdrop::before{background-position:50% 45%}
+.island.info-copy--about>.info-backdrop::before{background-position:56% 38%}
+.island.info-copy--rightnow>.info-backdrop::before{background-position:50% 37%}
 .island.info-copy--contact>.info-backdrop::before{background-position:55% 38%}
