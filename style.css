@@ -222,3 +222,18 @@ body.player-open{overflow:hidden}
 .island.info-copy--about>.info-backdrop::before{background-position:56% 46%}
 .island.info-copy--rightnow>.info-backdrop::before{background-position:50% 47%}
 .island.info-copy--contact>.info-backdrop::before{background-position:55% 63%}
+
+/* V43: push the Contact still much higher in its full-bleed island. */
+.island.info-copy--contact>.info-backdrop::before{background-position:55% 96%}
+
+/* V43: only the showreel carries a visible name; project tiles stay image-only. */
+.tile-meta{display:none!important}
+.reel-invite{gap:7px}
+.reel-name{font-size:clamp(17px,2.4vw,34px);font-weight:600;letter-spacing:-.055em;color:#f0eee8;text-shadow:0 2px 18px rgba(0,0,0,.55)}
+.reel-label{font-size:9px;letter-spacing:.24em;color:#d7c9ad}
+.reel-play{margin-top:8px}
+.placeholder-tile{background:rgba(255,255,255,.025)}
+.placeholder-tile .tile-media{background:transparent}
+
+.placeholder-mark::after{content:"+";font:300 clamp(23px,3.2vh,42px)/1 var(--sans);color:rgba(255,255,255,.18)}
+.placeholder-tile .tile-media::after{content:"";position:absolute;inset:9%;border:1px solid rgba(255,255,255,.045);pointer-events:none}

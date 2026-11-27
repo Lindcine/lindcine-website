@@ -25,11 +25,11 @@ const projects = [
   {id:"new04",title:"Project 04",ratio:"9-16",platform:"youtube",videoId:"XDRftVQ9QGM",video:"https://www.youtube.com/shorts/XDRftVQ9QGM",image:"https://img.youtube.com/vi/XDRftVQ9QGM/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/XDRftVQ9QGM/hqdefault.jpg"},
   {id:"new05",title:"Project 05",ratio:"16-9",platform:"youtube",videoId:"rEvU1r6oW34",video:"https://www.youtube.com/watch?v=rEvU1r6oW34",image:"https://img.youtube.com/vi/rEvU1r6oW34/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/rEvU1r6oW34/hqdefault.jpg"},
   {id:"new06",title:"Project 06",ratio:"16-9",platform:"youtube",videoId:"SRKoVi9C5b8",video:"https://www.youtube.com/watch?v=SRKoVi9C5b8",image:"https://img.youtube.com/vi/SRKoVi9C5b8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/SRKoVi9C5b8/hqdefault.jpg"},
-  {id:"new07",title:"Project 07",ratio:"16-9",platform:"youtube",videoId:"Zq7xl2nZD2M",video:"https://www.youtube.com/watch?v=Zq7xl2nZD2M",image:"https://img.youtube.com/vi/Zq7xl2nZD2M/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/Zq7xl2nZD2M/hqdefault.jpg"},
+  {id:"new07",title:"Project 07",ratio:"2-31",platform:"youtube",videoId:"Zq7xl2nZD2M",video:"https://www.youtube.com/watch?v=Zq7xl2nZD2M",image:"https://img.youtube.com/vi/Zq7xl2nZD2M/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/Zq7xl2nZD2M/hqdefault.jpg"},
   {id:"new08",title:"Project 08",ratio:"16-9",platform:"youtube",videoId:"j-7in2cY4rA",video:"https://www.youtube.com/watch?v=j-7in2cY4rA",image:"https://img.youtube.com/vi/j-7in2cY4rA/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/j-7in2cY4rA/hqdefault.jpg"},
   {id:"new09",title:"Project 09",ratio:"16-9",platform:"youtube",videoId:"acMafsKQiK8",video:"https://www.youtube.com/watch?v=acMafsKQiK8",image:"https://img.youtube.com/vi/acMafsKQiK8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/acMafsKQiK8/hqdefault.jpg"},
   {id:"new10",title:"Project 10",ratio:"16-9",platform:"youtube",videoId:"lcQXgpyjHrw",video:"https://www.youtube.com/watch?v=lcQXgpyjHrw",image:"https://img.youtube.com/vi/lcQXgpyjHrw/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/lcQXgpyjHrw/hqdefault.jpg"},
-  {id:"new11",title:"Project 11",ratio:"16-9",platform:"youtube",videoId:"hHhT0DtJwB4",video:"https://www.youtube.com/watch?v=hHhT0DtJwB4",image:"https://img.youtube.com/vi/hHhT0DtJwB4/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/hHhT0DtJwB4/hqdefault.jpg"}
+  {id:"new11",title:"Project 11",ratio:"2-31",platform:"youtube",videoId:"hHhT0DtJwB4",video:"https://www.youtube.com/watch?v=hHhT0DtJwB4",image:"https://img.youtube.com/vi/hHhT0DtJwB4/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/hHhT0DtJwB4/hqdefault.jpg"}
 ];
 
 const track = document.querySelector("#worldTrack");
@@ -62,25 +62,38 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
 
 function thumbnailFor(project) {
   if (!project.image) return null;
-  const fallbacks = project.fallbackImage ? [project.fallbackImage] : [];
+  const fallbacks = [];
+  if (project.fallbackImage) fallbacks.push(project.fallbackImage);
+  if (project.platform === "youtube" && project.videoId) {
+    const id = encodeURIComponent(project.videoId);
+    fallbacks.push(
+      `https://img.youtube.com/vi/${id}/sddefault.jpg`,
+      `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+      `https://img.youtube.com/vi/${id}/mqdefault.jpg`,
+      `https://img.youtube.com/vi/${id}/0.jpg`
+    );
+  }
   return {
     src: project.image,
     fallbacks: [...new Set(fallbacks)].filter(url => url !== project.image)
   };
 }
 
-function tile(project, extra = "", tall = false, placement = "", tileRatio = project.ratio) {
+function tile(project, extra = "", tall = false, placement = "", tileRatio = project?.ratio || "16-9") {
   const ratio = tall ? "tile-tall" : `ratio-${tileRatio}`;
+  if (!project) {
+    return `<article class="tile ${ratio} ${extra} placeholder-tile" style="${placement}" aria-hidden="true"><div class="tile-media"><span class="placeholder-mark"></span></div></article>`;
+  }
   const thumb = thumbnailFor(project);
   const image = project.platform === "mediaflow"
-    ? `<div class="mediaflow-poster" aria-hidden="true"><span>MEDIAFLOW</span><strong>PROJECT 03</strong><em>PLAY FILM</em></div>`
+    ? `<span class="placeholder-mark" aria-hidden="true"></span>`
     : thumb
-      ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
-      : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
+      ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "")}" alt="" loading="lazy" decoding="async">`
+      : `<span class="placeholder-mark" aria-hidden="true"></span>`;
   const preview = project.platform === "mediaflow"
     ? `<video class="hover-video mediaflow-preview" muted loop playsinline preload="none"></video>`
     : project.preview
-      ? `<video class="hover-video" muted loop playsinline preload="none" ${project.previewPoster ? `poster="${esc(project.previewPoster)}"` : ""} src="${esc(project.preview)}"></video>`
+      ? `<video class="hover-video local-preview" muted loop playsinline preload="none" ${project.previewPoster ? `poster="${esc(project.previewPoster)}"` : ""} data-src="${esc(project.preview)}"></video>`
       : "";
   const platformData = project.platform
     ? `data-platform="${esc(project.platform)}" data-video-id="${esc(project.videoId)}" data-video-url="${esc(project.video)}"`
@@ -88,16 +101,15 @@ function tile(project, extra = "", tall = false, placement = "", tileRatio = pro
   const note = project.note && COMMENT_PROJECT_IDS.has(project.id)
     ? `data-note="${esc(project.note)}" data-note-type="${esc(project.noteType || "A NOTE")}"`
     : "";
-  return `<article class="tile ${ratio} ${extra}" style="${placement}" data-id="${esc(project.id)}" data-ratio="${esc(tileRatio)}" ${platformData} ${note} tabindex="0" role="button" aria-label="${esc(project.title)}">
+  return `<article class="tile ${ratio} ${extra}" style="${placement}" data-id="${esc(project.id)}" data-ratio="${esc(tileRatio)}" ${platformData} ${note} tabindex="0" role="button" aria-label="Open project film">
     <div class="tile-media">${image}${preview}</div>
-    <div class="tile-meta">${esc(project.title)}</div>
   </article>`;
 }
 
 function reelTile() {
   return `<article class="tile reel-tile" data-id="showreel" data-anchor="showreel" tabindex="0" role="button" aria-label="Play cinematography showreel">
     <img class="reel-poster" src="https://vumbnail.com/${REEL_ID}.jpg" alt="Lucas Lindgren cinematography showreel thumbnail" loading="eager" decoding="async">
-    <div class="reel-invite"><span class="reel-play">▶</span><span class="reel-label">WATCH SHOWREEL</span></div>
+    <div class="reel-invite"><span class="reel-name">Lucas Lindgren</span><span class="reel-label">SHOWREEL</span><span class="reel-play">▶</span></div>
   </article>`;
 }
 
@@ -107,8 +119,8 @@ function reelTile() {
    16:9 / 2.35:1 / 1:1 / 4:3 rectangle with no gaps. Layers are phase-shifted until no vertical edge runs
    through more than ~half the page. Info areas are stair-stepped holes: left and right side tiles stop at
    different x per row, and the two sides split the height differently. ---- */
-const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "1":1, "4-3":4/3, "9-16":9/16};
-const WEIGHTS = [["16-9",.36],["2-35",.20],["1",.18],["4-3",.14],["9-16",.12]]; // includes portrait Shorts tiles at a restrained frequency
+const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "2-31":2.31, "1":1, "4-3":4/3, "9-16":9/16};
+const WEIGHTS = [["16-9",.36],["2-35",.12],["2-31",.08],["1",.18],["4-3",.14],["9-16",.12]]; // includes portrait Shorts tiles at a restrained frequency
 const SMALL = new Set(["1","4-3","9-16"]);
 const T = 2400, HT = 26, HM = 48, HB = 26, PANEL = REEL_RATIO*HM, ISL = 210;
 let seed = 20264;
@@ -291,25 +303,24 @@ const COMMENT_PROJECT_IDS = new Set([
 const projectPools = Object.fromEntries(ratioKeys.map(ratio => [
   ratio,
   // Instagram uses its own tile poster, so it remains eligible without a hotlinked thumbnail URL.
-  projects.filter(p => p.ratio === ratio && p.platform && p.video && (p.image || p.platform === "mediaflow"))
+  projects.filter(p => p.ratio === ratio && p.platform && p.video)
 ]));
 const projectBags = Object.fromEntries(ratioKeys.map(ratio => [ratio, []]));
 const lastProjectByRatio = {};
 function pickProject(tileRatio) {
   const pool = projectPools[tileRatio] || [];
-  if (!pool.length) throw new Error(`No project supplied for tile ratio ${tileRatio}`);
+  if (!pool.length) return null;
   if (!projectBags[tileRatio].length) {
+    if (projectBags[tileRatio].usedUp) return null;
     const freshBag = pool.slice();
     for (let i = freshBag.length - 1; i > 0; i--) {
       const j = Math.floor(rand() * (i + 1));
       [freshBag[i], freshBag[j]] = [freshBag[j], freshBag[i]];
     }
-    if (freshBag.length > 1 && freshBag[freshBag.length - 1].id === lastProjectByRatio[tileRatio]) {
-      [freshBag[0], freshBag[freshBag.length - 1]] = [freshBag[freshBag.length - 1], freshBag[0]];
-    }
     projectBags[tileRatio] = freshBag;
   }
   const project = projectBags[tileRatio].pop();
+  if (!projectBags[tileRatio].length) projectBags[tileRatio].usedUp = true;
   lastProjectByRatio[tileRatio] = project.id;
   return project;
 }
@@ -412,7 +423,7 @@ function stopActive() {
         releaseHlsVideo(video);
       } else {
         video.pause();
-        video.currentTime = 0;
+        try { video.currentTime = 0; } catch (_) {}
       }
     }
   }
@@ -616,7 +627,7 @@ function openProjectPlayer(tileNode, project) {
   projectModalFrame.classList.toggle("local-mode", localMode);
   projectModal.querySelector(".project-modal-dialog").classList.toggle("mediaflow-mode", mediaflowMode);
   projectModalFrame.classList.toggle("mediaflow-mode", mediaflowMode);
-  projectModalTitle.textContent = project.title;
+  projectModalTitle.textContent = "";
   projectModalLink.href = project.video;
   projectModalLink.textContent = localMode ? "OPEN VIDEO FILE ↗" : mediaflowMode ? "OPEN VIDEO STREAM ↗" : `OPEN ON ${project.platform.toUpperCase()} ↗`;
   projectModalFrame.replaceChildren();
@@ -624,14 +635,14 @@ function openProjectPlayer(tileNode, project) {
   if (localMode) {
     const video = document.createElement("video");
     video.className = "project-player-frame local-player-frame";
-    video.title = `${project.title} player`;
     video.controls = true;
     video.autoplay = true;
     video.playsInline = true;
     video.preload = "auto";
-    video.src = project.video;
+    video.src = new URL(project.video, document.baseURI).href;
+    video.addEventListener("loadedmetadata", () => video.play().catch(() => {}), {once:true});
     projectModalFrame.appendChild(video);
-    video.play().catch(() => {});
+    video.load();
   } else if (mediaflowMode) {
     const video = document.createElement("video");
     video.className = "project-player-frame mediaflow-player-frame";
@@ -683,8 +694,15 @@ function activate(tileNode) {
   } else {
     const project = projects.find(item => item.id === tileNode.dataset.id);
     if (project?.platform === "local" && project.ratio === tileNode.dataset.ratio) {
-      const localPreview = tileNode.querySelector(".hover-video");
-      if (localPreview) localPreview.play().catch(() => {});
+      const localPreview = tileNode.querySelector(".local-preview");
+      if (localPreview) {
+        const source = new URL(localPreview.dataset.src || project.preview, document.baseURI).href;
+        if (localPreview.src !== source) {
+          localPreview.src = source;
+          localPreview.load();
+        }
+        localPreview.play().catch(() => {});
+      }
     } else if (project?.platform === "mediaflow" && project.ratio === tileNode.dataset.ratio) {
       startHlsVideo(tileNode.querySelector(".mediaflow-preview"), project.video, true);
     } else if (project?.platform && project.ratio === tileNode.dataset.ratio) {
@@ -726,7 +744,7 @@ function bindTiles() {
           const mark = document.createElement("span");
           mark.className = "placeholder-mark";
           mark.setAttribute("aria-hidden", "true");
-          mark.textContent = image.dataset.placeholder || "L.";
+          mark.textContent = image.dataset.placeholder || "";
           media.prepend(mark);
         }
       }
