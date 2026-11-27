@@ -114,208 +114,6 @@ function reelTile() {
   </article>`;
 }
 
-/* ---- Layout v4. All widths/heights in svh. Page = top layer (26) + middle layer (48) + bottom layer (26).
-   Each layer is an endless sequence of random "blocks". A block is one tile, or a tree of tiles stacked
-   (same width, heights ∝ 1/ratio) or side by side (same height, widths ∝ ratio), so EVERY tile is an exact
-   16:9 / 2.35:1 / 1:1 / 4:3 rectangle with no gaps. Layers are phase-shifted until no vertical edge runs
-   through more than ~half the page. Info areas are stair-stepped holes: left and right side tiles stop at
-   different x per row, and the two sides split the height differently. ---- */
-const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "2-31":2.31, "1":1, "4-3":4/3, "9-16":9/16};
-const WEIGHTS = [["16-9",.36],["2-35",.12],["2-31",.08],["1",.18],["4-3",.14],["9-16",.12]]; // includes portrait Shorts tiles at a restrained frequency
-const SMALL = new Set(["1","4-3","9-16"]);
-const T = 2400, HT = 26, HM = 48, HB = 26, PANEL = REEL_RATIO*HM, ISL = 210;
-let seed = 20264;
-const rand = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
-function pickRatio(ctx) {
-  for (;;) {
-    let x = rand(), acc = 0, k = "16-9";
-    for (const [key, w] of WEIGHTS) { acc += w; if (x < acc) { k = key; break; } }
-    const a = ctx[ctx.length-1], b = ctx[ctx.length-2];
-    if (SMALL.has(k) && SMALL.has(a) && SMALL.has(b)) continue;
-    if (k === "2-35" && a === k) continue; // avoid adjacent panorama cards in the same run
-    if (a === k && b === k) continue;
-    ctx.push(k); return k;
-  }
-}
-const rho = n => n.leaf ? TILE_RATIOS[n.leaf] : n.h ? n.h.reduce((a,c) => a + rho(c), 0) : 1 / n.v.reduce((a,c) => a + 1/rho(c), 0);
-function leaves(n, x, y, w, h, out) {
-  if (n.leaf) { out.push({x, y, w, h}); return; }
-  if (n.h) { const s = rho(n); let cx = x; n.h.forEach(c => { const cw = w * rho(c) / s; leaves(c, cx, y, cw, h, out); cx += cw; }); }
-  else { const s = n.v.reduce((a,c) => a + 1/rho(c), 0); let cy = y; n.v.forEach(c => { const ch = h * (1/rho(c)) / s; leaves(c, x, cy, w, ch, out); cy += ch; }); }
-}
-function genNode(ctx, depth, stackOK) {
-  const x = rand();
-  if (depth === 0 || x < .28) return {leaf: pickRatio(ctx)};
-  if (stackOK && x < .66) {
-    const count = rand() < .88 ? 2 : 3;
-    return {v: Array.from({length: count}, () => genNode(ctx, depth - 1, false))};
-  }
-  return {h: [genNode(ctx, depth - 1, true), genNode(ctx, depth - 1, true)]};
-}
-function okBlock(b, H) {
-  const out = [];
-  leaves(b, 0, 0, H * rho(b), H, out);
-  return out.length > 0 && out.every(r => r.h >= 12 && r.w >= 22);
-}
-const genMid = ctx => {
-  for (let tries = 0; ; tries++) {
-    const c = ctx.slice();
-    const depth = rand() < .28 ? 3 : 2;
-    const b = genNode(c, depth, true);
-    if (okBlock(b, HM)) { ctx.splice(0, ctx.length, ...c); return b; }
-    if (tries > 5000) { const fallback = {leaf: pickRatio(ctx)}; return fallback; }
-  }
-};
-const genEdge = (ctx, H) => {
-  for (let tries = 0; ; tries++) {
-    const c = ctx.slice();
-    const mode = rand();
-    let b;
-    if (mode < .43) {
-      // A loose horizontal run of 2–3 full-height tiles gives the outer
-      // bands more internal rhythm without introducing gaps or distortion.
-      const count = rand() < .62 ? 2 : 3;
-      b = {h:Array.from({length:count}, () => ({leaf:pickRatio(c)}))};
-    } else if (mode < .60) {
-      // Occasional two-tier stack; alternate the two wide formats so the
-      // stacked pair does not read like duplicated cards.
-      const first = rand() < .66 ? "16-9" : "2-35";
-      const second = first === "16-9" ? "2-35" : "16-9";
-      c.push(first,second);
-      b = {v:[{leaf:first},{leaf:second}]};
-    } else if (mode < .90) {
-      b = genNode(c, rand() < .7 ? 2 : 3, true);
-    } else {
-      b = {leaf:pickRatio(c)};
-    }
-    if (okBlock(b, H)) { ctx.splice(0, ctx.length, ...c); return b; }
-    if (tries > 5000) { const fallback = {leaf: pickRatio(ctx)}; return fallback; }
-  }
-};
-function makeSeq(H, target, tol, gen) { // blocks whose natural widths sum to target ±tol (scaled to fit by flex)
-  let best = null, bestErr = Infinity;
-  for (let t = 0; t < 3000; t++) {
-    const ctx = [], list = []; let sum = 0;
-    while (sum < target * (1 - tol)) { const b = gen(ctx); list.push(b); sum += H * rho(b); }
-    const err = Math.abs(sum - target) / target;
-    if (err < bestErr) { best = list; bestErr = err; if (err <= tol) break; }
-  }
-  return best;
-}
-function rangeList(lo, hi, h, context = []) {
-  for (;;) {
-    const nextContext = context.slice(), list = [];
-    let s = 0;
-    while (s * h < lo) {
-      list.push(pickRatio(nextContext));
-      s += TILE_RATIOS[list[list.length-1]];
-    }
-    if (s * h <= hi) {
-      context.splice(0, context.length, ...nextContext);
-      return list;
-    }
-  }
-}
-const sumOf = list => list.reduce((a,k) => a + TILE_RATIOS[k], 0);
-function splitHeight() { // 2 or 3 rows summing to HM
-  for (;;) {
-    if (rand() < .4) { const a = 18 + rand()*12; return [a, HM - a]; }
-    const a = 14 + rand()*5, b = 14 + rand()*(34 - a - 14 + 5); if (HM - a - b >= 14) return [a, b, HM - a - b];
-  }
-}
-function layerEvents(blocks, H, y0, total, out = []) {
-  const s = total / blocks.reduce((a,b) => a + H * rho(b), 0); let x = 0;
-  blocks.forEach(b => { const bw = H * rho(b) * s, lv = []; leaves(b, x, y0, bw, H, lv); lv.forEach(r => out.push({x: r.x, y0: r.y, y1: r.y + r.h}, {x: r.x + r.w, y0: r.y, y1: r.y + r.h})); x += bw; });
-  return out;
-}
-function hasLongSeam(ev) { // reject an almost-continuous vertical edge ≥55svh
-  const sorted = ev.map(e => ({
-    x: ((e.x % T) + T) % T,
-    y0: e.y0,
-    y1: e.y1
-  })).sort((a,b) => a.x - b.x);
-  const groups = [];
-  for (const e of sorted) {
-    let g = groups[groups.length - 1];
-    if (!g || e.x - g.startX >= 1.2) {
-      g = {startX:e.x, intervals:[]};
-      groups.push(g);
-    }
-    g.intervals.push([e.y0,e.y1]);
-  }
-  // Also test edges that coincide across the infinite-loop seam at x=0/T.
-  if (groups.length > 1 && groups[0].startX + T - sorted[sorted.length-1].x < 1.2) {
-    groups[0].intervals.push(...groups.pop().intervals);
-  }
-  for (const g of groups) {
-    const intervals = g.intervals.sort((a,b) => a[0] - b[0]);
-    let cur = null, best = 0;
-    for (const [a,b] of intervals) {
-      if (cur && a <= cur[1] + .01) cur[1] = Math.max(cur[1],b);
-      else cur = [a,b];
-      best = Math.max(best,cur[1]-cur[0]);
-      if (best >= 55) return true;
-    }
-  }
-  return false;
-}
-const shifted = (ev, d) => ev.map(e => ({x: (((e.x - d) % T) + T) % T, y0: e.y0, y1: e.y1}));
-function chooseShift(layerEv, midEv) { for (let i = 0; i < 4000; i++) { const d = rand() * T; if (!hasLongSeam(shifted(layerEv, d).concat(midEv))) return d; } return 0; }
-function buildPlan() {
-  const mk = (H, target, tol, gen) => makeSeq(H, target, tol, gen);
-  const plan = {top: mk(HT, T, .0003, c => genEdge(c, HT)), bottom: mk(HB, T, .0003, c => genEdge(c, HB)), mid: []};
-  const free = T - PANEL - 3*ISL, wts = [0,1,2,3].map(() => .7 + rand()*.6), ws = wts.reduce((a,b) => a + b, 0), midEv = [];
-  let x = 0, si = 0;
-  for (const o of ["seg","reel","seg","about","seg","rightnow","seg","contact"]) {
-    if (o === "seg") { const w = free * wts[si++] / ws; const blocks = mk(HM, w, .0005, genMid); plan.mid.push({kind:"seg", w, blocks});
-      const ev = layerEvents(blocks, HM, HT, w); ev.forEach(e => midEv.push({x: e.x + x, y0: e.y0, y1: e.y1})); x += w; }
-    else if (o === "reel") { plan.mid.push({kind:"reel", w: PANEL}); midEv.push({x, y0: HT, y1: HT+HM}, {x: x+PANEL, y0: HT, y1: HT+HM}); x += PANEL; }
-    else {
-      const isl = {kind: o, w: ISL, L: [], R: []};
-      for (const side of ["L","R"]) {
-        let y = HT;
-        const sideContext = [];
-        splitHeight().forEach(h => {
-          const list = rangeList(26, 52, h, sideContext), wd = sumOf(list) * h;
-          const x0 = side === "L" ? x : x + ISL - wd;
-          let c = 0;
-          for (const k of [...list, null]) {
-            midEv.push({x: x0 + c*h, y0: y, y1: y + h});
-            if (k) c += TILE_RATIOS[k];
-          }
-          isl[side].push({h, list});
-          y += h;
-        });
-      }
-      plan.mid.push(isl); x += ISL;
-    }
-  }
-  plan.dT = chooseShift(layerEvents(plan.top, HT, 0, T), midEv); plan.dB = chooseShift(layerEvents(plan.bottom, HB, HT+HM, T), midEv);
-  return plan;
-}
-//--pure-end
-// Each clip is reserved for tiles with the same declared aspect ratio.
-// Projects are distributed across the complete wall before placeholders are rendered.
-const ratioKeys = Object.keys(TILE_RATIOS);
-const COMMENT_PROJECT_IDS = new Set([
-  "doc", "commercial", "light", "wedding",
-  "landscape", "bts", "events", "docfilm"
-]);
-const projectPools = Object.fromEntries(ratioKeys.map(ratio => [
-  ratio,
-  // Local and stream projects remain eligible even when their poster is not a remote URL.
-  projects.filter(p => p.ratio === ratio && p.platform && p.video)
-]));
-
-const tone = () => `--t:${Math.floor(rand() * 6)};`;
-function nodeHTML(n, parent) { // tile geometry and assigned project keep the same declared ratio
-  const flex = parent === "col" ? 1 / rho(n) : rho(n);
-  if (n.leaf) return tile(pickProject(n.leaf), "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`, n.leaf);
-  const dir = n.h ? "row" : "col";
-  return `<div class="cx ${dir}" style="flex:${(flex*1000).toFixed(3)} 1 0">${(n.h || n.v).map(c => nodeHTML(c, dir)).join("")}</div>`;
-}
-const exact = list => list.map(k => tile(pickProject(k), "wall-tile", false, `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`, k)).join("");
-const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H}svh;transform:translateX(-${shift}svh)">${blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const configs = {
     about: {
       bands:[
@@ -351,112 +149,106 @@ const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H
 const infoPanel = kind => `<div class="info-copy info-copy--${kind}" data-anchor="${kind}">
   ${configs[kind].copy}
 </div>`;
-function segHTML(s) {
-  if (s.kind === "reel") return reelTile();
-  if (s.kind === "seg") return `<div class="mseg" style="width:${s.w}svh">${s.blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
-  const side = rows => rows.map(r => `<div class="mrow" style="--h:${r.h}svh">${exact(r.list)}</div>`).join("");
-  return `<div class="island info-copy--${s.kind}" style="width:${ISL}svh"><div class="info-backdrop" aria-hidden="true"><span class="info-backdrop-shade"></span></div><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
-}
-// Built once and repeated 3× so the loop join is invisible.
-const plan = buildPlan();
-// Count every project-capable tile across all three layers before placing any clips.
-// This prevents the top strip from consuming a ratio pool before the other rows render.
-function countNodeSlots(node, counts) {
-  if (node.leaf) {
-    counts[node.leaf] = (counts[node.leaf] || 0) + 1;
-    return;
-  }
-  (node.h || node.v || []).forEach(child => countNodeSlots(child, counts));
-}
-function countBlockSlots(blocks, counts) {
-  blocks.forEach(block => countNodeSlots(block, counts));
-}
-function countPlannedSlots() {
-  const counts = Object.fromEntries(ratioKeys.map(ratio => [ratio, 0]));
-  countBlockSlots(plan.top, counts);
-  for (const segment of plan.mid) {
-    if (segment.kind === "seg") countBlockSlots(segment.blocks, counts);
-    else if (segment.kind !== "reel") {
-      for (const side of ["L", "R"]) {
-        for (const row of segment[side]) {
-          row.list.forEach(ratio => { counts[ratio] = (counts[ratio] || 0) + 1; });
-        }
-      }
-    }
-  }
-  countBlockSlots(plan.bottom, counts);
-  return counts;
-}
-function shuffleInPlace(items) {
-  for (let i = items.length - 1; i > 0; i--) {
+/* V45 — compact, one-pass project wall.
+   The previous grid generated 167 tile slots for 26 unique films. This version
+   gives every film exactly one tile and uses a small number of intentional
+   placeholder panels to complete the bands. */
+const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "2-31":2.31, "1":1, "4-3":4/3, "9-16":9/16};
+const COMMENT_PROJECT_IDS = new Set(["doc", "commercial", "light", "wedding", "landscape", "bts", "events", "docfilm"]);
+let seed = 20261127;
+const rand = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
+const shuffle = items => {
+  const copy = items.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
-    [items[i], items[j]] = [items[j], items[i]];
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  return items;
-}
-const slotCounts = countPlannedSlots();
-function findFirstRatioSlotAfterReel(targetRatio) {
-  const counts = Object.fromEntries(ratioKeys.map(ratio => [ratio, 0]));
-  countBlockSlots(plan.top, counts);
-  let afterReel = false;
-  let match = null;
-  const visitNode = node => {
-    if (match !== null) return;
-    if (node.leaf) {
-      const index = counts[node.leaf] || 0;
-      counts[node.leaf] = index + 1;
-      if (afterReel && node.leaf === targetRatio) match = index;
-      return;
-    }
-    (node.h || node.v || []).forEach(visitNode);
-  };
-  for (const segment of plan.mid) {
-    if (segment.kind === "reel") { afterReel = true; continue; }
-    if (segment.kind === "seg") segment.blocks.forEach(visitNode);
-    else {
-      for (const side of ["L", "R"]) {
-        for (const row of segment[side]) {
-          for (const ratio of row.list) {
-            const index = counts[ratio] || 0;
-            counts[ratio] = index + 1;
-            if (afterReel && ratio === targetRatio && match === null) match = index;
-          }
-        }
-      }
-    }
-    if (match !== null) return match;
-  }
-  plan.bottom.forEach(visitNode);
-  return match;
-}
-const preferredLocalSlot = findFirstRatioSlotAfterReel("1");
-const projectAssignments = Object.fromEntries(ratioKeys.map(ratio => {
-  const slots = Array(slotCounts[ratio] || 0).fill(null);
-  const candidates = shuffleInPlace((projectPools[ratio] || []).slice());
-  const preferredProjectIndex = ratio === "1"
-    ? candidates.findIndex(project => project.id === "hostprommis")
-    : -1;
-  if (preferredProjectIndex >= 0 && preferredLocalSlot !== null && preferredLocalSlot < slots.length) {
-    slots[preferredLocalSlot] = candidates.splice(preferredProjectIndex, 1)[0];
-  }
-  const positions = shuffleInPlace(Array.from({length: slots.length}, (_, index) => index).filter(index => slots[index] === null));
-  candidates.slice(0, positions.length).forEach((project, index) => {
-    slots[positions[index]] = project;
-  });
-  return [ratio, slots];
-}));
-const projectCursors = Object.fromEntries(ratioKeys.map(ratio => [ratio, 0]));
-function pickProject(tileRatio) {
-  const cursor = projectCursors[tileRatio] || 0;
-  projectCursors[tileRatio] = cursor + 1;
-  return projectAssignments[tileRatio]?.[cursor] || null;
-}
-const RUN_HTML = layerHTML(plan.top, HT, plan.dT) + `<div class="mid">${plan.mid.map(segHTML).join("")}</div>` + layerHTML(plan.bottom, HB, plan.dB);
-const renderRun = copy => `<div class="world-run" data-copy="${copy}">${RUN_HTML}</div>`;
+  return copy;
+};
 
+const TOP_H = 30;
+const MID_H = 40;
+const BOTTOM_H = 30;
+const ISLAND_W = 170;
+const REEL_W = REEL_RATIO * MID_H;
+const MID_PROJECT_W = MID_H * (16 / 9);
+const WORLD_W = 4 * MID_PROJECT_W + REEL_W + 3 * ISLAND_W;
+const INFO_SIDE_W = (ISLAND_W - 100) / 2;
+
+// Four 16:9 films sit in the four gaps around the showreel and information islands.
+const midProjects = projects.filter(p => p.ratio === "16-9" && p.platform !== "mediaflow").slice(0, 4);
+if (midProjects.length !== 4) throw new Error("The middle row needs four 16:9 projects.");
+const remainingProjects = projects.filter(p => !midProjects.includes(p));
+if (remainingProjects.length !== 22) throw new Error(`Expected 22 remaining projects, got ${remainingProjects.length}.`);
+
+// Balance the two outer rows by both tile count and total displayed width.
+const outerRows = [[], []];
+const outerWidths = [0, 0];
+const sortedRemaining = remainingProjects.slice().sort((a, b) => TILE_RATIOS[b.ratio] - TILE_RATIOS[a.ratio]);
+for (const project of sortedRemaining) {
+  const choices = [0, 1].filter(i => outerRows[i].length < 11);
+  choices.sort((a, b) => outerRows[a].length - outerRows[b].length || outerWidths[a] - outerWidths[b]);
+  const row = choices[0];
+  outerRows[row].push(project);
+  outerWidths[row] += TILE_RATIOS[project.ratio];
+}
+if (outerRows.some(row => row.length !== 11)) throw new Error("Outer project rows are not balanced.");
+const topProjects = shuffle(outerRows[0]);
+const bottomProjects = shuffle(outerRows[1]);
+
+function placeholderTile(width, className = "") {
+  return `<article class="tile placeholder-tile ${className}" style="flex:0 0 ${width.toFixed(4)}svh;width:${width.toFixed(4)}svh" aria-hidden="true"><div class="tile-media"><span class="placeholder-mark"></span></div></article>`;
+}
+
+function projectTile(project, height) {
+  const width = height * TILE_RATIOS[project.ratio];
+  return tile(project, "wall-tile", false, `--t:${Math.floor(rand() * 6)};flex:0 0 ${width.toFixed(4)}svh;width:${width.toFixed(4)}svh`, project.ratio);
+}
+
+function projectBand(items, height) {
+  const usedWidth = items.reduce((sum, project) => sum + height * TILE_RATIOS[project.ratio], 0);
+  const gapWidth = (WORLD_W - usedWidth) / 3;
+  if (!Number.isFinite(gapWidth) || gapWidth <= 20) {
+    throw new Error(`Outer row does not have enough room for placeholders (${gapWidth}).`);
+  }
+  const groupSizes = [3, 3, 3, 2];
+  let offset = 0;
+  const html = [];
+  groupSizes.forEach((size, index) => {
+    items.slice(offset, offset + size).forEach(project => html.push(projectTile(project, height)));
+    offset += size;
+    if (index < 3) html.push(placeholderTile(gapWidth, "wide-placeholder"));
+  });
+  return html.join("");
+}
+
+function islandHTML(kind) {
+  return `<div class="island info-copy--${kind}" style="width:${ISLAND_W}svh">
+    <div class="info-backdrop" aria-hidden="true"><span class="info-backdrop-shade"></span></div>
+    <div class="iside l">${placeholderTile(INFO_SIDE_W, "edge-placeholder")}</div>
+    <div class="iside r">${placeholderTile(INFO_SIDE_W, "edge-placeholder")}</div>
+    ${infoPanel(kind)}
+  </div>`;
+}
+
+function middleSegment(project) {
+  return `<div class="mseg" style="width:${MID_PROJECT_W.toFixed(4)}svh;flex:0 0 ${MID_PROJECT_W.toFixed(4)}svh;height:${MID_H}svh">${projectTile(project, MID_H)}</div>`;
+}
+
+const reelHTML = reelTile();
+function renderRun(copy) {
+  const top = `<div class="layer strip" style="--h:${TOP_H}svh">${projectBand(topProjects, TOP_H)}</div>`;
+  const middle = `<div class="mid" style="height:${MID_H}svh;flex:0 0 ${MID_H}svh;width:${WORLD_W.toFixed(4)}svh">
+    ${middleSegment(midProjects[0])}${reelHTML}${middleSegment(midProjects[1])}
+    ${islandHTML("about")}${middleSegment(midProjects[2])}
+    ${islandHTML("rightnow")}${middleSegment(midProjects[3])}${islandHTML("contact")}
+  </div>`;
+  const bottom = `<div class="layer strip" style="--h:${BOTTOM_H}svh">${projectBand(bottomProjects, BOTTOM_H)}</div>`;
+  return `<div class="world-run" data-copy="${copy}">${top}${middle}${bottom}</div>`;
+}
 
 function render() {
-  track.innerHTML = [0,1,2].map(renderRun).join("");
+  track.innerHTML = [0, 1, 2].map(renderRun).join("");
 }
 
 function setWallGradientPositions() {

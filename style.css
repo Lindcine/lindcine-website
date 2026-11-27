@@ -237,3 +237,19 @@ body.player-open{overflow:hidden}
 
 .placeholder-mark::after{content:"+";font:300 clamp(23px,3.2vh,42px)/1 var(--sans);color:rgba(255,255,255,.18)}
 .placeholder-tile .tile-media::after{content:"";position:absolute;inset:9%;border:1px solid rgba(255,255,255,.045);pointer-events:none}
+
+
+/* V45 — compact balanced wall: 30 / 40 / 30 vertical bands, 26 unique projects. */
+:root{--T:888.4444svh;--R:94svh}
+.world-run{width:var(--T);flex:0 0 var(--T)}
+.world-run>.layer{height:var(--h);flex:0 0 var(--h);width:var(--T)}
+.world-run>.mid{height:40svh;flex:0 0 40svh;width:var(--T)}
+.mseg{height:40svh;flex:0 0 auto}
+.island{height:40svh;flex:0 0 170svh;width:170svh}
+.iside{width:35svh;height:100%;}
+.iside .tile{width:35svh;height:100%;flex:1 1 auto}
+.island .info-copy{left:35svh;top:0;width:100svh;height:40svh;padding:2svh 0}
+.island .info-copy h1,.island .info-copy h2{font-size:clamp(28px,3.6vw,60px)}
+.island.info-copy--contact>.info-backdrop::before{background-position:55% 25%}
+.wide-placeholder .tile-media{background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(0,0,0,.22))}
+.edge-placeholder .tile-media{background:rgba(0,0,0,.12)}
