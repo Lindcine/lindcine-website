@@ -11,13 +11,7 @@ const projects = [
   {id:"wedding",title:"Spritfabriken",ratio:"16-9",platform:"youtube",videoId:"q4J1hM7gOYU",video:"https://www.youtube.com/watch?v=q4J1hM7gOYU",image:"https://img.youtube.com/vi/q4J1hM7gOYU/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/q4J1hM7gOYU/hqdefault.jpg",note:"Character lives in the details.",noteType:"A SENSE OF PLACE"},
   {id:"narrative",title:"Vattenfall, Fjärrvärme",ratio:"16-9",platform:"vimeo",videoId:"772037309",video:"https://vimeo.com/772037309",image:"https://vumbnail.com/772037309.jpg",note:"Energy, just beneath the surface.",noteType:"A DIFFERENT CURRENT"},
   {id:"selected",title:"Aleris, Art Clinic",ratio:"16-9",platform:"youtube",videoId:"O1T5kZkfx6U",video:"https://www.youtube.com/watch?v=O1T5kZkfx6U",image:"https://img.youtube.com/vi/O1T5kZkfx6U/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/O1T5kZkfx6U/hqdefault.jpg",note:"Quiet precision. Human stories.",noteType:"PEOPLE FIRST"},
-  {id:"landscape",title:"Ryder's Cup",ratio:"1",platform:"instagram",videoId:"CxutZ-Rt6jQ",video:"https://www.instagram.com/reel/CxutZ-Rt6jQ/",image:"https://www.instagram.com/p/CxutZ-Rt6jQ/media/?size=l",note:"A moment inside the noise.",noteType:"ON LOCATION",posterText:"RC"},
-  {id:"ig1",title:"Instagram 01",ratio:"1",platform:"instagram",videoId:"DfsdnTFIKUT",video:"https://www.instagram.com/p/DfsdnTFIKUT/",image:"ig-1.jpg",fallbackImage:"https://www.instagram.com/p/DfsdnTFIKUT/media/?size=l",preview:"ig-1.mp4",posterText:"IG"},
-  {id:"ig2",title:"Instagram 02",ratio:"1",platform:"instagram",videoId:"Dfam3LQolbM",video:"https://www.instagram.com/p/Dfam3LQolbM/",image:"ig-2.jpg",fallbackImage:"https://www.instagram.com/p/Dfam3LQolbM/media/?size=l",preview:"ig-2.mp4",posterText:"IG"},
-  {id:"ig3",title:"Instagram 03",ratio:"1",platform:"instagram",videoId:"DfYEw3JIh8y",video:"https://www.instagram.com/p/DfYEw3JIh8y/",image:"ig-3.jpg",fallbackImage:"https://www.instagram.com/p/DfYEw3JIh8y/media/?size=l",preview:"ig-3.mp4",posterText:"IG"},
-  {id:"ig4",title:"Instagram 04",ratio:"1",platform:"instagram",videoId:"DbRWvU5IkMD",video:"https://www.instagram.com/p/DbRWvU5IkMD/",image:"ig-4.jpg",fallbackImage:"https://www.instagram.com/p/DbRWvU5IkMD/media/?size=l",preview:"ig-4.mp4",posterText:"IG"},
-  {id:"ig5",title:"Instagram 05",ratio:"1",platform:"instagram",videoId:"DbEjUAsovxP",video:"https://www.instagram.com/p/DbEjUAsovxP/",image:"ig-5.jpg",fallbackImage:"https://www.instagram.com/p/DbEjUAsovxP/media/?size=l",preview:"ig-5.mp4",posterText:"IG"},
-  {id:"ig6",title:"Instagram 06",ratio:"1",platform:"instagram",videoId:"Da0G3arKIDX",video:"https://www.instagram.com/p/Da0G3arKIDX/",image:"ig-6.jpg",fallbackImage:"https://www.instagram.com/p/Da0G3arKIDX/media/?size=l",preview:"ig-6.mp4",posterText:"IG"},
+  {id:"landscape",title:"Ryder's Cup",ratio:"1",platform:"instagram",videoId:"CxutZ-Rt6jQ",video:"https://www.instagram.com/reel/CxutZ-Rt6jQ/",image:"",note:"A moment inside the noise.",noteType:"ON LOCATION"},
   {id:"brand",title:"Skånetrafiken",ratio:"16-9",platform:"youtube",videoId:"UMjSnObIrWg",video:"https://www.youtube.com/watch?v=UMjSnObIrWg",image:"https://img.youtube.com/vi/UMjSnObIrWg/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/UMjSnObIrWg/hqdefault.jpg",note:"The everyday, in motion.",noteType:"A REGION IN MOTION"},
   {id:"bts",title:"Demokrati Pågår",ratio:"16-9",platform:"youtube",videoId:"DoNzgCG3Fgs",video:"https://www.youtube.com/watch?v=DoNzgCG3Fgs",image:"https://img.youtube.com/vi/DoNzgCG3Fgs/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/DoNzgCG3Fgs/hqdefault.jpg",note:"A big idea, brought down to earth.",noteType:"IDEAS IN ACTION"},
   {id:"campaign",title:"Demokrativerkstaden",ratio:"4-3",platform:"youtube",videoId:"voEMRubg3p8",video:"https://www.youtube.com/watch?v=voEMRubg3p8",image:"https://img.youtube.com/vi/voEMRubg3p8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/voEMRubg3p8/hqdefault.jpg",note:"Democracy is something we do together.",noteType:"PARTICIPATION"},
@@ -67,9 +61,16 @@ function thumbnailFor(project) {
 function tile(project, extra = "", tall = false, placement = "", tileRatio = project.ratio) {
   const ratio = tall ? "tile-tall" : `ratio-${tileRatio}`;
   const thumb = thumbnailFor(project);
-  const image = thumb
-    ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
-    : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
+  const image = project.platform === "instagram"
+    ? `<div class="instagram-poster" aria-hidden="true">
+        <span class="instagram-poster-kicker">INSTAGRAM REEL</span>
+        <span class="instagram-poster-rule"></span>
+        <strong>RYDER'S<br>CUP</strong>
+        <span class="instagram-poster-cta"><span class="instagram-poster-play">▶</span> VIEW REEL</span>
+      </div>`
+    : thumb
+      ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
+      : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
   const preview = project.preview
     ? `<video class="hover-video" muted loop playsinline preload="none" src="${esc(project.preview)}"></video>`
     : "";
@@ -281,7 +282,8 @@ const COMMENT_PROJECT_IDS = new Set([
 ]);
 const projectPools = Object.fromEntries(ratioKeys.map(ratio => [
   ratio,
-  projects.filter(p => p.ratio === ratio && p.platform && p.video && p.image)
+  // Instagram uses its own tile poster, so it remains eligible without a hotlinked thumbnail URL.
+  projects.filter(p => p.ratio === ratio && p.platform && p.video && (p.image || p.platform === "instagram"))
 ]));
 const projectBags = Object.fromEntries(ratioKeys.map(ratio => [ratio, []]));
 const lastProjectByRatio = {};
@@ -345,13 +347,14 @@ const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H
     }
   };
 const infoPanel = kind => `<div class="info-copy info-copy--${kind}" data-anchor="${kind}">
+  <div class="info-backdrop" aria-hidden="true"><span class="info-backdrop-shade"></span></div>
   ${configs[kind].copy}
 </div>`;
 function segHTML(s) {
   if (s.kind === "reel") return reelTile();
   if (s.kind === "seg") return `<div class="mseg" style="width:${s.w}svh">${s.blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const side = rows => rows.map(r => `<div class="mrow" style="--h:${r.h}svh">${exact(r.list)}</div>`).join("");
-  return `<div class="island info-copy--${s.kind}" style="width:${ISL}svh"><div class="info-backdrop" aria-hidden="true"><span class="info-backdrop-shade"></span></div><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
+  return `<div class="island" style="width:${ISL}svh"><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
 }
 // Built once and repeated 3× so the loop join is invisible.
 const plan = buildPlan();
@@ -390,7 +393,7 @@ function stopActive() {
   noteBox.classList.remove("visible", "typing");
   noteText.textContent = "";
   if (activeTile) {
-    activeTile.classList.remove("is-active", "preview-on");
+    activeTile.classList.remove("is-active");
     if (activeTile.classList.contains("reel-tile") && !activeTile.classList.contains("is-full")) {
       activeTile.querySelector(".reel-frame")?.remove();
       activeTile.classList.remove("is-playing");
@@ -492,8 +495,7 @@ function projectEmbedUrl(project, mode = "preview") {
   if (project.platform === "instagram") {
     // Instagram's public embed is the best available fallback; its own
     // player controls autoplay, so hover autoplay cannot be guaranteed.
-    const base = String(project.video || "").split("?")[0].replace(/\/?$/, "/");
-    return /instagram\.com\//.test(base) ? `${base}embed/` : `https://www.instagram.com/p/${encodeURIComponent(project.videoId)}/embed/`;
+    return `https://www.instagram.com/reel/${encodeURIComponent(project.videoId)}/embed/`;
   }
   return project.preview || "";
 }
@@ -538,11 +540,13 @@ function openProjectPlayer(tileNode, project) {
   if (!project || !project.video) return;
   stopActive();
   lastFocusedTile = tileNode;
+  const instagramMode = project.platform === "instagram";
+  projectModal.querySelector(".project-modal-dialog").classList.toggle("instagram-mode", instagramMode);
+  projectModalFrame.classList.toggle("instagram-mode", instagramMode);
   projectModalTitle.textContent = project.title;
   projectModalLink.href = project.video;
   projectModalLink.textContent = project.platform === "instagram" ? "OPEN ON INSTAGRAM ↗" : `OPEN ON ${project.platform.toUpperCase()} ↗`;
   projectModalFrame.replaceChildren();
-  projectModal.dataset.platform = project.platform;
 
   const frame = document.createElement("iframe");
   frame.className = `project-player-frame ${project.platform}-player-frame`;
@@ -562,16 +566,12 @@ function closeProjectPlayer() {
   if (!projectModal.classList.contains("open")) return;
   projectModal.classList.remove("open");
   projectModal.setAttribute("aria-hidden", "true");
-  delete projectModal.dataset.platform;
   projectModalFrame.replaceChildren();
+  projectModalFrame.classList.remove("instagram-mode");
+  projectModal.querySelector(".project-modal-dialog").classList.remove("instagram-mode");
   document.body.classList.remove("player-open");
   if (lastFocusedTile?.isConnected) lastFocusedTile.focus({preventScroll:true});
   lastFocusedTile = null;
-}
-
-function primePreview(tileNode) { // start fetching the hover loop a moment before it is needed
-  const video = tileNode.querySelector(".hover-video");
-  if (video && !video.dataset.primed) { video.dataset.primed = "1"; video.preload = "auto"; video.load(); }
 }
 
 function activate(tileNode) {
@@ -584,12 +584,12 @@ function activate(tileNode) {
     mountReel(tileNode, false);
   } else {
     const project = projects.find(item => item.id === tileNode.dataset.id);
-    const video = tileNode.querySelector(".hover-video");
-    if (video) {
-      // Self-hosted loop (works for Instagram clips): reveal it only once it is really playing.
-      video.play().then(() => { if (activeTile === tileNode) tileNode.classList.add("preview-on"); }).catch(() => {});
-    } else if (project?.platform && project.platform !== "instagram" && project.ratio === tileNode.dataset.ratio) {
+    if (project?.platform === "instagram") {
+      // Keep the poster static in the mosaic; Instagram controls its own playback.
+    } else if (project?.platform && project.ratio === tileNode.dataset.ratio) {
       mountProjectPreview(tileNode, project);
+    } else {
+      tileNode.querySelector(".hover-video")?.play().catch(() => {});
     }
   }
   noteTimer = window.setTimeout(() => showNote(tileNode), 650);
@@ -641,7 +641,6 @@ function bindTiles() {
   });
   track.querySelectorAll(".tile").forEach(tileNode => {
     tileNode.addEventListener("mouseenter", () => {
-      primePreview(tileNode);
       clearTimeout(hoverTimer);
       hoverTimer = window.setTimeout(() => activate(tileNode), 180);
     });
