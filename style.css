@@ -167,9 +167,9 @@ body.player-open{overflow:hidden}
 }
 
 
-/* V27.2 — more visible gold-to-teal colour veil, sampled across each world run.
-   Each tile receives the colour at its true horizontal position. When a tile
-   becomes active, its own tint fades away to reveal the original image/video. */
+/* V27.4 — clearer matte gold/teal wash with fine, removable film grain.
+   The colour stays continuous across each world run. The active tile loses
+   both tint and local grain so the playing footage is shown cleanly. */
 .tile{
   --wall-gradient-width:2400svh;
   --wall-gradient-x:0px;
@@ -182,30 +182,47 @@ body.player-open{overflow:hidden}
   pointer-events:none;
   background-image:linear-gradient(
     90deg,
-    rgb(158,139,112) 0%,
-    rgb(145,135,116) 13%,
-    rgb(127,133,125) 27%,
-    rgb(106,130,132) 42%,
-    rgb(88,123,132) 57%,
-    rgb(91,128,133) 70%,
-    rgb(113,132,126) 84%,
-    rgb(158,139,112) 100%
+    rgb(166,132,91) 0%,
+    rgb(148,132,107) 13%,
+    rgb(119,133,122) 27%,
+    rgb(91,129,132) 42%,
+    rgb(66,116,128) 57%,
+    rgb(79,127,135) 70%,
+    rgb(119,136,126) 84%,
+    rgb(166,132,91) 100%
   );
   background-size:var(--wall-gradient-width) 100%;
   background-position:var(--wall-gradient-x) 0;
   background-repeat:no-repeat;
+  mix-blend-mode:color;
+  opacity:.42;
+  transition:opacity .62s cubic-bezier(.2,.75,.25,1);
+}
+.tile-media::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.48'/%3E%3C/svg%3E");
+  background-size:180px 180px;
+  background-repeat:repeat;
   mix-blend-mode:soft-light;
-  opacity:.34;
-  transition:opacity .72s cubic-bezier(.2,.75,.25,1);
+  opacity:.12;
+  transition:opacity .48s ease;
 }
 .tile.is-active::before,
 .tile:focus-visible::before{
   opacity:0;
   transition-duration:.48s;
 }
+.tile.is-active .tile-media::before{
+  opacity:0;
+}
 .tile-meta{
   z-index:6;
 }
 @media (prefers-reduced-motion:reduce){
-  .tile::before{transition:none}
+  .tile::before,
+  .tile-media::before{transition:none}
 }
