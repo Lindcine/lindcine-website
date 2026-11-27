@@ -232,6 +232,6 @@ body.player-open{overflow:hidden}
 .island>.info-backdrop{position:absolute;inset:0;z-index:0;width:100%;height:100%}
 .island>.info-backdrop::before{transform:none;opacity:var(--backdrop-opacity,.25)}
 .island .iside{z-index:1}
-.island.info-copy--about>.info-backdrop::before{background-position:56% 38%}
-.island.info-copy--rightnow>.info-backdrop::before{background-position:50% 37%}
-.island.info-copy--contact>.info-backdrop::before{background-position:55% 38%}
+.island.info-copy--about>.info-backdrop::before{background-position:56% 46%}
+.island.info-copy--rightnow>.info-backdrop::before{background-position:50% 47%}
+.island.info-copy--contact>.info-backdrop::before{background-position:55% 63%}
