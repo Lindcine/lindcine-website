@@ -38,6 +38,7 @@ let animationFrame = 0;
 let activeTile = null;
 let hoverTimer = 0;
 let noteTimer = 0;
+let noteTypeTimer = 0;
 let dimTimer = 0;
 let dragging = false;
 let dragX = 0;
@@ -69,7 +70,7 @@ function tile(project, extra = "", tall = false, placement = "", tileRatio = pro
   const platformData = project.platform
     ? `data-platform="${esc(project.platform)}" data-video-id="${esc(project.videoId)}" data-video-url="${esc(project.video)}"`
     : "";
-  const note = project.note
+  const note = project.note && COMMENT_PROJECT_IDS.has(project.id)
     ? `data-note="${esc(project.note)}" data-note-type="${esc(project.noteType || "A NOTE")}"`
     : "";
   return `<article class="tile ${ratio} ${extra}" style="${placement}" data-id="${esc(project.id)}" data-ratio="${esc(tileRatio)}" ${platformData} ${note} tabindex="0" role="button" aria-label="${esc(project.title)}">
@@ -268,6 +269,10 @@ function buildPlan() {
 // Each clip is reserved for tiles with the same declared aspect ratio.
 // Separate shuffled bags keep the wall varied without mixing formats.
 const ratioKeys = Object.keys(TILE_RATIOS);
+const COMMENT_PROJECT_IDS = new Set([
+  "doc", "commercial", "light", "wedding",
+  "landscape", "bts", "events", "docfilm"
+]);
 const projectPools = Object.fromEntries(ratioKeys.map(ratio => [
   ratio,
   projects.filter(p => p.ratio === ratio && p.platform && p.video && p.image)
@@ -374,9 +379,11 @@ function middleRun() {
 
 function stopActive() {
   clearTimeout(noteTimer);
+  clearTimeout(noteTypeTimer);
   clearTimeout(dimTimer);
   document.body.classList.remove("dim");
-  noteBox.classList.remove("visible");
+  noteBox.classList.remove("visible", "typing");
+  noteText.textContent = "";
   if (activeTile) {
     activeTile.classList.remove("is-active");
     if (activeTile.classList.contains("reel-tile") && !activeTile.classList.contains("is-full")) {
@@ -397,17 +404,33 @@ function stopActive() {
 const NOTE_POSITIONS = ["bottom-left","bottom-right","top-left","top-right","mid-left","mid-right"];
 let lastNotePosition = "";
 function showNote(tileNode) {
+  clearTimeout(noteTypeTimer);
   if (!tileNode.dataset.note) return;
+
   noteKicker.textContent = tileNode.dataset.noteType || "A NOTE";
-  noteText.textContent = tileNode.dataset.note;
+  noteText.textContent = "";
   const options = NOTE_POSITIONS.filter(position => position !== lastNotePosition);
   const position = options[Math.floor(rand() * options.length)];
   lastNotePosition = position;
   noteBox.dataset.position = position;
-  noteBox.classList.remove("visible");
-  // Restart the small reveal transition even when two notes appear quickly.
+  noteBox.classList.remove("visible", "typing");
+  // Restart the reveal transition even when two notes appear quickly.
   void noteBox.offsetWidth;
-  noteBox.classList.add("visible");
+  noteBox.classList.add("visible", "typing");
+
+  const characters = Array.from(tileNode.dataset.note);
+  let index = 0;
+  const typeNext = () => {
+    if (activeTile !== tileNode || !noteBox.classList.contains("visible")) return;
+    noteText.textContent = characters.slice(0, index).join("");
+    index += 1;
+    if (index <= characters.length) {
+      noteTypeTimer = window.setTimeout(typeNext, 27);
+    } else {
+      noteBox.classList.remove("typing");
+    }
+  };
+  typeNext();
 }
 
 function mountReel(tileNode, full = false) {
