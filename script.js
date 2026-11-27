@@ -347,14 +347,13 @@ const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H
     }
   };
 const infoPanel = kind => `<div class="info-copy info-copy--${kind}" data-anchor="${kind}">
-  <div class="info-backdrop" aria-hidden="true"><span class="info-backdrop-shade"></span></div>
   ${configs[kind].copy}
 </div>`;
 function segHTML(s) {
   if (s.kind === "reel") return reelTile();
   if (s.kind === "seg") return `<div class="mseg" style="width:${s.w}svh">${s.blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const side = rows => rows.map(r => `<div class="mrow" style="--h:${r.h}svh">${exact(r.list)}</div>`).join("");
-  return `<div class="island" style="width:${ISL}svh"><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
+  return `<div class="island info-copy--${s.kind}" style="width:${ISL}svh"><div class="info-backdrop" aria-hidden="true"><span class="info-backdrop-shade"></span></div><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
 }
 // Built once and repeated 3× so the loop join is invisible.
 const plan = buildPlan();
