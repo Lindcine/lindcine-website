@@ -11,7 +11,7 @@ const projects = [
   {id:"wedding",title:"Spritfabriken",ratio:"16-9",platform:"youtube",videoId:"q4J1hM7gOYU",video:"https://www.youtube.com/watch?v=q4J1hM7gOYU",image:"https://img.youtube.com/vi/q4J1hM7gOYU/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/q4J1hM7gOYU/hqdefault.jpg",note:"Character lives in the details.",noteType:"A SENSE OF PLACE"},
   {id:"narrative",title:"Vattenfall, Fjärrvärme",ratio:"16-9",platform:"vimeo",videoId:"772037309",video:"https://vimeo.com/772037309",image:"https://vumbnail.com/772037309.jpg",note:"Energy, just beneath the surface.",noteType:"A DIFFERENT CURRENT"},
   {id:"selected",title:"Aleris, Art Clinic",ratio:"16-9",platform:"youtube",videoId:"O1T5kZkfx6U",video:"https://www.youtube.com/watch?v=O1T5kZkfx6U",image:"https://img.youtube.com/vi/O1T5kZkfx6U/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/O1T5kZkfx6U/hqdefault.jpg",note:"Quiet precision. Human stories.",noteType:"PEOPLE FIRST"},
-  {id:"landscape",title:"Ryder's Cup",ratio:"1",platform:"instagram",videoId:"CxutZ-Rt6jQ",video:"https://www.instagram.com/reel/CxutZ-Rt6jQ/",image:"https://www.instagram.com/p/CxutZ-Rt6jQ/media/?size=l",note:"A moment inside the noise.",noteType:"ON LOCATION",posterText:"RC"},
+  {id:"landscape",title:"Ryder's Cup",ratio:"1",platform:"instagram",videoId:"CxutZ-Rt6jQ",video:"https://www.instagram.com/reel/CxutZ-Rt6jQ/",image:"",note:"A moment inside the noise.",noteType:"ON LOCATION"},
   {id:"brand",title:"Skånetrafiken",ratio:"16-9",platform:"youtube",videoId:"UMjSnObIrWg",video:"https://www.youtube.com/watch?v=UMjSnObIrWg",image:"https://img.youtube.com/vi/UMjSnObIrWg/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/UMjSnObIrWg/hqdefault.jpg",note:"The everyday, in motion.",noteType:"A REGION IN MOTION"},
   {id:"bts",title:"Demokrati Pågår",ratio:"16-9",platform:"youtube",videoId:"DoNzgCG3Fgs",video:"https://www.youtube.com/watch?v=DoNzgCG3Fgs",image:"https://img.youtube.com/vi/DoNzgCG3Fgs/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/DoNzgCG3Fgs/hqdefault.jpg",note:"A big idea, brought down to earth.",noteType:"IDEAS IN ACTION"},
   {id:"campaign",title:"Demokrativerkstaden",ratio:"4-3",platform:"youtube",videoId:"voEMRubg3p8",video:"https://www.youtube.com/watch?v=voEMRubg3p8",image:"https://img.youtube.com/vi/voEMRubg3p8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/voEMRubg3p8/hqdefault.jpg",note:"Democracy is something we do together.",noteType:"PARTICIPATION"},
@@ -61,9 +61,16 @@ function thumbnailFor(project) {
 function tile(project, extra = "", tall = false, placement = "", tileRatio = project.ratio) {
   const ratio = tall ? "tile-tall" : `ratio-${tileRatio}`;
   const thumb = thumbnailFor(project);
-  const image = thumb
-    ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
-    : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
+  const image = project.platform === "instagram"
+    ? `<div class="instagram-poster" aria-hidden="true">
+        <span class="instagram-poster-kicker">INSTAGRAM REEL</span>
+        <span class="instagram-poster-rule"></span>
+        <strong>RYDER'S<br>CUP</strong>
+        <span class="instagram-poster-cta"><span class="instagram-poster-play">▶</span> VIEW REEL</span>
+      </div>`
+    : thumb
+      ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
+      : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
   const preview = project.preview
     ? `<video class="hover-video" muted loop playsinline preload="none" src="${esc(project.preview)}"></video>`
     : "";
@@ -532,6 +539,9 @@ function openProjectPlayer(tileNode, project) {
   if (!project || !project.video) return;
   stopActive();
   lastFocusedTile = tileNode;
+  const instagramMode = project.platform === "instagram";
+  projectModal.querySelector(".project-modal-dialog").classList.toggle("instagram-mode", instagramMode);
+  projectModalFrame.classList.toggle("instagram-mode", instagramMode);
   projectModalTitle.textContent = project.title;
   projectModalLink.href = project.video;
   projectModalLink.textContent = project.platform === "instagram" ? "OPEN ON INSTAGRAM ↗" : `OPEN ON ${project.platform.toUpperCase()} ↗`;
@@ -556,6 +566,8 @@ function closeProjectPlayer() {
   projectModal.classList.remove("open");
   projectModal.setAttribute("aria-hidden", "true");
   projectModalFrame.replaceChildren();
+  projectModalFrame.classList.remove("instagram-mode");
+  projectModal.querySelector(".project-modal-dialog").classList.remove("instagram-mode");
   document.body.classList.remove("player-open");
   if (lastFocusedTile?.isConnected) lastFocusedTile.focus({preventScroll:true});
   lastFocusedTile = null;
@@ -571,8 +583,13 @@ function activate(tileNode) {
     mountReel(tileNode, false);
   } else {
     const project = projects.find(item => item.id === tileNode.dataset.id);
-    if (project?.platform && project.ratio === tileNode.dataset.ratio) mountProjectPreview(tileNode, project);
-    else tileNode.querySelector(".hover-video")?.play().catch(() => {});
+    if (project?.platform === "instagram") {
+      // Keep the poster static in the mosaic; Instagram controls its own playback.
+    } else if (project?.platform && project.ratio === tileNode.dataset.ratio) {
+      mountProjectPreview(tileNode, project);
+    } else {
+      tileNode.querySelector(".hover-video")?.play().catch(() => {});
+    }
   }
   noteTimer = window.setTimeout(() => showNote(tileNode), 650);
   clearTimeout(dimTimer);

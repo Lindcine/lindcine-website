@@ -171,6 +171,18 @@ body.dim .tile:not(.is-active){filter:brightness(.3);transition:filter 1.8s ease
 }
 .tile.is-active .tile-preview-frame{opacity:1}
 .tile.is-active .tile-meta{z-index:3}
+
+/* Instagram project card: intentional graphic poster, since Instagram does not
+   provide a stable public thumbnail URL for direct hotlinking. */
+.instagram-poster{position:absolute;z-index:0;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,1.4vh,16px);padding:10%;color:#eeeae1;text-align:center;background:radial-gradient(ellipse at 50% 38%,rgba(78,94,91,.38),transparent 58%),linear-gradient(145deg,#1b2223 0%,#111516 55%,#080a0b 100%);overflow:hidden}
+.instagram-poster::before{content:"";position:absolute;inset:8%;border:1px solid rgba(235,233,226,.19);pointer-events:none}
+.instagram-poster-kicker{font:8px var(--mono);letter-spacing:.2em;color:rgba(235,233,226,.66)}
+.instagram-poster-rule{width:26px;height:1px;background:var(--accent);opacity:.8}
+.instagram-poster strong{font:600 clamp(23px,3.1vw,42px)/.9 var(--sans);letter-spacing:-.07em}
+.instagram-poster-cta{display:flex;align-items:center;gap:8px;font:8px var(--mono);letter-spacing:.15em;color:var(--accent)}
+.instagram-poster-play{font-size:9px}
+.tile[data-platform="instagram"].is-active .instagram-poster{opacity:1}
+
 .tile-media .placeholder-mark{z-index:0}
 .project-modal{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:5vh 4vw}
 .project-modal.open{display:flex}
@@ -178,6 +190,13 @@ body.dim .tile:not(.is-active){filter:brightness(.3);transition:filter 1.8s ease
 .project-modal-dialog{position:relative;z-index:1;width:min(92vw,1480px);max-height:90svh;display:flex;flex-direction:column;gap:12px;opacity:0;transform:translateY(14px) scale(.985);animation:projectDialogIn .42s cubic-bezier(.2,.75,.25,1) .04s forwards}
 .project-modal-frame{position:relative;width:100%;aspect-ratio:16/9;max-height:80svh;background:#050607;overflow:hidden;box-shadow:0 24px 90px rgba(0,0,0,.38)}
 .project-player-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#050607}
+
+/* Instagram Reels are portrait-first: give the native embed a portrait modal. */
+.project-modal-dialog.instagram-mode{width:min(92vw,440px);max-height:92svh}
+.project-modal-frame.instagram-mode{width:min(92vw,440px,44svh);height:auto;aspect-ratio:9/16;max-height:78svh;margin:0 auto}
+.project-modal-frame.instagram-mode .project-player-frame{background:#08090a}
+.project-modal-dialog.instagram-mode .project-modal-caption{width:min(92vw,440px,44svh);margin:0 auto}
+
 .instagram-player-frame{background:#0b0c0e}
 .project-modal-close{position:absolute;z-index:5;top:-42px;right:0;width:34px;height:34px;border:1px solid rgba(255,255,255,.32);border-radius:50%;background:rgba(8,9,10,.72);font:24px/1 var(--sans);font-weight:300;color:var(--fg);cursor:pointer;display:grid;place-items:center;transition:background .2s,border-color .2s,transform .2s}
 .project-modal-close:hover{background:rgba(183,161,126,.22);border-color:var(--accent);transform:rotate(90deg)}
