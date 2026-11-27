@@ -333,6 +333,21 @@ function render() {
   track.innerHTML = [0,1,2].map(renderRun).join("");
 }
 
+function setWallGradientPositions() {
+  track.querySelectorAll(".world-run").forEach(run => {
+    const runRect = run.getBoundingClientRect();
+    const runWidth = runRect.width || run.offsetWidth;
+    if (!runWidth) return;
+
+    run.querySelectorAll(".tile").forEach(tile => {
+      const rect = tile.getBoundingClientRect();
+      const x = Math.max(0, Math.min(runWidth - rect.width, rect.left - runRect.left));
+      tile.style.setProperty("--wall-gradient-width", `${runWidth}px`);
+      tile.style.setProperty("--wall-gradient-x", `${-x}px`);
+    });
+  });
+}
+
 function middleRun() {
   return track.querySelector('.world-run[data-copy="1"]');
 }
@@ -708,8 +723,14 @@ document.querySelectorAll("[data-go]").forEach(button => {
 
 render();
 bindTiles();
-requestAnimationFrame(measure);
-window.addEventListener("resize", () => requestAnimationFrame(measure));
+requestAnimationFrame(() => {
+  measure();
+  setWallGradientPositions();
+});
+window.addEventListener("resize", () => requestAnimationFrame(() => {
+  measure();
+  setWallGradientPositions();
+}));
 
 /* Subtle horizontal motion blur. Navigation flights get a small extra lift;
    the filter fades away as soon as horizontal movement settles. */
