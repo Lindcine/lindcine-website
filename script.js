@@ -80,6 +80,7 @@ function tile(project, extra = "", tall = false, placement = "", tileRatio = pro
 
 function reelTile() {
   return `<article class="tile reel-tile" data-id="showreel" data-anchor="showreel" tabindex="0" role="button" aria-label="Play cinematography showreel">
+    <img class="reel-poster" src="https://vumbnail.com/${REEL_ID}.jpg" alt="Lucas Lindgren cinematography showreel thumbnail" loading="eager" decoding="async">
     <div class="reel-invite"><span class="reel-play">▶</span><span class="reel-label">WATCH SHOWREEL</span></div>
   </article>`;
 }
@@ -563,6 +564,9 @@ function openReel(tileNode) {
 }
 
 function bindTiles() {
+  track.querySelectorAll(".reel-poster").forEach(image => {
+    image.addEventListener("error", () => image.remove(), {once:true});
+  });
   track.querySelectorAll(".tile-poster").forEach(image => {
     image.addEventListener("error", () => {
       const fallbacks = (image.dataset.fallbacks || "").split("|").filter(Boolean);

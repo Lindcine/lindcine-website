@@ -32,6 +32,8 @@ button{font:inherit;color:inherit}
 
 /* Showreel: 2.35:1, 50svh high, same geometry for hover and click */
 .reel-tile{flex:0 0 var(--R);width:var(--R);height:100%;background:#090a0b}
+.reel-poster{position:absolute;z-index:1;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:50% 50%;transition:opacity .32s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.reel-tile.is-playing .reel-poster{opacity:0}
 .reel-frame{position:absolute;z-index:4;inset:0;width:100%;height:100%;border:0;opacity:0;pointer-events:none}
 .reel-tile.is-playing .reel-frame{opacity:1}
 .reel-tile.is-full .reel-frame{pointer-events:auto}
