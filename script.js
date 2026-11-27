@@ -48,40 +48,20 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
 
-function thumbnailFor(project, tileRatio) {
+function thumbnailFor(project) {
   if (!project.image) return null;
-  let src = project.image;
-  const fallbacks = [];
-  if (project.platform === "youtube") {
-    // YouTube exposes a few alternate frame stills (1–3.jpg). Use them
-    // occasionally for genuine moment-to-moment variety; retain the HD poster
-    // as the first fallback in case a frame still is unavailable.
-    const frameChance = tileRatio === "1" || tileRatio === "4-3" ? 0.42 : 0.24;
-    if (rand() < frameChance) {
-      const frame = 1 + Math.floor(rand() * 3);
-      src = `https://img.youtube.com/vi/${project.videoId}/${frame}.jpg`;
-    }
-    fallbacks.push(project.image);
-    fallbacks.push(`https://img.youtube.com/vi/${project.videoId}/1.jpg`);
-    fallbacks.push(`https://img.youtube.com/vi/${project.videoId}/2.jpg`);
-    fallbacks.push(`https://img.youtube.com/vi/${project.videoId}/3.jpg`);
-    if (project.fallbackImage) fallbacks.push(project.fallbackImage);
-  } else if (project.platform === "instagram") {
-    fallbacks.push(`https://www.instagram.com/reel/${project.videoId}/media/?size=l`);
-  } else if (project.fallbackImage) {
-    fallbacks.push(project.fallbackImage);
-  }
-  return {src, fallbacks:[...new Set(fallbacks)].filter(url => url !== src)};
+  const fallbacks = project.fallbackImage ? [project.fallbackImage] : [];
+  return {
+    src: project.image,
+    fallbacks: [...new Set(fallbacks)].filter(url => url !== project.image)
+  };
 }
 
 function tile(project, extra = "", tall = false, placement = "", tileRatio = project.ratio) {
   const ratio = tall ? "tile-tall" : `ratio-${tileRatio}`;
-  const thumb = thumbnailFor(project, tileRatio);
-  const posterX = Math.round(18 + rand() * 64);
-  const posterY = Math.round(18 + rand() * 64);
-  const posterZoom = (1.03 + rand() * 0.11).toFixed(2);
+  const thumb = thumbnailFor(project);
   const image = thumb
-    ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" style="--poster-x:${posterX}%;--poster-y:${posterY}%;--poster-zoom:${posterZoom}" loading="lazy" decoding="async">`
+    ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" loading="lazy" decoding="async">`
     : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
   const preview = project.preview
     ? `<video class="hover-video" muted loop playsinline preload="none" src="${esc(project.preview)}"></video>`
@@ -92,7 +72,7 @@ function tile(project, extra = "", tall = false, placement = "", tileRatio = pro
   const note = project.note
     ? `data-note="${esc(project.note)}" data-note-type="${esc(project.noteType || "A NOTE")}"`
     : "";
-  return `<article class="tile ${ratio} ${extra}" style="${placement}" data-id="${esc(project.id)}" ${platformData} ${note} tabindex="0" role="button" aria-label="${esc(project.title)}">
+  return `<article class="tile ${ratio} ${extra}" style="${placement}" data-id="${esc(project.id)}" data-ratio="${esc(tileRatio)}" ${platformData} ${note} tabindex="0" role="button" aria-label="${esc(project.title)}">
     <div class="tile-media">${image}${preview}</div>
     <div class="tile-meta">${esc(project.title)}</div>
   </article>`;
@@ -284,34 +264,41 @@ function buildPlan() {
   return plan;
 }
 //--pure-end
-// A shuffled project bag gives every supplied film a fair share of the wall,
-// without grouping the same titles together or repeating one immediately.
-const wallProjects = projects.filter(p => p.platform && p.video && (p.image || p.posterText));
-let projectBag = [];
-let lastProjectId = "";
-function pickProject() {
-  if (!projectBag.length) {
-    projectBag = wallProjects.slice();
-    for (let i = projectBag.length - 1; i > 0; i--) {
+// Each clip is reserved for tiles with the same declared aspect ratio.
+// Separate shuffled bags keep the wall varied without mixing formats.
+const ratioKeys = Object.keys(TILE_RATIOS);
+const projectPools = Object.fromEntries(ratioKeys.map(ratio => [
+  ratio,
+  projects.filter(p => p.ratio === ratio && p.platform && p.video && p.image)
+]));
+const projectBags = Object.fromEntries(ratioKeys.map(ratio => [ratio, []]));
+const lastProjectByRatio = {};
+function pickProject(tileRatio) {
+  const pool = projectPools[tileRatio] || [];
+  if (!pool.length) throw new Error(`No project supplied for tile ratio ${tileRatio}`);
+  if (!projectBags[tileRatio].length) {
+    const freshBag = pool.slice();
+    for (let i = freshBag.length - 1; i > 0; i--) {
       const j = Math.floor(rand() * (i + 1));
-      [projectBag[i], projectBag[j]] = [projectBag[j], projectBag[i]];
+      [freshBag[i], freshBag[j]] = [freshBag[j], freshBag[i]];
     }
-    if (projectBag.length > 1 && projectBag[projectBag.length - 1].id === lastProjectId) {
-      [projectBag[0], projectBag[projectBag.length - 1]] = [projectBag[projectBag.length - 1], projectBag[0]];
+    if (freshBag.length > 1 && freshBag[freshBag.length - 1].id === lastProjectByRatio[tileRatio]) {
+      [freshBag[0], freshBag[freshBag.length - 1]] = [freshBag[freshBag.length - 1], freshBag[0]];
     }
+    projectBags[tileRatio] = freshBag;
   }
-  const project = projectBag.pop();
-  lastProjectId = project.id;
+  const project = projectBags[tileRatio].pop();
+  lastProjectByRatio[tileRatio] = project.id;
   return project;
 }
 const tone = () => `--t:${Math.floor(rand() * 6)};`;
 function nodeHTML(n, parent) { // tile geometry follows the layout ratio, artwork may come from any project
   const flex = parent === "col" ? 1 / rho(n) : rho(n);
-  if (n.leaf) return tile(pickProject(), "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`, n.leaf);
+  if (n.leaf) return tile(pickProject(n.leaf), "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`, n.leaf);
   const dir = n.h ? "row" : "col";
   return `<div class="cx ${dir}" style="flex:${(flex*1000).toFixed(3)} 1 0">${(n.h || n.v).map(c => nodeHTML(c, dir)).join("")}</div>`;
 }
-const exact = list => list.map(k => tile(pickProject(), "wall-tile", false, `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`, k)).join("");
+const exact = list => list.map(k => tile(pickProject(k), "wall-tile", false, `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`, k)).join("");
 const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H}svh;transform:translateX(-${shift}svh)">${blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const configs = {
     about: {
@@ -487,7 +474,7 @@ function fitPreviewFrame(frame, tileNode, project) {
   const rect = tileNode.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
   const tileRatio = rect.width / rect.height;
-  const playerRatio = 16 / 9;
+  const playerRatio = TILE_RATIOS[project.ratio] || (16 / 9);
   if (tileRatio > playerRatio) {
     frame.style.width = `${rect.width}px`;
     frame.style.height = `${rect.width / playerRatio}px`;
@@ -498,6 +485,7 @@ function fitPreviewFrame(frame, tileNode, project) {
 }
 
 function mountProjectPreview(tileNode, project) {
+  if (tileNode.dataset.ratio !== project.ratio) return;
   tileNode.querySelector(".tile-preview-frame")?.remove();
   const frame = document.createElement("iframe");
   frame.className = `tile-preview-frame ${project.platform}-preview-frame`;
@@ -556,7 +544,7 @@ function activate(tileNode) {
     mountReel(tileNode, false);
   } else {
     const project = projects.find(item => item.id === tileNode.dataset.id);
-    if (project?.platform) mountProjectPreview(tileNode, project);
+    if (project?.platform && project.ratio === tileNode.dataset.ratio) mountProjectPreview(tileNode, project);
     else tileNode.querySelector(".hover-video")?.play().catch(() => {});
   }
   noteTimer = window.setTimeout(() => showNote(tileNode), 650);
