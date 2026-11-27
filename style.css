@@ -182,23 +182,26 @@ body.player-open{overflow:hidden}
   pointer-events:none;
   background-image:linear-gradient(
     90deg,
-    rgb(190,145,88) 0%,
-    rgb(163,130,91) 17%,
-    rgb(105,119,126) 34%,
-    rgb(35,75,111) 52%,
-    rgb(39,104,127) 69%,
-    rgb(121,126,108) 84%,
-    rgb(190,145,88) 100%
+    rgb(158,139,112) 0%,
+    rgb(145,135,116) 13%,
+    rgb(127,133,125) 27%,
+    rgb(106,130,132) 42%,
+    rgb(88,123,132) 57%,
+    rgb(91,128,133) 70%,
+    rgb(113,132,126) 84%,
+    rgb(158,139,112) 100%
   );
   background-size:var(--wall-gradient-width) 100%;
   background-position:var(--wall-gradient-x) 0;
   background-repeat:no-repeat;
-  mix-blend-mode:color;
-  opacity:.68;
-  transition:opacity .62s cubic-bezier(.2,.75,.25,1);
+  mix-blend-mode:soft-light;
+  opacity:.34;
+  transition:opacity .72s cubic-bezier(.2,.75,.25,1);
 }
-.tile.is-active::before{
+.tile.is-active::before,
+.tile:focus-visible::before{
   opacity:0;
+  transition-duration:.48s;
 }
 .tile-meta{
   z-index:6;
