@@ -167,36 +167,20 @@ body.player-open{overflow:hidden}
 }
 
 
-/* V27.5 — richer warm skin-tone golds, stronger teal, and visible fine grain.
-   The tint and grain are both part of the tile overlay and disappear on hover. */
-.tile{
-  --wall-gradient-width:2400svh;
-  --wall-gradient-x:0px;
-}
+/* V27.6 — original image colours, coarse monochrome film texture only.
+   Two neutral noise scales create a rougher analogue texture without a colour grade. */
 .tile::before{
   content:"";
   position:absolute;
   inset:0;
   z-index:4;
   pointer-events:none;
-  background-image:linear-gradient(
-    90deg,
-    rgb(197,138,82) 0%,
-    rgb(185,120,78) 13%,
-    rgb(160,119,88) 25%,
-    rgb(124,139,120) 38%,
-    rgb(79,144,145) 50%,
-    rgb(45,130,144) 63%,
-    rgb(82,141,139) 76%,
-    rgb(151,143,109) 88%,
-    rgb(197,138,82) 100%
-  );
-  background-size:var(--wall-gradient-width) 100%;
-  background-position:var(--wall-gradient-x) 0;
-  background-repeat:no-repeat;
-  mix-blend-mode:color;
-  opacity:.54;
-  transition:opacity .62s cubic-bezier(.2,.75,.25,1);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='coarse'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.055' numOctaves='3' seed='19' stitchTiles='stitch' result='noise'/%3E%3CfeColorMatrix in='noise' type='saturate' values='0' result='mono'/%3E%3CfeComponentTransfer in='mono'%3E%3CfeFuncR type='linear' slope='1.85' intercept='-.42'/%3E%3CfeFuncG type='linear' slope='1.85' intercept='-.42'/%3E%3CfeFuncB type='linear' slope='1.85' intercept='-.42'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23coarse)'/%3E%3C/svg%3E");
+  background-size:256px 256px;
+  background-repeat:repeat;
+  mix-blend-mode:soft-light;
+  opacity:.42;
+  transition:opacity .48s ease;
 }
 .tile::after{
   content:"";
@@ -204,11 +188,11 @@ body.player-open{overflow:hidden}
   inset:0;
   z-index:5;
   pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='.78'/%3E%3C/svg%3E");
-  background-size:160px 160px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Cfilter id='roughgrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' seed='31' stitchTiles='stitch' result='noise'/%3E%3CfeColorMatrix in='noise' type='saturate' values='0' result='mono'/%3E%3CfeComponentTransfer in='mono'%3E%3CfeFuncR type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncG type='linear' slope='2.2' intercept='-.6'/%3E%3CfeFuncB type='linear' slope='2.2' intercept='-.6'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23roughgrain)'/%3E%3C/svg%3E");
+  background-size:128px 128px;
   background-repeat:repeat;
-  mix-blend-mode:soft-light;
-  opacity:.21;
+  mix-blend-mode:overlay;
+  opacity:.24;
   transition:opacity .48s ease;
 }
 .tile.is-active::before,
