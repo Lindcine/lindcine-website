@@ -333,7 +333,28 @@ const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H
       copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
     }
   };
-const infoPanel = kind => `<div class="info-copy" data-anchor="${kind}">${configs[kind].copy}</div>`;
+const infoBackgrounds = {
+  about: [
+    "assets/about-01-crew.webp",
+    "assets/about-02-camera.webp"
+  ],
+  rightnow: [
+    "assets/rightnow-01-night.webp",
+    "assets/rightnow-02-interview.webp"
+  ],
+  contact: [
+    "assets/contact-01-crew.webp"
+  ]
+};
+const infoPanel = kind => {
+  const backgrounds = (infoBackgrounds[kind] || []).map(src =>
+    `<img src="${src}" alt="" aria-hidden="true" loading="eager" decoding="async">`
+  ).join("");
+  return `<div class="info-copy info-copy--${kind}" data-anchor="${kind}">
+    <div class="info-backdrop" aria-hidden="true">${backgrounds}<span class="info-backdrop-shade"></span></div>
+    ${configs[kind].copy}
+  </div>`;
+};
 function segHTML(s) {
   if (s.kind === "reel") return reelTile();
   if (s.kind === "seg") return `<div class="mseg" style="width:${s.w}svh">${s.blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;

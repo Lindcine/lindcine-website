@@ -4,13 +4,14 @@
 html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--fg);font-family:var(--sans);-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit}
-.site-header{position:fixed;z-index:50;left:0;right:0;top:0;height:42px;padding:0 2.5vw;display:flex;align-items:center;justify-content:space-between;pointer-events:none;background:linear-gradient(180deg,rgba(5,6,7,.66),transparent)}
+.site-header{position:fixed;z-index:50;left:0;right:0;top:0;height:58px;padding:0 2.5vw;display:flex;align-items:center;justify-content:space-between;pointer-events:none;background:linear-gradient(180deg,rgba(5,6,7,.78),rgba(5,6,7,.12) 78%,transparent)}
 .wordmark,.main-nav{pointer-events:auto}
-.wordmark{font-size:13px;font-weight:700;letter-spacing:-.09em;text-shadow:0 1px 10px #000}
+.wordmark{font-size:14px;font-weight:700;letter-spacing:-.09em;text-shadow:0 1px 10px #000}
 .wordmark span{font:7px var(--mono);vertical-align:top;margin-left:3px;letter-spacing:0}
-.main-nav{display:flex;gap:clamp(18px,2vw,34px)}
-.main-nav button{border:0;background:none;padding:8px 0;cursor:pointer;font:8px var(--mono);letter-spacing:.13em;color:rgba(235,233,226,.8);transition:color .2s}
-.main-nav button:hover{color:var(--accent)}
+.main-nav{display:flex;align-items:center;gap:clamp(7px,1vw,14px)}
+.main-nav button{min-height:40px;padding:10px 13px;border:1px solid rgba(235,233,226,.25);border-radius:2px;background:rgba(8,9,10,.48);cursor:pointer;font:10px var(--mono);letter-spacing:.12em;color:rgba(245,243,236,.94);text-shadow:0 1px 8px #000;transition:color .2s,border-color .2s,background .2s}
+.main-nav button:hover,.main-nav button:focus-visible{color:var(--accent);border-color:rgba(183,161,126,.8);background:rgba(8,9,10,.82)}
+.main-nav button:focus-visible{outline:1px solid var(--accent);outline-offset:3px}
 
 /* World: three identical runs; script.js jumps between them for the endless loop */
 .world-viewport{position:fixed;inset:0;height:100svh;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;touch-action:pan-x pan-y;cursor:grab;outline:none}
@@ -44,6 +45,12 @@ button{font:inherit;color:inherit}
 
 /* About / Right now / Contact: text panel takes the same slot as the reel */
 .info-copy{flex:0 0 var(--R);width:var(--R);height:100%;padding:clamp(20px,3vw,56px);display:flex;flex-direction:column;justify-content:center;gap:14px;background:#0b0c0e;overflow:hidden}
+.info-copy{position:relative;isolation:isolate}
+.info-backdrop{position:absolute;z-index:0;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:2px;overflow:hidden;background:#08090a;pointer-events:none}
+.info-backdrop img{display:block;min-width:0;width:100%;height:100%;object-fit:cover;opacity:.25}
+.info-backdrop img:only-child{grid-column:1/-1}
+.info-backdrop-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,9,10,.20),rgba(8,9,10,.34));pointer-events:none}
+.info-copy>:not(.info-backdrop){position:relative;z-index:1}
 .info-copy h1,.info-copy h2{font-size:clamp(36px,4.6vw,76px);line-height:.9;margin:0;letter-spacing:-.04em;font-weight:600}
 .info-copy h1 span,.info-copy h2 span{color:var(--accent)}
 .info-copy h3{margin:0;font-size:clamp(18px,2vw,30px);letter-spacing:-.03em}
@@ -121,6 +128,10 @@ body.dim .tile:not(.is-active){filter:brightness(.3);transition:filter 1.8s ease
 .hover-note span{display:block;margin-bottom:2px}
 .hover-note p{line-height:1.45;letter-spacing:-.015em}
 @media (max-width:700px){
+  .site-header{height:54px;padding:0 12px}
+  .main-nav{gap:5px}
+  .main-nav button{min-height:36px;padding:8px 8px;font-size:8px;letter-spacing:.08em}
+
   .hover-note{width:min(290px,72vw);padding:11px 13px}
   .hover-note[data-position="top-left"],.hover-note[data-position="mid-left"],.hover-note[data-position="bottom-left"]{left:5vw}
   .hover-note[data-position="top-right"],.hover-note[data-position="mid-right"],.hover-note[data-position="bottom-right"]{right:5vw}
