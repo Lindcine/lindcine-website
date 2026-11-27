@@ -11,7 +11,7 @@ const projects = [
   {id:"wedding",title:"Spritfabriken",ratio:"16-9",platform:"youtube",videoId:"q4J1hM7gOYU",video:"https://www.youtube.com/watch?v=q4J1hM7gOYU",image:"https://img.youtube.com/vi/q4J1hM7gOYU/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/q4J1hM7gOYU/hqdefault.jpg",note:"Character lives in the details.",noteType:"A SENSE OF PLACE"},
   {id:"narrative",title:"Vattenfall, Fjärrvärme",ratio:"16-9",platform:"vimeo",videoId:"772037309",video:"https://vimeo.com/772037309",image:"https://vumbnail.com/772037309.jpg",note:"Energy, just beneath the surface.",noteType:"A DIFFERENT CURRENT"},
   {id:"selected",title:"Aleris, Art Clinic",ratio:"16-9",platform:"youtube",videoId:"O1T5kZkfx6U",video:"https://www.youtube.com/watch?v=O1T5kZkfx6U",image:"https://img.youtube.com/vi/O1T5kZkfx6U/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/O1T5kZkfx6U/hqdefault.jpg",note:"Quiet precision. Human stories.",noteType:"PEOPLE FIRST"},
-  {id:"landscape",title:"Ryder's Cup",ratio:"1",platform:"instagram",videoId:"CxutZ-Rt6jQ",video:"https://www.instagram.com/reel/CxutZ-Rt6jQ/",note:"A moment inside the noise.",noteType:"ON LOCATION",posterText:"RC"},
+  {id:"landscape",title:"Ryder's Cup",ratio:"1",platform:"instagram",videoId:"CxutZ-Rt6jQ",video:"https://www.instagram.com/reel/CxutZ-Rt6jQ/",image:"https://www.instagram.com/p/CxutZ-Rt6jQ/media/?size=l",note:"A moment inside the noise.",noteType:"ON LOCATION",posterText:"RC"},
   {id:"brand",title:"Skånetrafiken",ratio:"16-9",platform:"youtube",videoId:"UMjSnObIrWg",video:"https://www.youtube.com/watch?v=UMjSnObIrWg",image:"https://img.youtube.com/vi/UMjSnObIrWg/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/UMjSnObIrWg/hqdefault.jpg",note:"The everyday, in motion.",noteType:"A REGION IN MOTION"},
   {id:"bts",title:"Demokrati Pågår",ratio:"16-9",platform:"youtube",videoId:"DoNzgCG3Fgs",video:"https://www.youtube.com/watch?v=DoNzgCG3Fgs",image:"https://img.youtube.com/vi/DoNzgCG3Fgs/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/DoNzgCG3Fgs/hqdefault.jpg",note:"A big idea, brought down to earth.",noteType:"IDEAS IN ACTION"},
   {id:"campaign",title:"Demokrativerkstaden",ratio:"4-3",platform:"youtube",videoId:"voEMRubg3p8",video:"https://www.youtube.com/watch?v=voEMRubg3p8",image:"https://img.youtube.com/vi/voEMRubg3p8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/voEMRubg3p8/hqdefault.jpg",note:"Democracy is something we do together.",noteType:"PARTICIPATION"},
@@ -19,21 +19,6 @@ const projects = [
   {id:"chasing",title:"Väddö",ratio:"2-35",platform:"youtube",videoId:"uZfV9U9B7TA",video:"https://www.youtube.com/watch?v=uZfV9U9B7TA",image:"https://img.youtube.com/vi/uZfV9U9B7TA/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/uZfV9U9B7TA/hqdefault.jpg",note:"A place, a rhythm, a little breathing room.",noteType:"A SMALL OBSERVATION"},
   {id:"music",title:"KTH, Innovation",ratio:"16-9",platform:"youtube",videoId:"wR9AfemNIOM",video:"https://www.youtube.com/watch?v=wR9AfemNIOM",image:"https://img.youtube.com/vi/wR9AfemNIOM/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/wR9AfemNIOM/hqdefault.jpg",note:"Curiosity turning into possibility.",noteType:"A STARTING POINT"},
   {id:"docfilm",title:"Skin — Short Film",ratio:"2-35",platform:"vimeo",videoId:"239191351",video:"https://vimeo.com/239191351",image:"https://vumbnail.com/239191351.jpg",note:"A story told in gestures and atmosphere.",noteType:"SHORT FILM"},
-  {id:"afternoon",title:"An afternoon that turned into something else",ratio:"1",note:"Didn't plan this one. Glad it happened.",noteType:"A PERSONAL NOTE"},
-  {id:"earlier",title:"Earlier Work",ratio:"4-3"},
-  {id:"between",title:"Between takes",ratio:"16-9",note:"The in-between is often where things happen.",noteType:"A PERSONAL NOTE"},
-  {id:"study",title:"Light study",ratio:"1",note:"A little experiment with available light.",noteType:"A SMALL OBSERVATION"},
-  {id:"onset",title:"On set",ratio:"4-3"},
-  {id:"portrait",title:"A quiet portrait",ratio:"16-9"},
-  {id:"motion",title:"Motion study",ratio:"2-35"},
-  {id:"afterlight",title:"After the light",ratio:"1"},
-  {id:"fieldnotes",title:"Field notes",ratio:"4-3"},
-  {id:"texture",title:"Texture & tone",ratio:"16-9"},
-  {id:"cutaway",title:"A small cutaway",ratio:"1"},
-  {id:"location",title:"Location scouting",ratio:"2-35"},
-  {id:"process",title:"The process",ratio:"4-3"},
-  {id:"night",title:"Night work",ratio:"16-9"},
-  {id:"stillness",title:"Stillness",ratio:"1"}
 ];
 
 const track = document.querySelector("#worldTrack");
@@ -63,10 +48,40 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
 
-function tile(project, extra = "", tall = false, placement = "") {
-  const ratio = tall ? "tile-tall" : `ratio-${project.ratio}`;
-  const image = project.image
-    ? `<img class="tile-poster" src="${esc(project.image)}" ${project.fallbackImage ? `data-fallback="${esc(project.fallbackImage)}"` : ""} alt="${esc(project.title)}" loading="lazy" decoding="async">`
+function thumbnailFor(project, tileRatio) {
+  if (!project.image) return null;
+  let src = project.image;
+  const fallbacks = [];
+  if (project.platform === "youtube") {
+    // YouTube exposes a few alternate frame stills (1–3.jpg). Use them
+    // occasionally for genuine moment-to-moment variety; retain the HD poster
+    // as the first fallback in case a frame still is unavailable.
+    const frameChance = tileRatio === "1" || tileRatio === "4-3" ? 0.42 : 0.24;
+    if (rand() < frameChance) {
+      const frame = 1 + Math.floor(rand() * 3);
+      src = `https://img.youtube.com/vi/${project.videoId}/${frame}.jpg`;
+    }
+    fallbacks.push(project.image);
+    fallbacks.push(`https://img.youtube.com/vi/${project.videoId}/1.jpg`);
+    fallbacks.push(`https://img.youtube.com/vi/${project.videoId}/2.jpg`);
+    fallbacks.push(`https://img.youtube.com/vi/${project.videoId}/3.jpg`);
+    if (project.fallbackImage) fallbacks.push(project.fallbackImage);
+  } else if (project.platform === "instagram") {
+    fallbacks.push(`https://www.instagram.com/reel/${project.videoId}/media/?size=l`);
+  } else if (project.fallbackImage) {
+    fallbacks.push(project.fallbackImage);
+  }
+  return {src, fallbacks:[...new Set(fallbacks)].filter(url => url !== src)};
+}
+
+function tile(project, extra = "", tall = false, placement = "", tileRatio = project.ratio) {
+  const ratio = tall ? "tile-tall" : `ratio-${tileRatio}`;
+  const thumb = thumbnailFor(project, tileRatio);
+  const posterX = Math.round(18 + rand() * 64);
+  const posterY = Math.round(18 + rand() * 64);
+  const posterZoom = (1.03 + rand() * 0.11).toFixed(2);
+  const image = thumb
+    ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "L.")}" alt="${esc(project.title)}" style="--poster-x:${posterX}%;--poster-y:${posterY}%;--poster-zoom:${posterZoom}" loading="lazy" decoding="async">`
     : `<span class="placeholder-mark" aria-hidden="true">${esc(project.posterText || "L.")}</span>`;
   const preview = project.preview
     ? `<video class="hover-video" muted loop playsinline preload="none" src="${esc(project.preview)}"></video>`
@@ -269,20 +284,34 @@ function buildPlan() {
   return plan;
 }
 //--pure-end
-const lastPick = {};
-function pickProject(ratio) { // random project of this ratio, never the same twice in a row
-  const list = projects.filter(p => p.ratio === ratio); let i;
-  do { i = Math.floor(rand() * list.length); } while (list.length > 1 && i === lastPick[ratio]);
-  lastPick[ratio] = i; return list[i];
+// A shuffled project bag gives every supplied film a fair share of the wall,
+// without grouping the same titles together or repeating one immediately.
+const wallProjects = projects.filter(p => p.platform && p.video && (p.image || p.posterText));
+let projectBag = [];
+let lastProjectId = "";
+function pickProject() {
+  if (!projectBag.length) {
+    projectBag = wallProjects.slice();
+    for (let i = projectBag.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [projectBag[i], projectBag[j]] = [projectBag[j], projectBag[i]];
+    }
+    if (projectBag.length > 1 && projectBag[projectBag.length - 1].id === lastProjectId) {
+      [projectBag[0], projectBag[projectBag.length - 1]] = [projectBag[projectBag.length - 1], projectBag[0]];
+    }
+  }
+  const project = projectBag.pop();
+  lastProjectId = project.id;
+  return project;
 }
-const tone = () => `--t:${Math.floor(rand() * 6)};`; // placeholder colour only
-function nodeHTML(n, parent) { // flex-grow = ratio along rows, 1/ratio down columns → exact proportions
+const tone = () => `--t:${Math.floor(rand() * 6)};`;
+function nodeHTML(n, parent) { // tile geometry follows the layout ratio, artwork may come from any project
   const flex = parent === "col" ? 1 / rho(n) : rho(n);
-  if (n.leaf) return tile(pickProject(n.leaf), "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`);
+  if (n.leaf) return tile(pickProject(), "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`, n.leaf);
   const dir = n.h ? "row" : "col";
   return `<div class="cx ${dir}" style="flex:${(flex*1000).toFixed(3)} 1 0">${(n.h || n.v).map(c => nodeHTML(c, dir)).join("")}</div>`;
 }
-const exact = list => list.map(k => tile(pickProject(k), "wall-tile", false, `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`)).join("");
+const exact = list => list.map(k => tile(pickProject(), "wall-tile", false, `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`, k)).join("");
 const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H}svh;transform:translateX(-${shift}svh)">${blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const configs = {
     about: {
@@ -548,10 +577,11 @@ function openReel(tileNode) {
 function bindTiles() {
   track.querySelectorAll(".tile-poster").forEach(image => {
     image.addEventListener("error", () => {
-      const fallback = image.dataset.fallback;
-      if (fallback && image.dataset.fallbackTried !== "1") {
-        image.dataset.fallbackTried = "1";
-        image.src = fallback;
+      const fallbacks = (image.dataset.fallbacks || "").split("|").filter(Boolean);
+      const next = fallbacks.shift();
+      if (next) {
+        image.dataset.fallbacks = fallbacks.join("|");
+        image.src = next;
       } else {
         const media = image.closest(".tile-media");
         image.remove();
@@ -559,7 +589,7 @@ function bindTiles() {
           const mark = document.createElement("span");
           mark.className = "placeholder-mark";
           mark.setAttribute("aria-hidden", "true");
-          mark.textContent = "L.";
+          mark.textContent = image.dataset.placeholder || "L.";
           media.prepend(mark);
         }
       }
