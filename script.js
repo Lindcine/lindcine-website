@@ -63,15 +63,16 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
 function thumbnailFor(project) {
   if (!project.image) return null;
   const fallbacks = [];
-  if (project.fallbackImage) fallbacks.push(project.fallbackImage);
   if (project.platform === "youtube" && project.videoId) {
     const id = encodeURIComponent(project.videoId);
     fallbacks.push(
       `https://img.youtube.com/vi/${id}/sddefault.jpg`,
       `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
-      `https://img.youtube.com/vi/${id}/mqdefault.jpg`,
-      `https://img.youtube.com/vi/${id}/0.jpg`
+      `https://img.youtube.com/vi/${id}/0.jpg`,
+      `https://img.youtube.com/vi/${id}/mqdefault.jpg`
     );
+  } else if (project.fallbackImage) {
+    fallbacks.push(project.fallbackImage);
   }
   return {
     src: project.image,
@@ -294,7 +295,7 @@ function buildPlan() {
 }
 //--pure-end
 // Each clip is reserved for tiles with the same declared aspect ratio.
-// Separate shuffled bags keep the wall varied without mixing formats.
+// Projects are distributed across the complete wall before placeholders are rendered.
 const ratioKeys = Object.keys(TILE_RATIOS);
 const COMMENT_PROJECT_IDS = new Set([
   "doc", "commercial", "light", "wedding",
@@ -302,30 +303,12 @@ const COMMENT_PROJECT_IDS = new Set([
 ]);
 const projectPools = Object.fromEntries(ratioKeys.map(ratio => [
   ratio,
-  // Instagram uses its own tile poster, so it remains eligible without a hotlinked thumbnail URL.
+  // Local and stream projects remain eligible even when their poster is not a remote URL.
   projects.filter(p => p.ratio === ratio && p.platform && p.video)
 ]));
-const projectBags = Object.fromEntries(ratioKeys.map(ratio => [ratio, []]));
-const lastProjectByRatio = {};
-function pickProject(tileRatio) {
-  const pool = projectPools[tileRatio] || [];
-  if (!pool.length) return null;
-  if (!projectBags[tileRatio].length) {
-    if (projectBags[tileRatio].usedUp) return null;
-    const freshBag = pool.slice();
-    for (let i = freshBag.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1));
-      [freshBag[i], freshBag[j]] = [freshBag[j], freshBag[i]];
-    }
-    projectBags[tileRatio] = freshBag;
-  }
-  const project = projectBags[tileRatio].pop();
-  if (!projectBags[tileRatio].length) projectBags[tileRatio].usedUp = true;
-  lastProjectByRatio[tileRatio] = project.id;
-  return project;
-}
+
 const tone = () => `--t:${Math.floor(rand() * 6)};`;
-function nodeHTML(n, parent) { // tile geometry follows the layout ratio, artwork may come from any project
+function nodeHTML(n, parent) { // tile geometry and assigned project keep the same declared ratio
   const flex = parent === "col" ? 1 / rho(n) : rho(n);
   if (n.leaf) return tile(pickProject(n.leaf), "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`, n.leaf);
   const dir = n.h ? "row" : "col";
@@ -376,6 +359,98 @@ function segHTML(s) {
 }
 // Built once and repeated 3× so the loop join is invisible.
 const plan = buildPlan();
+// Count every project-capable tile across all three layers before placing any clips.
+// This prevents the top strip from consuming a ratio pool before the other rows render.
+function countNodeSlots(node, counts) {
+  if (node.leaf) {
+    counts[node.leaf] = (counts[node.leaf] || 0) + 1;
+    return;
+  }
+  (node.h || node.v || []).forEach(child => countNodeSlots(child, counts));
+}
+function countBlockSlots(blocks, counts) {
+  blocks.forEach(block => countNodeSlots(block, counts));
+}
+function countPlannedSlots() {
+  const counts = Object.fromEntries(ratioKeys.map(ratio => [ratio, 0]));
+  countBlockSlots(plan.top, counts);
+  for (const segment of plan.mid) {
+    if (segment.kind === "seg") countBlockSlots(segment.blocks, counts);
+    else if (segment.kind !== "reel") {
+      for (const side of ["L", "R"]) {
+        for (const row of segment[side]) {
+          row.list.forEach(ratio => { counts[ratio] = (counts[ratio] || 0) + 1; });
+        }
+      }
+    }
+  }
+  countBlockSlots(plan.bottom, counts);
+  return counts;
+}
+function shuffleInPlace(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+const slotCounts = countPlannedSlots();
+function findFirstRatioSlotAfterReel(targetRatio) {
+  const counts = Object.fromEntries(ratioKeys.map(ratio => [ratio, 0]));
+  countBlockSlots(plan.top, counts);
+  let afterReel = false;
+  let match = null;
+  const visitNode = node => {
+    if (match !== null) return;
+    if (node.leaf) {
+      const index = counts[node.leaf] || 0;
+      counts[node.leaf] = index + 1;
+      if (afterReel && node.leaf === targetRatio) match = index;
+      return;
+    }
+    (node.h || node.v || []).forEach(visitNode);
+  };
+  for (const segment of plan.mid) {
+    if (segment.kind === "reel") { afterReel = true; continue; }
+    if (segment.kind === "seg") segment.blocks.forEach(visitNode);
+    else {
+      for (const side of ["L", "R"]) {
+        for (const row of segment[side]) {
+          for (const ratio of row.list) {
+            const index = counts[ratio] || 0;
+            counts[ratio] = index + 1;
+            if (afterReel && ratio === targetRatio && match === null) match = index;
+          }
+        }
+      }
+    }
+    if (match !== null) return match;
+  }
+  plan.bottom.forEach(visitNode);
+  return match;
+}
+const preferredLocalSlot = findFirstRatioSlotAfterReel("1");
+const projectAssignments = Object.fromEntries(ratioKeys.map(ratio => {
+  const slots = Array(slotCounts[ratio] || 0).fill(null);
+  const candidates = shuffleInPlace((projectPools[ratio] || []).slice());
+  const preferredProjectIndex = ratio === "1"
+    ? candidates.findIndex(project => project.id === "hostprommis")
+    : -1;
+  if (preferredProjectIndex >= 0 && preferredLocalSlot !== null && preferredLocalSlot < slots.length) {
+    slots[preferredLocalSlot] = candidates.splice(preferredProjectIndex, 1)[0];
+  }
+  const positions = shuffleInPlace(Array.from({length: slots.length}, (_, index) => index).filter(index => slots[index] === null));
+  candidates.slice(0, positions.length).forEach((project, index) => {
+    slots[positions[index]] = project;
+  });
+  return [ratio, slots];
+}));
+const projectCursors = Object.fromEntries(ratioKeys.map(ratio => [ratio, 0]));
+function pickProject(tileRatio) {
+  const cursor = projectCursors[tileRatio] || 0;
+  projectCursors[tileRatio] = cursor + 1;
+  return projectAssignments[tileRatio]?.[cursor] || null;
+}
 const RUN_HTML = layerHTML(plan.top, HT, plan.dT) + `<div class="mid">${plan.mid.map(segHTML).join("")}</div>` + layerHTML(plan.bottom, HB, plan.dB);
 const renderRun = copy => `<div class="world-run" data-copy="${copy}">${RUN_HTML}</div>`;
 
@@ -731,7 +806,7 @@ function bindTiles() {
     image.addEventListener("error", () => image.remove(), {once:true});
   });
   track.querySelectorAll(".tile-poster").forEach(image => {
-    image.addEventListener("error", () => {
+    const advanceThumbnail = () => {
       const fallbacks = (image.dataset.fallbacks || "").split("|").filter(Boolean);
       const next = fallbacks.shift();
       if (next) {
@@ -748,7 +823,15 @@ function bindTiles() {
           media.prepend(mark);
         }
       }
-    }, {once:false});
+    };
+    image.addEventListener("error", advanceThumbnail);
+    image.addEventListener("load", () => {
+      // YouTube can return a tiny 120×90 placeholder instead of an image error.
+      // Treat it as unavailable and try the next thumbnail size.
+      if (image.currentSrc.includes("img.youtube.com") && image.naturalWidth <= 120 && image.dataset.fallbacks) {
+        advanceThumbnail();
+      }
+    });
   });
   projectModal.querySelectorAll("[data-close-project]").forEach(node => {
     node.addEventListener("click", closeProjectPlayer);
