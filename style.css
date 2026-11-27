@@ -165,3 +165,32 @@ body.player-open{overflow:hidden}
   .tile-preview-frame,.tile-poster,.project-modal-backdrop,.project-modal-dialog,.project-modal-close{transition:none;animation:none}
   .project-modal-backdrop,.project-modal-dialog{opacity:1;transform:none}
 }
+
+
+/* V27.1 — very subtle horizontal colour drift across each seamless world run.
+   The first and last stops match, so duplicated infinite runs join seamlessly.
+   This is a non-interactive blend layer: it does not change tile geometry,
+   thumbnail sizing, video playback, or hover behaviour. */
+.world-run{
+  position:relative;
+  isolation:isolate;
+}
+.world-run::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:30;
+  pointer-events:none;
+  background:linear-gradient(
+    90deg,
+    rgba(184,148,105,.19) 0%,
+    rgba(164,139,107,.11) 17%,
+    rgba(91,119,128,.12) 34%,
+    rgba(39,88,113,.20) 51%,
+    rgba(48,105,121,.14) 68%,
+    rgba(123,121,103,.10) 84%,
+    rgba(184,148,105,.19) 100%
+  );
+  mix-blend-mode:soft-light;
+  opacity:.34;
+}
