@@ -19,7 +19,7 @@ button{font:inherit;color:inherit}
 .world-track{display:flex;height:100svh;width:max-content}
 
 /* Tiles: width comes from flex-grow = aspect ratio (set in script.js) */
-.tile{position:relative;height:100%;min-width:0;overflow:hidden;background:#171a1c;isolation:isolate;cursor:pointer;color:var(--fg)}
+.tile{position:relative;height:100%;min-width:0;overflow:hidden;background:#171a1c;isolation:isolate;cursor:pointer;color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--bg)}
 .tile-media{position:absolute;inset:0;overflow:hidden;background:linear-gradient(140deg,#242a2d,#0c0e10 78%)}
 .tile-media::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(0,0,0,.68),transparent 42%)}
 .tile-media img,.tile-media video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .25s}
@@ -64,7 +64,7 @@ button{font:inherit;color:inherit}
 /* v3: continuous rows, 2- or 3-row middle layer, 3px gutters, ragged info holes */
 .world-run{display:flex;flex-direction:column;flex:0 0 var(--T);width:var(--T);height:100svh}
 .mrow{display:flex;flex:0 0 var(--h,25svh);height:var(--h,25svh);width:100%}
-.tile::after{content:"";position:absolute;inset:0;z-index:7;pointer-events:none;box-shadow:inset 0 0 0 1.5px var(--bg)}
+/* Tile separators are now an inset shadow, leaving ::after for the grain overlay. */
 
 /* v4: layers of block trees, stair-stepped info holes, hover dimming */
 :root{--T:2400svh;--R:112.8svh}
@@ -167,9 +167,8 @@ body.player-open{overflow:hidden}
 }
 
 
-/* V27.4 — clearer matte gold/teal wash with fine, removable film grain.
-   The colour stays continuous across each world run. The active tile loses
-   both tint and local grain so the playing footage is shown cleanly. */
+/* V27.5 — richer warm skin-tone golds, stronger teal, and visible fine grain.
+   The tint and grain are both part of the tile overlay and disappear on hover. */
 .tile{
   --wall-gradient-width:2400svh;
   --wall-gradient-x:0px;
@@ -182,47 +181,47 @@ body.player-open{overflow:hidden}
   pointer-events:none;
   background-image:linear-gradient(
     90deg,
-    rgb(166,132,91) 0%,
-    rgb(148,132,107) 13%,
-    rgb(119,133,122) 27%,
-    rgb(91,129,132) 42%,
-    rgb(66,116,128) 57%,
-    rgb(79,127,135) 70%,
-    rgb(119,136,126) 84%,
-    rgb(166,132,91) 100%
+    rgb(197,138,82) 0%,
+    rgb(185,120,78) 13%,
+    rgb(160,119,88) 25%,
+    rgb(124,139,120) 38%,
+    rgb(79,144,145) 50%,
+    rgb(45,130,144) 63%,
+    rgb(82,141,139) 76%,
+    rgb(151,143,109) 88%,
+    rgb(197,138,82) 100%
   );
   background-size:var(--wall-gradient-width) 100%;
   background-position:var(--wall-gradient-x) 0;
   background-repeat:no-repeat;
   mix-blend-mode:color;
-  opacity:.42;
+  opacity:.54;
   transition:opacity .62s cubic-bezier(.2,.75,.25,1);
 }
-.tile-media::before{
+.tile::after{
   content:"";
   position:absolute;
   inset:0;
   z-index:5;
   pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.48'/%3E%3C/svg%3E");
-  background-size:180px 180px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='.78'/%3E%3C/svg%3E");
+  background-size:160px 160px;
   background-repeat:repeat;
   mix-blend-mode:soft-light;
-  opacity:.12;
+  opacity:.21;
   transition:opacity .48s ease;
 }
 .tile.is-active::before,
-.tile:focus-visible::before{
+.tile:focus-visible::before,
+.tile.is-active::after,
+.tile:focus-visible::after{
   opacity:0;
   transition-duration:.48s;
-}
-.tile.is-active .tile-media::before{
-  opacity:0;
 }
 .tile-meta{
   z-index:6;
 }
 @media (prefers-reduced-motion:reduce){
   .tile::before,
-  .tile-media::before{transition:none}
+  .tile::after{transition:none}
 }
