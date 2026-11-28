@@ -257,3 +257,18 @@ body.player-open{overflow:hidden}
   background-position:55% 38%;
 }
 .island > .info-backdrop::before{content:none !important;display:none !important}
+
+/* V49.2: backdrop image is now set inline by the island renderer.
+   Keep this element above the island's base colour and below all content. */
+.island > .info-backdrop{
+  display:block!important;
+  z-index:0!important;
+  background-color:#111!important;
+  background-origin:border-box;
+  background-clip:border-box;
+  background-attachment:scroll;
+}
+.island > .info-backdrop .info-backdrop-shade{
+  background:linear-gradient(90deg,rgba(8,9,10,.08),rgba(8,9,10,.18))!important;
+}
+.island > .iside,.island > .info-copy{position:relative;z-index:1}
