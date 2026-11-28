@@ -463,3 +463,31 @@ body.player-open{overflow:hidden}
   opacity:1!important;
   transform:none!important;
 }
+
+
+/* V49.9 — global image opacity + feathered text legibility.
+   All photographic section backgrounds are reduced to 75% opacity.
+   A separate black veil adds 25% behind the copy, with a broad ~100px
+   feather so the transition stays soft and cinematic. */
+.island > .info-backdrop > .section-background{
+  opacity:.75!important;
+}
+.island > .info-backdrop > .info-backdrop-shade{
+  position:absolute!important;
+  inset:0!important;
+  background:transparent!important;
+  pointer-events:none!important;
+  overflow:visible!important;
+}
+.island > .info-backdrop > .info-backdrop-shade::before{
+  content:""!important;
+  position:absolute!important;
+  z-index:1!important;
+  left:-100px!important;
+  top:-100px!important;
+  bottom:-100px!important;
+  width:58%!important;
+  background:rgba(0,0,0,.25)!important;
+  filter:blur(100px)!important;
+  pointer-events:none!important;
+}
