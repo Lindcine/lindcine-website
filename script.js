@@ -81,7 +81,7 @@ function thumbnailFor(project) {
 }
 
 function tile(project, extra = "", tall = false, placement = "", tileRatio = project?.ratio || "16-9") {
-  const ratio = tall ? "tile-tall" : `ratio-${tileRatio}`;
+  const ratio = `${tall ? "tile-tall" : `ratio-${tileRatio}`} ${project?.id === "hostprommis" ? "hostprommis-tile" : ""}`;
   if (!project) {
     return `<article class="tile ${ratio} ${extra} placeholder-tile" style="${placement}" aria-hidden="true"><div class="tile-media"><span class="placeholder-mark"></span></div></article>`;
   }
@@ -337,11 +337,26 @@ function pickProject(tileRatio) {
 const tone = () => `--t:${Math.floor(rand() * 6)};`;
 function nodeHTML(n, parent) { // tile geometry follows the layout ratio, artwork may come from any project
   const flex = parent === "col" ? 1 / rho(n) : rho(n);
-  if (n.leaf) return tile(pickProject(n.leaf), "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`, n.leaf);
+  if (n.leaf) {
+    const project = pickProject(n.leaf);
+    if (project.id === "hostprommis") {
+      const squarePlacement = parent === "col"
+        ? `${tone()}flex:0 0 auto;width:100%;height:auto;aspect-ratio:1/1`
+        : `${tone()}flex:0 0 auto;width:auto;height:100%;aspect-ratio:1/1`;
+      return tile(project, "wall-tile", false, squarePlacement, "1");
+    }
+    return tile(project, "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`, n.leaf);
+  }
   const dir = n.h ? "row" : "col";
   return `<div class="cx ${dir}" style="flex:${(flex*1000).toFixed(3)} 1 0">${(n.h || n.v).map(c => nodeHTML(c, dir)).join("")}</div>`;
 }
-const exact = list => list.map(k => tile(pickProject(k), "wall-tile", false, `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`, k)).join("");
+const exact = list => list.map(k => {
+  const project = pickProject(k);
+  const placement = project.id === "hostprommis"
+    ? `${tone()}flex:0 0 var(--h);width:var(--h);height:100%;aspect-ratio:1/1`
+    : `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`;
+  return tile(project, "wall-tile", false, placement, k);
+}).join("");
 const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H}svh;transform:translateX(-${shift}svh)">${blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const configs = {
     about: {
@@ -382,7 +397,8 @@ function segHTML(s) {
   if (s.kind === "reel") return reelTile();
   if (s.kind === "seg") return `<div class="mseg" style="width:${s.w}svh">${s.blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const side = rows => rows.map(r => `<div class="mrow" style="--h:${r.h}svh">${exact(r.list)}</div>`).join("");
-  return `<div class="island info-copy--${s.kind}" style="width:${ISL}svh"><div class="info-backdrop" aria-hidden="true"><span class="info-backdrop-shade"></span></div><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
+  const backgroundFile = {about:"about-bg.webp",rightnow:"rightnow-bg.webp",contact:"contact-bg.webp"}[s.kind];
+  return `<div class="island info-copy--${s.kind}" style="width:${ISL}svh"><div class="info-backdrop" aria-hidden="true"><img class="section-background" src="assets/${backgroundFile}" alt="" loading="eager" decoding="async"><span class="info-backdrop-shade"></span></div><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
 }
 // Built once and repeated 3× so the loop join is invisible.
 const plan = buildPlan();
