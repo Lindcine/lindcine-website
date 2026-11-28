@@ -232,3 +232,28 @@ body.player-open{overflow:hidden}
 .tile-meta{display:none!important}
 .tile img,.tile video{object-fit:cover}
 .project-modal-frame video{display:block;width:100%;height:100%;object-fit:contain;background:#050607}
+
+/* V49.1: robust section backgrounds on the backdrop element itself.
+   This avoids relying on pseudo-element stacking inside the clipped island. */
+.island.info-copy--about > .info-backdrop{
+  background-color:#101315;
+  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./assets/about-bg.webp") !important;
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:56% 30%;
+}
+.island.info-copy--rightnow > .info-backdrop{
+  background-color:#101315;
+  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./assets/rightnow-bg.webp") !important;
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:50% 45%;
+}
+.island.info-copy--contact > .info-backdrop{
+  background-color:#101315;
+  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./assets/contact-bg.webp") !important;
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:55% 38%;
+}
+.island > .info-backdrop::before{content:none !important;display:none !important}
