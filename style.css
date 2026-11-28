@@ -49,19 +49,19 @@ button{font:inherit;color:inherit}
 .info-backdrop{position:absolute;z-index:0;inset:0;width:100%;height:100%;overflow:hidden;background:#08090a;pointer-events:none}
 .info-backdrop::before{content:"";position:absolute;inset:0;opacity:.25;background-repeat:no-repeat;background-position:center;background-size:cover;transform:scale(1.22);transform-origin:center}
 .info-copy--about .info-backdrop::before{
-  background-image:url("assets/about-bg.webp");
+  background-image:url("./about-bg.webp");
   background-repeat:no-repeat;
   background-size:cover;
   background-position:54% 50%;
 }
 .info-copy--rightnow .info-backdrop::before{
-  background-image:url("assets/rightnow-bg.webp");
+  background-image:url("./rightnow-bg.webp");
   background-repeat:no-repeat;
   background-size:cover;
   background-position:50% 50%;
 }
 .info-copy--contact .info-backdrop::before{
-  background-image:url("assets/contact-bg.webp");
+  background-image:url("./contact-bg.webp");
   background-repeat:no-repeat;
   background-size:cover;
   background-position:50% 50%;
@@ -237,21 +237,21 @@ body.player-open{overflow:hidden}
    This avoids relying on pseudo-element stacking inside the clipped island. */
 .island.info-copy--about > .info-backdrop{
   background-color:#101315;
-  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./assets/about-bg.webp") !important;
+  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./about-bg.webp") !important;
   background-repeat:no-repeat;
   background-size:cover;
   background-position:56% 30%;
 }
 .island.info-copy--rightnow > .info-backdrop{
   background-color:#101315;
-  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./assets/rightnow-bg.webp") !important;
+  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./rightnow-bg.webp") !important;
   background-repeat:no-repeat;
   background-size:cover;
   background-position:50% 45%;
 }
 .island.info-copy--contact > .info-backdrop{
   background-color:#101315;
-  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./assets/contact-bg.webp") !important;
+  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./contact-bg.webp") !important;
   background-repeat:no-repeat;
   background-size:cover;
   background-position:55% 38%;
@@ -287,13 +287,13 @@ body.player-open{overflow:hidden}
   background:linear-gradient(90deg,rgba(8,9,10,.12),rgba(8,9,10,.28))!important;
 }
 .island.info-copy--about > .info-backdrop{
-  background-image:url("./assets/about-bg.webp")!important;background-position:56% 30%!important;
+  background-image:url("./about-bg.webp")!important;background-position:56% 30%!important;
 }
 .island.info-copy--rightnow > .info-backdrop{
-  background-image:url("./assets/rightnow-bg.webp")!important;background-position:50% 45%!important;
+  background-image:url("./rightnow-bg.webp")!important;background-position:50% 45%!important;
 }
 .island.info-copy--contact > .info-backdrop{
-  background-image:url("./assets/contact-bg.webp")!important;background-position:55% 38%!important;
+  background-image:url("./contact-bg.webp")!important;background-position:55% 38%!important;
 }
 .island > .iside{position:absolute!important;z-index:1!important}
 .island > .info-copy{
