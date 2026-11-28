@@ -405,3 +405,18 @@ body.player-open{overflow:hidden}
   aspect-ratio:1/1!important;
   background:#050607!important;
 }
+
+
+/* V49.6 — tuned section framing.
+   Right Now intentionally retains its approved framing.
+   About and Contact use panoramic single-image assets, with the full source
+   frame visible so the camera and Lucas's head are no longer cropped. */
+.island.info-copy--about > .info-backdrop > .section-background,
+.island.info-copy--contact > .info-backdrop > .section-background{
+  object-fit:cover!important;
+  object-position:50% 50%!important;
+  transform:none!important;
+}
+.island.info-copy--rightnow > .info-backdrop > .section-background{
+  object-position:50% 48%!important;
+}

@@ -22,7 +22,6 @@ const projects = [
   {id:"new01",title:"Project 01",ratio:"16-9",platform:"youtube",videoId:"97A397zoDRQ",video:"https://www.youtube.com/watch?v=97A397zoDRQ",image:"https://img.youtube.com/vi/97A397zoDRQ/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/97A397zoDRQ/hqdefault.jpg"},
   {id:"new02",title:"Project 02",ratio:"16-9",platform:"youtube",videoId:"7bjct80YFVU",video:"https://www.youtube.com/watch?v=7bjct80YFVU",image:"https://img.youtube.com/vi/7bjct80YFVU/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/7bjct80YFVU/hqdefault.jpg"},
   {id:"new03",title:"Project 03",ratio:"16-9",platform:"mediaflow",videoId:"03LEWFM2AD",video:"https://m.mediaflow.com/m3u8/03LEWFM2AD?multiRes=1",image:"",posterText:"MF"},
-  {id:"new04",title:"Project 04",ratio:"16-9",platform:"youtube",videoId:"XDRftVQ9QGM",video:"https://www.youtube.com/shorts/XDRftVQ9QGM",image:"https://img.youtube.com/vi/XDRftVQ9QGM/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/XDRftVQ9QGM/hqdefault.jpg"},
   {id:"new05",title:"Project 05",ratio:"16-9",platform:"youtube",videoId:"rEvU1r6oW34",video:"https://www.youtube.com/watch?v=rEvU1r6oW34",image:"https://img.youtube.com/vi/rEvU1r6oW34/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/rEvU1r6oW34/hqdefault.jpg"},
   {id:"new06",title:"Project 06",ratio:"16-9",platform:"youtube",videoId:"SRKoVi9C5b8",video:"https://www.youtube.com/watch?v=SRKoVi9C5b8",image:"https://img.youtube.com/vi/SRKoVi9C5b8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/SRKoVi9C5b8/hqdefault.jpg"},
   {id:"new07",title:"Project 07",ratio:"2-35",platform:"youtube",videoId:"Zq7xl2nZD2M",video:"https://www.youtube.com/watch?v=Zq7xl2nZD2M",image:"https://img.youtube.com/vi/Zq7xl2nZD2M/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/Zq7xl2nZD2M/hqdefault.jpg"},
@@ -311,20 +310,14 @@ const lastProjectByRatio = {};
 let hostprommisPlaced = false;
 function pickProject(tileRatio) {
   const pool = projectPools[tileRatio] || [];
-  if (tileRatio === "1") {
-    if (!hostprommisPlaced) {
-      const hostprommisIndex = pool.findIndex(project => project.id === "hostprommis");
-      if (hostprommisIndex >= 0) {
-        hostprommisPlaced = true;
-        pool.splice(hostprommisIndex, 1);
-        return projects.find(project => project.id === "hostprommis");
-      }
-    }
-    // There is only one native 1:1 project. Keep other square slots empty
-    // rather than duplicating Höstprommis across the wall.
-    return null;
-  }
   if (!pool.length) throw new Error(`No project supplied for tile ratio ${tileRatio}`);
+  if (tileRatio === "1" && !hostprommisPlaced) {
+    const hostprommisIndex = pool.findIndex(project => project.id === "hostprommis");
+    if (hostprommisIndex >= 0) {
+      hostprommisPlaced = true;
+      return pool[hostprommisIndex];
+    }
+  }
   if (!projectBags[tileRatio].length) {
     const freshBag = pool.slice();
     for (let i = freshBag.length - 1; i > 0; i--) {
@@ -341,18 +334,28 @@ function pickProject(tileRatio) {
   return project;
 }
 const tone = () => `--t:${Math.floor(rand() * 6)};`;
-function nodeHTML(n, parent) { // all tile dimensions follow the organic mosaic's ratio geometry
+function nodeHTML(n, parent) { // tile geometry follows the layout ratio, artwork may come from any project
   const flex = parent === "col" ? 1 / rho(n) : rho(n);
   if (n.leaf) {
     const project = pickProject(n.leaf);
+    if (project.id === "hostprommis") {
+      const squarePlacement = parent === "col"
+        ? `${tone()}flex:0 0 auto;width:100%;height:auto;aspect-ratio:1/1`
+        : `${tone()}flex:0 0 auto;width:auto;height:100%;aspect-ratio:1/1`;
+      return tile(project, "wall-tile", false, squarePlacement, "1");
+    }
     return tile(project, "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`, n.leaf);
   }
   const dir = n.h ? "row" : "col";
   return `<div class="cx ${dir}" style="flex:${(flex*1000).toFixed(3)} 1 0">${(n.h || n.v).map(c => nodeHTML(c, dir)).join("")}</div>`;
 }
-const exact = list => list.map(k =>
-  tile(pickProject(k), "wall-tile", false, `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`, k)
-).join("");
+const exact = list => list.map(k => {
+  const project = pickProject(k);
+  const placement = project.id === "hostprommis"
+    ? `${tone()}flex:0 0 var(--h);width:var(--h);height:100%;aspect-ratio:1/1`
+    : `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`;
+  return tile(project, "wall-tile", false, placement, k);
+}).join("");
 const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H}svh;transform:translateX(-${shift}svh)">${blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const configs = {
     about: {
