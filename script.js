@@ -1,5 +1,4 @@
-/* LINDCINE v26 — organic edge-to-edge horizontal film wall.
-   Edit the projects array to add real stills, previews and links. */
+/* LINDCINE — ratio-locked, infinite horizontal portfolio mosaic. */
 const REEL_ID = "994186610";
 const REEL_RATIO = 2.35;
 
@@ -22,14 +21,14 @@ const projects = [
   {id:"new01",title:"Project 01",ratio:"16-9",platform:"youtube",videoId:"97A397zoDRQ",video:"https://www.youtube.com/watch?v=97A397zoDRQ",image:"https://img.youtube.com/vi/97A397zoDRQ/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/97A397zoDRQ/hqdefault.jpg"},
   {id:"new02",title:"Project 02",ratio:"16-9",platform:"youtube",videoId:"7bjct80YFVU",video:"https://www.youtube.com/watch?v=7bjct80YFVU",image:"https://img.youtube.com/vi/7bjct80YFVU/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/7bjct80YFVU/hqdefault.jpg"},
   {id:"new03",title:"Project 03",ratio:"16-9",platform:"mediaflow",videoId:"03LEWFM2AD",video:"https://m.mediaflow.com/m3u8/03LEWFM2AD?multiRes=1",image:"",posterText:"MF"},
-  {id:"new04",title:"Project 04",ratio:"9-16",platform:"youtube",videoId:"XDRftVQ9QGM",video:"https://www.youtube.com/shorts/XDRftVQ9QGM",image:"https://img.youtube.com/vi/XDRftVQ9QGM/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/XDRftVQ9QGM/hqdefault.jpg"},
-  {id:"new05",title:"Project 05",ratio:"16-9",platform:"youtube",videoId:"rEvU1r6oW34",video:"https://www.youtube.com/watch?v=rEvU1r6oW34",image:"https://img.youtube.com/vi/rEvU1r6oW34/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/rEvU1r6oW34/hqdefault.jpg"},
+  {id:"new04",title:"Project 04",ratio:"1",platform:"youtube",videoId:"XDRftVQ9QGM",video:"https://www.youtube.com/shorts/XDRftVQ9QGM",image:"https://img.youtube.com/vi/XDRftVQ9QGM/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/XDRftVQ9QGM/hqdefault.jpg"},
+  {id:"new05",title:"Project 05",ratio:"4-3",platform:"youtube",videoId:"rEvU1r6oW34",video:"https://www.youtube.com/watch?v=rEvU1r6oW34",image:"https://img.youtube.com/vi/rEvU1r6oW34/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/rEvU1r6oW34/hqdefault.jpg"},
   {id:"new06",title:"Project 06",ratio:"16-9",platform:"youtube",videoId:"SRKoVi9C5b8",video:"https://www.youtube.com/watch?v=SRKoVi9C5b8",image:"https://img.youtube.com/vi/SRKoVi9C5b8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/SRKoVi9C5b8/hqdefault.jpg"},
-  {id:"new07",title:"Project 07",ratio:"2-31",platform:"youtube",videoId:"Zq7xl2nZD2M",video:"https://www.youtube.com/watch?v=Zq7xl2nZD2M",image:"https://img.youtube.com/vi/Zq7xl2nZD2M/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/Zq7xl2nZD2M/hqdefault.jpg"},
+  {id:"new07",title:"Project 07",ratio:"2-35",platform:"youtube",videoId:"Zq7xl2nZD2M",video:"https://www.youtube.com/watch?v=Zq7xl2nZD2M",image:"https://img.youtube.com/vi/Zq7xl2nZD2M/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/Zq7xl2nZD2M/hqdefault.jpg"},
   {id:"new08",title:"Project 08",ratio:"16-9",platform:"youtube",videoId:"j-7in2cY4rA",video:"https://www.youtube.com/watch?v=j-7in2cY4rA",image:"https://img.youtube.com/vi/j-7in2cY4rA/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/j-7in2cY4rA/hqdefault.jpg"},
   {id:"new09",title:"Project 09",ratio:"16-9",platform:"youtube",videoId:"acMafsKQiK8",video:"https://www.youtube.com/watch?v=acMafsKQiK8",image:"https://img.youtube.com/vi/acMafsKQiK8/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/acMafsKQiK8/hqdefault.jpg"},
   {id:"new10",title:"Project 10",ratio:"16-9",platform:"youtube",videoId:"lcQXgpyjHrw",video:"https://www.youtube.com/watch?v=lcQXgpyjHrw",image:"https://img.youtube.com/vi/lcQXgpyjHrw/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/lcQXgpyjHrw/hqdefault.jpg"},
-  {id:"new11",title:"Project 11",ratio:"2-31",platform:"youtube",videoId:"hHhT0DtJwB4",video:"https://www.youtube.com/watch?v=hHhT0DtJwB4",image:"https://img.youtube.com/vi/hHhT0DtJwB4/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/hHhT0DtJwB4/hqdefault.jpg"}
+  {id:"new11",title:"Project 11",ratio:"2-35",platform:"youtube",videoId:"hHhT0DtJwB4",video:"https://www.youtube.com/watch?v=hHhT0DtJwB4",image:"https://img.youtube.com/vi/hHhT0DtJwB4/maxresdefault.jpg",fallbackImage:"https://img.youtube.com/vi/hHhT0DtJwB4/hqdefault.jpg"}
 ];
 
 const track = document.querySelector("#worldTrack");
@@ -87,7 +86,7 @@ function tile(project, extra = "", tall = false, placement = "", tileRatio = pro
   }
   const thumb = thumbnailFor(project);
   const image = project.platform === "mediaflow"
-    ? `<span class="placeholder-mark" aria-hidden="true"></span>`
+    ? `<span class="project-fallback" aria-hidden="true"><span>MEDIAFLOW</span><b>03</b></span>`
     : thumb
       ? `<img class="tile-poster" src="${esc(thumb.src)}" data-fallbacks="${esc(thumb.fallbacks.join("|"))}" data-placeholder="${esc(project.posterText || "")}" alt="" loading="lazy" decoding="async">`
       : `<span class="placeholder-mark" aria-hidden="true"></span>`;
@@ -114,161 +113,127 @@ function reelTile() {
   </article>`;
 }
 
-  const configs = {
-    about: {
-      bands:[
-        {left:["2-35","1"],right:["16-9","4-3"]},
-        {left:["16-9","4-3"],right:["2-35","1"]},
-        {left:["1","4-3"],right:["2-35","16-9"]},
-        {left:["4-3","1"],right:["1","2-35"]},
-        {left:["2-35","16-9"],right:["4-3","1"]}
-      ],
-      copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
-    },
-    rightnow: {
-      bands:[
-        {left:["4-3","1"],right:["2-35","16-9"]},
-        {left:["2-35","1"],right:["16-9","4-3"]},
-        {left:["1","4-3"],right:["16-9","2-35"]},
-        {left:["2-35","16-9"],right:["4-3","1"]},
-        {left:["16-9","4-3"],right:["2-35","1"]}
-      ],
-      copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
-    },
-    contact: {
-      bands:[
-        {left:["16-9","4-3"],right:["2-35","1"]},
-        {left:["2-35","1"],right:["4-3","16-9"]},
-        {left:["1","2-35"],right:["16-9","4-3"]},
-        {left:["4-3","1"],right:["2-35","16-9"]},
-        {left:["2-35","16-9"],right:["1","4-3"]}
-      ],
-      copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
-    }
-  };
-const infoPanel = kind => `<div class="info-copy info-copy--${kind}" data-anchor="${kind}">
-  ${configs[kind].copy}
-</div>`;
-/* V45 — compact, one-pass project wall.
-   The previous grid generated 167 tile slots for 26 unique films. This version
-   gives every film exactly one tile and uses a small number of intentional
-   placeholder panels to complete the bands. */
-const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "2-31":2.31, "1":1, "4-3":4/3, "9-16":9/16};
-const COMMENT_PROJECT_IDS = new Set(["doc", "commercial", "light", "wedding", "landscape", "bts", "events", "docfilm"]);
-let seed = 20261127;
-const rand = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
-const shuffle = items => {
-  const copy = items.slice();
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(rand() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+/* LINDCINE V47 — four-row, ratio-locked horizontal mosaic.
+   One complete run contains each of the 26 projects exactly once. */
+const TILE_RATIOS = {"16-9":16/9, "2-35":2.35, "1":1, "4-3":4/3};
+const COMMENT_PROJECT_IDS = new Set(["doc","commercial","light","wedding","bts","events","docfilm"]);
+const projectById = Object.fromEntries(projects.map(p => [p.id,p]));
+let noteRandomSeed = 0x51F15E;
+function rand() { noteRandomSeed = (noteRandomSeed * 1664525 + 1013904223) >>> 0; return noteRandomSeed / 4294967296; }
+const ROW_H = 25;
+const SEGMENTS = {
+  A: {ratio: 3.5555555555555554, width: 88.88888888888889},
+  B: {ratio: 4.127777777777778, width: 103.19444444444445},
+  C: {ratio: 4.127777777777778, width: 103.19444444444445}
+};
+const PANEL_W = 117.5; // 2.35:1 at 50svh high
+const X_SHOWREEL = SEGMENTS.A.width;
+const X_MIDDLE = X_SHOWREEL + PANEL_W;
+const X_RIGHTNOW = X_MIDDLE + SEGMENTS.B.width;
+const X_RIGHT = X_RIGHTNOW + PANEL_W;
+const RUN_WIDTH = X_RIGHT + SEGMENTS.C.width;
+const ROW_GROUPS = [
+  {x:0, y:0, width:SEGMENTS.A.width, ids:["wedding","events"]},
+  {x:0, y:25, width:SEGMENTS.A.width, ids:["commercial","new09"]},
+  {x:X_MIDDLE, y:0, width:SEGMENTS.B.width, ids:["new07","new08"]},
+  {x:X_MIDDLE, y:25, width:SEGMENTS.B.width, ids:["hostprommis","campaign","new10"]},
+  {x:X_RIGHT, y:0, width:SEGMENTS.C.width, ids:["new04","new05","new03"]},
+  {x:X_RIGHT, y:25, width:SEGMENTS.C.width, ids:["docfilm","bts"]},
+  {x:0, y:50, width:SEGMENTS.A.width, ids:["selected","new06"]},
+  {x:0, y:75, width:SEGMENTS.A.width, ids:["music","new02"]},
+  {x:X_MIDDLE, y:50, width:SEGMENTS.B.width, ids:["brand","new01"]},
+  {x:X_MIDDLE, y:75, width:SEGMENTS.B.width, ids:["light","new11"]},
+  {x:X_RIGHT, y:50, width:SEGMENTS.C.width, ids:["narrative","doc"]},
+  {x:X_RIGHT, y:75, width:SEGMENTS.C.width, ids:["chasing","people"]}
+];
+
+const configs = {
+  about: {
+    copy:`<span class="kicker">BEHIND THE CAMERA</span><h1>Lucas<br>Lindgren<span>.</span></h1><p class="info-lead">Cinematographer, filmmaker and editor based in Stockholm.</p><div class="info-body"><p>I work across documentaries, commercials, branded films and other visual projects — moving between cinematography, camera, lighting and editing.</p><p>I’m interested in people, atmosphere and images that serve a story. Available for selected projects in Sweden and internationally.</p></div>`
+  },
+  rightnow: {
+    copy:`<span class="kicker">A CURRENT CHAPTER</span><h2>Right<br>now<span>.</span></h2><div class="current-work"><span class="kicker">IN PRODUCTION</span><h3>DO THE GAME</h3><p>A documentary journey following the people behind the creation of Den of Wolves, and the personal cost of pursuing a dream.</p><span class="current-meta">DOCUMENTARY SERIES · STOCKHOLM</span></div>`
+  },
+  contact: {
+    copy:`<span class="kicker">HAVE SOMETHING IN MIND?</span><h2>Let's make<br>something<span>.</span></h2><a class="contact-email" href="mailto:lucas@lindcine.com">lucas@lindcine.com <span>↗</span></a><span class="contact-location">STOCKHOLM, SWEDEN · AVAILABLE INTERNATIONALLY</span>`
   }
-  return copy;
 };
 
-const TOP_H = 30;
-const MID_H = 40;
-const BOTTOM_H = 30;
-const ISLAND_W = 170;
-const REEL_W = REEL_RATIO * MID_H;
-const MID_PROJECT_W = MID_H * (16 / 9);
-const WORLD_W = 4 * MID_PROJECT_W + REEL_W + 3 * ISLAND_W;
-const INFO_SIDE_W = (ISLAND_W - 100) / 2;
-
-// Four 16:9 films sit in the four gaps around the showreel and information islands.
-const midProjects = projects.filter(p => p.ratio === "16-9" && p.platform !== "mediaflow").slice(0, 4);
-if (midProjects.length !== 4) throw new Error("The middle row needs four 16:9 projects.");
-const remainingProjects = projects.filter(p => !midProjects.includes(p));
-if (remainingProjects.length !== 22) throw new Error(`Expected 22 remaining projects, got ${remainingProjects.length}.`);
-
-// Balance the two outer rows by both tile count and total displayed width.
-const outerRows = [[], []];
-const outerWidths = [0, 0];
-const sortedRemaining = remainingProjects.slice().sort((a, b) => TILE_RATIOS[b.ratio] - TILE_RATIOS[a.ratio]);
-for (const project of sortedRemaining) {
-  const choices = [0, 1].filter(i => outerRows[i].length < 11);
-  choices.sort((a, b) => outerRows[a].length - outerRows[b].length || outerWidths[a] - outerWidths[b]);
-  const row = choices[0];
-  outerRows[row].push(project);
-  outerWidths[row] += TILE_RATIOS[project.ratio];
-}
-if (outerRows.some(row => row.length !== 11)) throw new Error("Outer project rows are not balanced.");
-const topProjects = shuffle(outerRows[0]);
-const bottomProjects = shuffle(outerRows[1]);
-
-function placeholderTile(width, className = "") {
-  return `<article class="tile placeholder-tile ${className}" style="flex:0 0 ${width.toFixed(4)}svh;width:${width.toFixed(4)}svh" aria-hidden="true"><div class="tile-media"><span class="placeholder-mark"></span></div></article>`;
-}
-
-function projectTile(project, height) {
-  const width = height * TILE_RATIOS[project.ratio];
-  return tile(project, "wall-tile", false, `--t:${Math.floor(rand() * 6)};flex:0 0 ${width.toFixed(4)}svh;width:${width.toFixed(4)}svh`, project.ratio);
-}
-
-function projectBand(items, height) {
-  const usedWidth = items.reduce((sum, project) => sum + height * TILE_RATIOS[project.ratio], 0);
-  const gapWidth = (WORLD_W - usedWidth) / 3;
-  if (!Number.isFinite(gapWidth) || gapWidth <= 20) {
-    throw new Error(`Outer row does not have enough room for placeholders (${gapWidth}).`);
-  }
-  const groupSizes = [3, 3, 3, 2];
-  let offset = 0;
-  const html = [];
-  groupSizes.forEach((size, index) => {
-    items.slice(offset, offset + size).forEach(project => html.push(projectTile(project, height)));
-    offset += size;
-    if (index < 3) html.push(placeholderTile(gapWidth, "wide-placeholder"));
-  });
-  return html.join("");
-}
-
-function islandHTML(kind) {
-  return `<div class="island info-copy--${kind}" style="width:${ISLAND_W}svh">
+function infoPanel(kind, x, y) {
+  return `<section class="feature-panel info-copy info-copy--${kind}" style="left:${x}svh;top:${y}svh;width:${PANEL_W}svh;height:50svh" data-anchor="${kind}">
     <div class="info-backdrop" aria-hidden="true"><span class="info-backdrop-shade"></span></div>
-    <div class="iside l">${placeholderTile(INFO_SIDE_W, "edge-placeholder")}</div>
-    <div class="iside r">${placeholderTile(INFO_SIDE_W, "edge-placeholder")}</div>
-    ${infoPanel(kind)}
-  </div>`;
+    <div class="info-content">${configs[kind].copy}</div>
+  </section>`;
 }
 
-function middleSegment(project) {
-  return `<div class="mseg" style="width:${MID_PROJECT_W.toFixed(4)}svh;flex:0 0 ${MID_PROJECT_W.toFixed(4)}svh;height:${MID_H}svh">${projectTile(project, MID_H)}</div>`;
+function projectRow(group) {
+  let cursor = group.x;
+  let html = '';
+  for (const id of group.ids) {
+    const project = projectById[id];
+    if (!project) throw new Error(`Unknown project in layout: ${id}`);
+    const ratio = TILE_RATIOS[project.ratio];
+    if (!ratio) throw new Error(`Unknown ratio for ${id}: ${project.ratio}`);
+    const width = ROW_H * ratio;
+    html += tile(project, 'wall-tile', false,
+      `left:${cursor.toFixed(5)}svh;top:${group.y}svh;width:${width.toFixed(5)}svh;height:${ROW_H}svh`, project.ratio);
+    cursor += width;
+  }
+  const remaining = group.x + group.width - cursor;
+  if (remaining < -0.05) {
+    throw new Error(`Mosaic row overflows its segment by ${Math.abs(remaining).toFixed(3)}svh`);
+  }
+  if (remaining > 0.05) {
+    // Use a tightly cropped continuation of the final real project image rather
+    // than an empty plus tile. This is a decorative crop, not another project.
+    const source = projectById[group.ids[group.ids.length - 1]];
+    const poster = source?.image || source?.previewPoster || "";
+    html += `<div class="tile wall-tile segment-filler" aria-hidden="true"
+      style="left:${cursor.toFixed(5)}svh;top:${group.y}svh;width:${remaining.toFixed(5)}svh;height:${ROW_H}svh">
+      <div class="tile-media">${poster ? `<img src="${esc(poster)}" alt="" loading="lazy" decoding="async">` : `<span class="project-fallback"><span>SELECTED WORK</span></span>`}</div>
+    </div>`;
+  }
+  return html;
 }
 
-const reelHTML = reelTile();
 function renderRun(copy) {
-  const top = `<div class="layer strip" style="--h:${TOP_H}svh">${projectBand(topProjects, TOP_H)}</div>`;
-  const middle = `<div class="mid" style="height:${MID_H}svh;flex:0 0 ${MID_H}svh;width:${WORLD_W.toFixed(4)}svh">
-    ${middleSegment(midProjects[0])}${reelHTML}${middleSegment(midProjects[1])}
-    ${islandHTML("about")}${middleSegment(midProjects[2])}
-    ${islandHTML("rightnow")}${middleSegment(midProjects[3])}${islandHTML("contact")}
+  const tiles = ROW_GROUPS.map(projectRow).join('');
+  return `<div class="world-run" data-copy="${copy}" style="--run-width:${RUN_WIDTH.toFixed(5)}svh">
+    ${tiles}
+    ${reelTilePositioned(X_SHOWREEL,0)}
+    ${infoPanel('rightnow',X_RIGHTNOW,0)}
+    ${infoPanel('about',X_SHOWREEL,50)}
+    ${infoPanel('contact',X_RIGHTNOW,50)}
   </div>`;
-  const bottom = `<div class="layer strip" style="--h:${BOTTOM_H}svh">${projectBand(bottomProjects, BOTTOM_H)}</div>`;
-  return `<div class="world-run" data-copy="${copy}">${top}${middle}${bottom}</div>`;
+}
+
+function reelTilePositioned(x,y) {
+  return reelTile().replace('class="tile reel-tile"','class="tile reel-tile" style="left:'+x+'svh;top:'+y+'svh;width:'+PANEL_W+'svh;height:50svh"');
+}
+
+
+function validateProjectData() {
+  const allowed = new Set(["1", "4-3", "16-9", "2-35"]);
+  const ids = new Set();
+  for (const project of projects) {
+    if (ids.has(project.id)) throw new Error(`Duplicate project id: ${project.id}`);
+    ids.add(project.id);
+    if (!allowed.has(project.ratio)) throw new Error(`Unsupported tile ratio for ${project.id}: ${project.ratio}`);
+  }
 }
 
 function render() {
-  track.innerHTML = [0, 1, 2].map(renderRun).join("");
+  validateProjectData();
+  track.innerHTML = [0,1,2].map(renderRun).join('');
+  const used = ROW_GROUPS.flatMap(group => group.ids);
+  const unique = new Set(used);
+  if (used.length !== projects.length || unique.size !== projects.length || projects.some(p => !unique.has(p.id))) {
+    throw new Error('Layout validation failed: every project must appear exactly once per run.');
+  }
 }
 
-function setWallGradientPositions() {
-  track.querySelectorAll(".world-run").forEach(run => {
-    const runRect = run.getBoundingClientRect();
-    const runWidth = runRect.width || run.offsetWidth;
-    if (!runWidth) return;
-
-    run.querySelectorAll(".tile").forEach(tile => {
-      const rect = tile.getBoundingClientRect();
-      const x = Math.max(0, Math.min(runWidth - rect.width, rect.left - runRect.left));
-      tile.style.setProperty("--wall-gradient-width", `${runWidth}px`);
-      tile.style.setProperty("--wall-gradient-x", `${-x}px`);
-    });
-  });
-}
-
-function middleRun() {
-  return track.querySelector('.world-run[data-copy="1"]');
-}
+function setWallGradientPositions() { /* Ratios and coordinates are fixed; no per-tile gradient remapping needed. */ }
+function middleRun() { return track.querySelector('.world-run[data-copy="1"]'); }
 
 function stopActive() {
   clearTimeout(noteTimer);
@@ -598,6 +563,17 @@ function bindTiles() {
     image.addEventListener("error", () => image.remove(), {once:true});
   });
   track.querySelectorAll(".tile-poster").forEach(image => {
+    const showThumbnailPlaceholder = () => {
+      const media = image.closest(".tile-media");
+      image.remove();
+      if (media && !media.querySelector(".placeholder-mark")) {
+        const mark = document.createElement("span");
+        mark.className = "placeholder-mark";
+        mark.setAttribute("aria-hidden", "true");
+        mark.textContent = image.dataset.placeholder || "";
+        media.prepend(mark);
+      }
+    };
     const advanceThumbnail = () => {
       const fallbacks = (image.dataset.fallbacks || "").split("|").filter(Boolean);
       const next = fallbacks.shift();
@@ -605,22 +581,14 @@ function bindTiles() {
         image.dataset.fallbacks = fallbacks.join("|");
         image.src = next;
       } else {
-        const media = image.closest(".tile-media");
-        image.remove();
-        if (media && !media.querySelector(".placeholder-mark")) {
-          const mark = document.createElement("span");
-          mark.className = "placeholder-mark";
-          mark.setAttribute("aria-hidden", "true");
-          mark.textContent = image.dataset.placeholder || "";
-          media.prepend(mark);
-        }
+        showThumbnailPlaceholder();
       }
     };
     image.addEventListener("error", advanceThumbnail);
     image.addEventListener("load", () => {
-      // YouTube can return a tiny 120×90 placeholder instead of an image error.
-      // Treat it as unavailable and try the next thumbnail size.
-      if (image.currentSrc.includes("img.youtube.com") && image.naturalWidth <= 120 && image.dataset.fallbacks) {
+      // YouTube may return a 120×90 placeholder with HTTP 200. Treat it as
+      // unavailable even when it is the final fallback, then show a real tile placeholder.
+      if (image.currentSrc.includes("img.youtube.com") && image.naturalWidth <= 120) {
         advanceThumbnail();
       }
     });
@@ -675,8 +643,8 @@ function measure() {
   if (!first || !middle || !reel) return;
   cycleWidth = middle.getBoundingClientRect().left - first.getBoundingClientRect().left;
   const rect = reel.getBoundingClientRect();
-  const center = rect.left - viewport.getBoundingClientRect().left + viewport.scrollLeft + rect.width / 2;
-  const initial = cycleWidth + center - viewport.clientWidth / 2;
+  const center = rect.left - viewport.getBoundingClientRect().left + rect.width / 2;
+  const initial = center - viewport.clientWidth / 2;
   viewport.scrollLeft = initial;
   targetScroll = initial;
 }
@@ -719,7 +687,7 @@ function goToAnchor(name) {
   const node = middleRun()?.querySelector(`[data-anchor="${name}"]`);
   if (!node) return;
   const rect = node.getBoundingClientRect();
-  const center = rect.left + rect.width / 2;
+  const center = rect.left - viewport.getBoundingClientRect().left + rect.width / 2;
   scrollToX(viewport.scrollLeft + center - viewport.clientWidth / 2, true);
 }
 
@@ -727,7 +695,8 @@ function goToReel() {
   const node = middleRun()?.querySelector(".reel-tile");
   if (!node) return;
   const rect = node.getBoundingClientRect();
-  scrollToX(viewport.scrollLeft + rect.left + rect.width / 2 - viewport.clientWidth / 2, true);
+  const center = rect.left - viewport.getBoundingClientRect().left + rect.width / 2;
+  scrollToX(viewport.scrollLeft + center - viewport.clientWidth / 2, true);
 }
 
 viewport.addEventListener("wheel", event => {
@@ -792,29 +761,3 @@ window.addEventListener("resize", () => requestAnimationFrame(() => {
   setWallGradientPositions();
 }));
 
-/* Subtle horizontal motion blur. Navigation flights get a small extra lift;
-   the filter fades away as soon as horizontal movement settles. */
-document.body.insertAdjacentHTML("beforeend", '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="mblur" x="-18%" y="-8%" width="136%" height="116%" color-interpolation-filters="sRGB"><feGaussianBlur id="mblurStd" stdDeviation="0 0"/></filter></svg>');
-(function motionBlur() {
-  const std = document.querySelector("#mblurStd");
-  let last = viewport.scrollLeft, amount = 0, active = false;
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-  (function loop() {
-    const current = viewport.scrollLeft;
-    let dx = current - last;
-    last = current;
-    if (cycleWidth && Math.abs(dx) > cycleWidth * .3) dx = 0; // ignore seamless-loop rebasing
-    const target = reduced.matches ? 0 : Math.min(3.2, Math.abs(dx) * .065 * motionBlurBoost);
-    amount += (target - amount) * (target > amount ? .38 : .17);
-    if (amount > .28) {
-      std.setAttribute("stdDeviation", `${amount.toFixed(2)} 0.025`);
-      if (!active) { viewport.style.filter = "url(#mblur)"; active = true; }
-    } else if (active) {
-      std.setAttribute("stdDeviation", "0 0");
-      viewport.style.filter = "";
-      active = false;
-      amount = 0;
-    }
-    requestAnimationFrame(loop);
-  })();
-})();
