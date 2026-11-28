@@ -113,7 +113,7 @@ function reelTile() {
   </article>`;
 }
 
-/* ---- Layout v4. All widths/heights in svh. Page = top layer (26) + middle layer (48) + bottom layer (26).
+/* ---- Layout v5. Fine mosaic. All widths/heights in svh. Page = top layer (26) + middle layer (48) + bottom layer (26).
    Each layer is an endless sequence of random "blocks". A block is one tile, or a tree of tiles stacked
    (same width, heights ∝ 1/ratio) or side by side (same height, widths ∝ ratio), so EVERY tile is an exact
    16:9 / 2.35:1 / 1:1 / 4:3 rectangle with no gaps. Layers are phase-shifted until no vertical edge runs
@@ -154,12 +154,14 @@ function genNode(ctx, depth, stackOK) {
 function okBlock(b, H) {
   const out = [];
   leaves(b, 0, 0, H * rho(b), H, out);
-  return out.length > 0 && out.every(r => r.h >= 12 && r.w >= 22);
+  // Smaller cards, but keep a practical minimum so footage remains legible.
+  return out.length > 0 && out.every(r => r.h >= 9 && r.w >= 16);
 }
 const genMid = ctx => {
   for (let tries = 0; ; tries++) {
     const c = ctx.slice();
-    const depth = rand() < .28 ? 3 : 2;
+    // More nested subdivisions create a finer, more editorial mosaic.
+    const depth = rand() < .42 ? 4 : 3;
     const b = genNode(c, depth, true);
     if (okBlock(b, HM)) { ctx.splice(0, ctx.length, ...c); return b; }
     if (tries > 5000) { const fallback = {leaf: pickRatio(ctx)}; return fallback; }
@@ -171,9 +173,8 @@ const genEdge = (ctx, H) => {
     const mode = rand();
     let b;
     if (mode < .43) {
-      // A loose horizontal run of 2–3 full-height tiles gives the outer
-      // bands more internal rhythm without introducing gaps or distortion.
-      const count = rand() < .62 ? 2 : 3;
+      // Finer horizontal runs in the outer bands; ratios remain exact.
+      const count = rand() < .72 ? 3 : 4;
       b = {h:Array.from({length:count}, () => ({leaf:pickRatio(c)}))};
     } else if (mode < .60) {
       // Occasional two-tier stack; alternate the two wide formats so the
@@ -183,7 +184,7 @@ const genEdge = (ctx, H) => {
       c.push(first,second);
       b = {v:[{leaf:first},{leaf:second}]};
     } else if (mode < .90) {
-      b = genNode(c, rand() < .7 ? 2 : 3, true);
+      b = genNode(c, rand() < .42 ? 4 : 3, true);
     } else {
       b = {leaf:pickRatio(c)};
     }
