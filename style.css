@@ -272,3 +272,56 @@ body.player-open{overflow:hidden}
   background:linear-gradient(90deg,rgba(8,9,10,.08),rgba(8,9,10,.18))!important;
 }
 .island > .iside,.island > .info-copy{position:relative;z-index:1}
+
+/* V49.3 — restore the information island content layer and image backdrops. */
+.island{isolation:isolate}
+.island > .info-backdrop{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  z-index:0!important;display:block!important;pointer-events:none!important;
+  background-color:#101315!important;background-repeat:no-repeat!important;
+  background-size:cover!important;
+}
+.island > .info-backdrop::before{content:none!important;display:none!important}
+.island > .info-backdrop .info-backdrop-shade{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(8,9,10,.12),rgba(8,9,10,.28))!important;
+}
+.island.info-copy--about > .info-backdrop{
+  background-image:url("./assets/about-bg.webp")!important;background-position:56% 30%!important;
+}
+.island.info-copy--rightnow > .info-backdrop{
+  background-image:url("./assets/rightnow-bg.webp")!important;background-position:50% 45%!important;
+}
+.island.info-copy--contact > .info-backdrop{
+  background-image:url("./assets/contact-bg.webp")!important;background-position:55% 38%!important;
+}
+.island > .iside{position:absolute!important;z-index:1!important}
+.island > .info-copy{
+  position:absolute!important;left:58svh!important;top:0!important;
+  width:100svh!important;height:48svh!important;flex:none!important;
+  display:flex!important;flex-direction:column!important;justify-content:center!important;
+  gap:14px!important;padding:2svh 0!important;margin:0!important;
+  background:transparent!important;overflow:hidden!important;z-index:3!important;
+  isolation:isolate;
+}
+.island > .info-copy h1,.island > .info-copy h2,
+.island > .info-copy h3,.island > .info-copy p,
+.island > .info-copy .kicker,.island > .info-copy .current-meta,
+.island > .info-copy .contact-location,.island > .info-copy .contact-email{
+  position:relative;z-index:1;
+}
+.island > .info-copy h1,.island > .info-copy h2{color:var(--fg)!important}
+.island > .info-copy p{color:#d0cec8!important}
+.island > .info-copy .info-lead{color:var(--fg)!important}
+
+/* Höstprommis is a native 1:1 source: keep its tile, preview and modal square. */
+.project-modal-dialog.local-mode{
+  width:min(92vw,80svh)!important;max-height:92svh!important;
+}
+.project-modal-frame.local-mode{
+  width:min(80svh,92vw)!important;height:auto!important;aspect-ratio:1/1!important;
+  max-height:80svh!important;margin:0 auto!important;
+}
+.project-modal-frame.local-mode .local-player-frame{
+  width:100%!important;height:100%!important;object-fit:contain!important;
+}

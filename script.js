@@ -308,9 +308,17 @@ const projectPools = Object.fromEntries(ratioKeys.map(ratio => [
 ]));
 const projectBags = Object.fromEntries(ratioKeys.map(ratio => [ratio, []]));
 const lastProjectByRatio = {};
+let hostprommisPlaced = false;
 function pickProject(tileRatio) {
   const pool = projectPools[tileRatio] || [];
   if (!pool.length) throw new Error(`No project supplied for tile ratio ${tileRatio}`);
+  if (tileRatio === "1" && !hostprommisPlaced) {
+    const hostprommisIndex = pool.findIndex(project => project.id === "hostprommis");
+    if (hostprommisIndex >= 0) {
+      hostprommisPlaced = true;
+      return pool[hostprommisIndex];
+    }
+  }
   if (!projectBags[tileRatio].length) {
     const freshBag = pool.slice();
     for (let i = freshBag.length - 1; i > 0; i--) {
@@ -374,10 +382,7 @@ function segHTML(s) {
   if (s.kind === "reel") return reelTile();
   if (s.kind === "seg") return `<div class="mseg" style="width:${s.w}svh">${s.blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const side = rows => rows.map(r => `<div class="mrow" style="--h:${r.h}svh">${exact(r.list)}</div>`).join("");
-  const bg = {about:"./assets/about-bg.webp",rightnow:"./assets/rightnow-bg.webp",contact:"./assets/contact-bg.webp"}[s.kind];
-  const pos = {about:"56% 30%",rightnow:"50% 45%",contact:"55% 38%"}[s.kind];
-  const backdropStyle = bg ? `style="background-image:linear-gradient(90deg,rgba(8,9,10,.12),rgba(8,9,10,.24)),url('${bg}');background-repeat:no-repeat;background-size:cover;background-position:${pos}"` : "";
-  return `<div class="island info-copy--${s.kind}" style="width:${ISL}svh"><div class="info-backdrop" ${backdropStyle} aria-hidden="true"><span class="info-backdrop-shade"></span></div><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
+  return `<div class="island info-copy--${s.kind}" style="width:${ISL}svh"><div class="info-backdrop" aria-hidden="true"><span class="info-backdrop-shade"></span></div><div class="iside l">${side(s.L)}</div><div class="iside r">${side(s.R)}</div>${infoPanel(s.kind)}</div>`;
 }
 // Built once and repeated 3× so the loop join is invisible.
 const plan = buildPlan();
