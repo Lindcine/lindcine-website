@@ -450,3 +450,16 @@ body.player-open{overflow:hidden}
 .island.info-copy--contact > .info-backdrop > .section-background{
   object-position:50% 50%!important;
 }
+
+
+/* V49.8 — final framing nudge.
+   Contact: slightly less headroom, image content shifted upward.
+   About: reveal Lucas's full face and more of the ARRI Amira body. */
+.island.info-copy--contact > .info-backdrop > .section-background{
+  object-position:50% 50%!important;
+}
+.island.info-copy--about > .info-backdrop > .section-background{
+  object-position:50% 50%!important;
+  opacity:1!important;
+  transform:none!important;
+}
