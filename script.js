@@ -311,14 +311,20 @@ const lastProjectByRatio = {};
 let hostprommisPlaced = false;
 function pickProject(tileRatio) {
   const pool = projectPools[tileRatio] || [];
-  if (!pool.length) throw new Error(`No project supplied for tile ratio ${tileRatio}`);
-  if (tileRatio === "1" && !hostprommisPlaced) {
-    const hostprommisIndex = pool.findIndex(project => project.id === "hostprommis");
-    if (hostprommisIndex >= 0) {
-      hostprommisPlaced = true;
-      return pool[hostprommisIndex];
+  if (tileRatio === "1") {
+    if (!hostprommisPlaced) {
+      const hostprommisIndex = pool.findIndex(project => project.id === "hostprommis");
+      if (hostprommisIndex >= 0) {
+        hostprommisPlaced = true;
+        pool.splice(hostprommisIndex, 1);
+        return projects.find(project => project.id === "hostprommis");
+      }
     }
+    // There is only one native 1:1 project. Keep other square slots empty
+    // rather than duplicating Höstprommis across the wall.
+    return null;
   }
+  if (!pool.length) throw new Error(`No project supplied for tile ratio ${tileRatio}`);
   if (!projectBags[tileRatio].length) {
     const freshBag = pool.slice();
     for (let i = freshBag.length - 1; i > 0; i--) {
@@ -335,28 +341,18 @@ function pickProject(tileRatio) {
   return project;
 }
 const tone = () => `--t:${Math.floor(rand() * 6)};`;
-function nodeHTML(n, parent) { // tile geometry follows the layout ratio, artwork may come from any project
+function nodeHTML(n, parent) { // all tile dimensions follow the organic mosaic's ratio geometry
   const flex = parent === "col" ? 1 / rho(n) : rho(n);
   if (n.leaf) {
     const project = pickProject(n.leaf);
-    if (project.id === "hostprommis") {
-      const squarePlacement = parent === "col"
-        ? `${tone()}flex:0 0 auto;width:100%;height:auto;aspect-ratio:1/1`
-        : `${tone()}flex:0 0 auto;width:auto;height:100%;aspect-ratio:1/1`;
-      return tile(project, "wall-tile", false, squarePlacement, "1");
-    }
     return tile(project, "wall-tile", false, `${tone()}flex:${(flex*1000).toFixed(3)} 1 0`, n.leaf);
   }
   const dir = n.h ? "row" : "col";
   return `<div class="cx ${dir}" style="flex:${(flex*1000).toFixed(3)} 1 0">${(n.h || n.v).map(c => nodeHTML(c, dir)).join("")}</div>`;
 }
-const exact = list => list.map(k => {
-  const project = pickProject(k);
-  const placement = project.id === "hostprommis"
-    ? `${tone()}flex:0 0 var(--h);width:var(--h);height:100%;aspect-ratio:1/1`
-    : `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`;
-  return tile(project, "wall-tile", false, placement, k);
-}).join("");
+const exact = list => list.map(k =>
+  tile(pickProject(k), "wall-tile", false, `${tone()}flex:0 0 calc(var(--h) * ${TILE_RATIOS[k]})`, k)
+).join("");
 const layerHTML = (blocks, H, shift) => `<div class="layer strip" style="--h:${H}svh;transform:translateX(-${shift}svh)">${blocks.map(b => nodeHTML(b, "layer")).join("")}</div>`;
   const configs = {
     about: {

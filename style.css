@@ -48,24 +48,6 @@ button{font:inherit;color:inherit}
 .info-copy{position:relative;isolation:isolate}
 .info-backdrop{position:absolute;z-index:0;inset:0;width:100%;height:100%;overflow:hidden;background:#08090a;pointer-events:none}
 .info-backdrop::before{content:"";position:absolute;inset:0;opacity:.25;background-repeat:no-repeat;background-position:center;background-size:cover;transform:scale(1.22);transform-origin:center}
-.info-copy--about .info-backdrop::before{
-  background-image:url("./about-bg.webp");
-  background-repeat:no-repeat;
-  background-size:cover;
-  background-position:54% 50%;
-}
-.info-copy--rightnow .info-backdrop::before{
-  background-image:url("./rightnow-bg.webp");
-  background-repeat:no-repeat;
-  background-size:cover;
-  background-position:50% 50%;
-}
-.info-copy--contact .info-backdrop::before{
-  background-image:url("./contact-bg.webp");
-  background-repeat:no-repeat;
-  background-size:cover;
-  background-position:50% 50%;
-}
 .info-backdrop-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,9,10,.20),rgba(8,9,10,.34));pointer-events:none}
 .info-copy>:not(.info-backdrop){position:relative;z-index:1}
 .info-copy h1,.info-copy h2{font-size:clamp(36px,4.6vw,76px);line-height:.9;margin:0;letter-spacing:-.04em;font-weight:600}
@@ -235,27 +217,6 @@ body.player-open{overflow:hidden}
 
 /* V49.1: robust section backgrounds on the backdrop element itself.
    This avoids relying on pseudo-element stacking inside the clipped island. */
-.island.info-copy--about > .info-backdrop{
-  background-color:#101315;
-  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./about-bg.webp") !important;
-  background-repeat:no-repeat;
-  background-size:cover;
-  background-position:56% 30%;
-}
-.island.info-copy--rightnow > .info-backdrop{
-  background-color:#101315;
-  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./rightnow-bg.webp") !important;
-  background-repeat:no-repeat;
-  background-size:cover;
-  background-position:50% 45%;
-}
-.island.info-copy--contact > .info-backdrop{
-  background-color:#101315;
-  background-image:linear-gradient(90deg,rgba(8,9,10,.18),rgba(8,9,10,.38)),url("./contact-bg.webp") !important;
-  background-repeat:no-repeat;
-  background-size:cover;
-  background-position:55% 38%;
-}
 .island > .info-backdrop::before{content:none !important;display:none !important}
 
 /* V49.2: backdrop image is now set inline by the island renderer.
@@ -285,15 +246,6 @@ body.player-open{overflow:hidden}
 .island > .info-backdrop .info-backdrop-shade{
   position:absolute;inset:0;
   background:linear-gradient(90deg,rgba(8,9,10,.12),rgba(8,9,10,.28))!important;
-}
-.island.info-copy--about > .info-backdrop{
-  background-image:url("./about-bg.webp")!important;background-position:56% 30%!important;
-}
-.island.info-copy--rightnow > .info-backdrop{
-  background-image:url("./rightnow-bg.webp")!important;background-position:50% 45%!important;
-}
-.island.info-copy--contact > .info-backdrop{
-  background-image:url("./contact-bg.webp")!important;background-position:55% 38%!important;
 }
 .island > .iside{position:absolute!important;z-index:1!important}
 .island > .info-copy{
@@ -383,4 +335,73 @@ body.player-open{overflow:hidden}
 .project-modal-frame.local-mode .local-player-frame{
   position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
   object-fit:contain!important;background:#050607!important;
+}
+
+/* V49.5 — SINGLE SOURCE BACKGROUNDS: the section-background <img> is the
+   only photograph in each island backdrop. Disable every legacy CSS image
+   background left by earlier iterations. */
+.island > .info-backdrop{
+  background-color:#101315!important;
+  background-image:none!important;
+}
+.island > .info-backdrop::before,
+.island > .info-backdrop::after{
+  content:none!important;
+  display:none!important;
+  background-image:none!important;
+}
+.island.info-copy--about > .info-backdrop,
+.island.info-copy--rightnow > .info-backdrop,
+.island > .info-backdrop > .section-background{
+  display:block!important;
+  opacity:1!important;
+  object-fit:cover!important;
+  transform:none!important;
+}
+.island > .info-backdrop > .info-backdrop-shade{
+  background:linear-gradient(90deg,rgba(5,7,8,.28),rgba(5,7,8,.42))!important;
+}
+
+/* Höstprommis is rendered by the same ratio geometry as every other tile.
+   Its declared ratio is 1:1, and the tile's media fills that square. */
+.tile.hostprommis-tile{
+  aspect-ratio:1/1!important;
+  overflow:hidden!important;
+}
+.tile.hostprommis-tile > .tile-media{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  aspect-ratio:auto!important;
+}
+.tile.hostprommis-tile .tile-poster,
+.tile.hostprommis-tile .local-preview{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+}
+
+/* The local MP4 player frame is exactly square; the native square video fills it. */
+.project-modal-dialog.local-mode{
+  width:min(92vw,80svh)!important;
+  max-width:80svh!important;
+}
+.project-modal-frame.local-mode{
+  width:min(80svh,92vw)!important;
+  height:min(80svh,92vw)!important;
+  aspect-ratio:1/1!important;
+  max-height:80svh!important;
+  margin:0 auto!important;
+  flex:0 0 auto!important;
+}
+.project-modal-frame.local-mode .local-player-frame{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  aspect-ratio:1/1!important;
+  background:#050607!important;
 }
