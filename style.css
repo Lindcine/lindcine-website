@@ -95,6 +95,16 @@ button{font:inherit;color:inherit}
 /* hover: after a moment the other tiles fade slowly darker; they recover quickly */
 .tile{transition:filter .5s ease}
 body.dim .tile:not(.is-active){filter:brightness(.3);transition:filter 1.8s ease}
+/* V50.1 — when a clip is active, dim every other part of the wall,
+   including the large About / Right Now / Contact image sections. */
+body.dim .island{
+  filter:brightness(.3);
+  transition:filter 1.8s ease;
+}
+body.dim .island .info-copy{
+  filter:brightness(1);
+}
+
 /* Placeholder tones (random per tile) until real stills are added */
 .tile[style*="--t:0;"] .tile-media{background:linear-gradient(140deg,#3d5560,#101a1f 85%)}
 .tile[style*="--t:1;"] .tile-media{background:linear-gradient(140deg,#6a5238,#1c140d 85%)}
